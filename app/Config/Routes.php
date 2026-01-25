@@ -47,5 +47,11 @@ $routes->group('pinjam', ['filter' => 'auth'], function ($routes) {
     $routes->get('edit/(:num)', 'PinjamController::edit/$1');
     $routes->post('update/(:num)', 'PinjamController::update/$1');
     $routes->get('delete/(:num)', 'PinjamController::delete/$1');
+    
+    $routes->post('return/(:num)', 'PinjamController::requestReturn/$1');
+    $routes->get('return-check/(:num)', 'PinjamController::returnCheck/$1');
+    $routes->post('return-update/(:num)', 'PinjamController::returnUpdate/$1');
 });
+
+
 

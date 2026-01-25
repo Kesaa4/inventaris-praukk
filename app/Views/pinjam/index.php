@@ -28,10 +28,12 @@
     <th>Tipe</th>
     <th>Peminjam</th>
     <th>Tgl Pinjam</th>
+    <th>Tgl Kembali</th>
     <th>Status</th>
     <?php if (in_array(session('role'), ['admin','petugas'])): ?>
     <th>Aksi</th>
     <?php endif ?>
+    <th>Pengembalian</th>
 </tr>
 
 <?php foreach ($pinjam as $p): ?>
@@ -40,6 +42,15 @@
     <td><?= $p['tipe_barang'] ?></td>
     <td><?= explode('@', $p['email'])[0] ?></td>
     <td><?= $p['tgl_pinjam'] ?></td>
+    <td>
+        <?php if ($p['status'] === 'dikembalikan'): ?>
+            <?= date('d-m-Y H:i', strtotime($p['tgl_kembali'])) ?>
+        <?php elseif ($p['status'] === 'pengembalian'): ?>
+            Menunggu konfirmasi
+        <?php else: ?>
+            -
+        <?php endif; ?>
+    </td>
     <td><?= $p['status'] ?></td>
     <?php if (in_array(session('role'), ['admin','petugas'])): ?>
     <td>
@@ -52,6 +63,23 @@
         <?php endif ?>
     </td>
     <?php endif ?>
+    <td>
+        <!-- PEMINJAM -->
+        <?php if (session('role') === 'peminjam' && trim($p['status']) === 'disetujui'): ?>
+            <form action="/pinjam/return/<?= $p['id_pinjam'] ?>" method="post">
+                <button type="submit" class="btn btn-warning btn-sm">
+                    Ajukan Pengembalian
+                </button>
+            </form>
+        <?php endif; ?>
+
+        <!-- ADMIN / PETUGAS -->
+        <?php if (in_array(session('role'), ['admin','petugas']) && trim($p['status']) === 'pengembalian'): ?>
+            <a href="/pinjam/return-check/<?= $p['id_pinjam'] ?>">
+                Cek Pengembalian
+            </a>
+        <?php endif; ?>
+    </td>
 </tr>
 <?php endforeach ?>
 </table>

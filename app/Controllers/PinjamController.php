@@ -76,7 +76,6 @@ class PinjamController extends BaseController
             'id_barang'   => $this->request->getPost('id_barang'),
             'id_user'     => session('id_user'),
             'tgl_pinjam'  => date('Y-m-d'),
-            'tgl_kembali' => $this->request->getPost('tgl_kembali'),
             'status'      => 'menunggu'
         ]);
 
@@ -162,4 +161,61 @@ class PinjamController extends BaseController
 
         return redirect()->to('/pinjam');
     }
+
+    //pengembalian barang oleh peminjam
+    public function requestReturn($id)
+    {
+        if (session('role') !== 'peminjam') {
+            throw new \CodeIgniter\Exceptions\PageForbiddenException();
+        }
+
+        $pinjamModel = new PinjamModel();
+
+        $pinjamModel->update($id, [
+            'status' => 'pengembalian'
+        ]);
+
+        return redirect()->to('/pinjam')->with('success', 'Pengembalian diajukan');
+    }
+
+    //view pengecekan oleh petugas dan admin
+    public function returnCheck($id)
+    {
+        $this->mustAdminOrPetugas();
+
+        $pinjamModel = new PinjamModel();
+
+        return view('pinjam/return_check', [
+            'pinjam' => $pinjamModel->getPinjamWithRelasiById($id)
+        ]);
+    }
+
+    //update status + barang jadi tersedia
+    public function returnUpdate($id)
+    {
+        $this->mustAdminOrPetugas();
+
+        $pinjamModel = new PinjamModel();
+        $barangModel = new BarangModel();
+
+        $pinjam = $pinjamModel->find($id);
+        $status = $this->request->getPost('status');
+
+        // update pinjam
+        $pinjamModel->update($id, [
+            'status' => $status,
+        ]);
+
+        // update barang
+        if ($status === 'dikembalikan') {
+            $barangModel->update($pinjam['id_barang'], [
+                'status' => 'tersedia'
+            ]);
+        }
+
+        return redirect()->to('/pinjam')->with('success', 'Pengembalian diproses');
+    }
+
+    
+
 }
