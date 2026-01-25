@@ -11,12 +11,7 @@ $routes->get('/', 'AuthController::login');
 $routes->post('/login', 'AuthController::attemptLogin');
 $routes->get('/logout', 'AuthController::logout');
 
-$routes->group('user', ['filter' => 'admin'], function ($routes) {
-    $routes->get('/', 'UserController::index');
-    $routes->get('edit/(:num)', 'UserController::edit/$1');
-    $routes->post('update/(:num)', 'UserController::update/$1');
-    $routes->get('delete/(:num)', 'UserController::delete/$1');
-});
+$routes->get('/dashboard', 'DashboardController::index', ['filter' => 'auth']);
 
 $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('profile', 'ProfileController::index');
@@ -24,7 +19,12 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->post('profile/update', 'ProfileController::update');
 });
 
-$routes->get('/dashboard', 'DashboardController::index', ['filter' => 'auth']);
+$routes->group('user', ['filter' => 'admin'], function ($routes) {
+    $routes->get('/', 'UserController::index');
+    $routes->get('edit/(:num)', 'UserController::edit/$1');
+    $routes->post('update/(:num)', 'UserController::update/$1');
+    $routes->get('delete/(:num)', 'UserController::delete/$1');
+});
 
 $routes->group('barang', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'BarangController::index');
@@ -40,4 +40,12 @@ $routes->group('barang', ['filter' => 'admin'], function ($routes) {
     $routes->get('delete/(:num)', 'BarangController::delete/$1');
 });
 
+$routes->group('pinjam', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'PinjamController::index');
+    $routes->get('create', 'PinjamController::create');
+    $routes->post('store', 'PinjamController::store');
+    $routes->get('edit/(:num)', 'PinjamController::edit/$1');
+    $routes->post('update/(:num)', 'PinjamController::update/$1');
+    $routes->get('delete/(:num)', 'PinjamController::delete/$1');
+});
 

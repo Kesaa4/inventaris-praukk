@@ -11,6 +11,7 @@ Login sebagai:
 </p>
 
 <ul>
+    <li><a href="<?= base_url('pinjam') ?>" class="btn btn-primary">Data Peminjaman</a></li>
     <li><a href="<?= base_url('barang') ?>">Data Barang</a></li>
 
     <?php if (session()->get('role') === 'admin'): ?>
