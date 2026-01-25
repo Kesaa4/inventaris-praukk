@@ -1,4 +1,4 @@
-<form action="/dashboard/update/<?= $barang['id_barang'] ?>" method="post">
+<form action="/barang/update/<?= $barang['id_barang'] ?>" method="post">
     <?= csrf_field() ?>
 
     <input type="text" name="jenis_barang" value="<?= $barang['jenis_barang'] ?>" required>

@@ -7,7 +7,7 @@
 
 <h2>Tambah Barang</h2>
 
-<form action="<?= base_url('/dashboard/store') ?>" method="post">
+<form action="<?= base_url('/barang/store') ?>" method="post">
     <?= csrf_field() ?>
 
     <p>
@@ -75,7 +75,7 @@
     </p>
 
     <button type="submit">Simpan</button>
-    <a href="<?= base_url('/dashboard') ?>">Kembali</a>
+    <a href="<?= base_url('/barang') ?>">Kembali</a>
 </form>
 
 </body>
