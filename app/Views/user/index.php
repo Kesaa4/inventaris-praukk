@@ -56,7 +56,7 @@
 </table>
 
 <br>
-<a href="/dashboard">⬅ Kembali ke Dashboard</a>
+<a href="/dashboard">Kembali ke Dashboard</a>
 
 </body>
 </html>

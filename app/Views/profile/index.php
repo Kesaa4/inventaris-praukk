@@ -9,4 +9,4 @@
 
 <a href="/profile/edit">Edit Profile</a>
 
-<a href="/dashboard">⬅ Kembali ke Dashboard</a>
+<a href="/dashboard">Kembali ke Dashboard</a>

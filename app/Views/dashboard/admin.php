@@ -11,13 +11,13 @@ Login sebagai:
 </p>
 
 <ul>
-    <li><a href="<?= base_url('barang') ?>">📦 Data Barang</a></li>
+    <li><a href="<?= base_url('barang') ?>">Data Barang</a></li>
 
     <?php if (session()->get('role') === 'admin'): ?>
-        <li><a href="/user">👤 Manajemen User</a></li>
+        <li><a href="/user">Manajemen User</a></li>
     <?php endif ?>
 
-    <li><a href="/profile">⚙️ Profile Saya</a></li>
-    <li><a href="/logout">🚪 Logout</a></li>
+    <li><a href="/profile">Profile Saya</a></li>
+    <li><a href="/logout">Logout</a></li>
 </ul>
 
