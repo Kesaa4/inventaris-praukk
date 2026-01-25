@@ -18,7 +18,7 @@
     <a href="<?= base_url('barang/create') ?>">Tambah Barang</a>
 <?php endif ?>
 <a href="<?= base_url('/barang') ?>">Reset</a>
-<a href="/dashboard">⬅ Kembali ke Dashboard</a>
+<a href="/dashboard">Kembali ke Dashboard</a>
 <a href="<?= base_url('logout') ?>">Logout</a>
 
 
