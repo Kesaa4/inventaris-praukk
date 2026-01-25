@@ -3,7 +3,8 @@
 <p>Selamat datang, <?= explode('@', session()->get('email'))[0] ?></p>
 
 <a href="<?= base_url('barang') ?>">Lihat Barang</a> |
-<a href="<?= base_url('logout') ?>">Logout</a>
+<a href="<?= base_url('pinjam') ?>" class="btn btn-success">Peminjaman Saya</a> |
+<a href="<?= base_url('logout') ?>">Logout</a> 
 
 <p>
 Login sebagai:

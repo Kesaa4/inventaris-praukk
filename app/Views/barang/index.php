@@ -1,3 +1,19 @@
+<head>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #aaa;
+            padding: 8px;
+        }
+        th {
+            background: #eee;
+        }
+    </style>
+</head>
+
 <form method="get" action="<?= base_url('barang') ?>">
     <input type="text" name="keyword" placeholder="Cari Jenis atau Merek..." value="<?= $keyword ?>">
     
