@@ -10,9 +10,6 @@
         <?php endforeach ?>
     </select><br><br>
 
-    <label>Tanggal Kembali</label><br>
-    <input type="date" name="tgl_kembali" required><br><br>
-
     <button type="submit">Ajukan</button>
     <a href="/pinjam">Kembali</a>
 </form>

@@ -33,9 +33,6 @@
         <option value="ditolak" <?= $pinjam['status'] == 'ditolak' ? 'selected' : '' ?>>
             Ditolak
         </option>
-        <option value="dikembalikan" <?= $pinjam['status'] == 'dikembalikan' ? 'selected' : '' ?>>
-            Dikembalikan
-        </option>
     </select>
 
     <br><br>
