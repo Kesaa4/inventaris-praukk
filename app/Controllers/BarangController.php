@@ -23,15 +23,15 @@ class BarangController extends BaseController
         // PAGINATE DARI barangModel
         // ->withDeleted() ini buat nampilin dengan barang yang udah dihapus
         $data = [
-            'title'     => 'Dashboard Barang',
+            'title'     => 'Data Barang',
             'barang'    => $barangModel->paginate(10, 'barang'),
             'pager'     => $barangModel->pager,
             'kategori'  => $kategoriModel->findAll(),
             'keyword'   => $keyword,
-            'catFilter' => $kategori
+            'catFilter' => $kategori,
         ];
 
-        return view('dashboard/index', $data);
+        return view('barang/index', $data);
     }
 
     public function create()
@@ -39,7 +39,7 @@ class BarangController extends BaseController
         $kategoriModel = new KategoriModel();
         $barangModel = new BarangModel();
 
-        return view('dashboard/create', [
+        return view('barang/create', [
             'kategori' => $kategoriModel->findAll(),
             'jenis_barang' => $barangModel->getEnumJenisBarang()
         ]);
@@ -60,7 +60,7 @@ class BarangController extends BaseController
             'id_kategori'   => $this->request->getPost('id_kategori')
         ]);
 
-        return redirect()->to('/dashboard')->with('success', 'Barang berhasil ditambahkan');
+        return redirect()->to('/barang')->with('success', 'Barang berhasil ditambahkan');
     }
 
     public function edit($id)
@@ -68,7 +68,7 @@ class BarangController extends BaseController
         $barangModel = new BarangModel();
         $kategoriModel = new KategoriModel();
 
-        return view('dashboard/edit', [
+        return view('barang/edit', [
             'barang'    => $barangModel->find($id),
             'kategori'  => $kategoriModel->findAll()
         ]);
@@ -89,7 +89,7 @@ class BarangController extends BaseController
             'keterangan'    => $this->request->getPost('keterangan')
         ]);
 
-        return redirect()->to('/dashboard')->with('success', 'Data berhasil diedit.');
+        return redirect()->to('/barang')->with('success', 'Data berhasil diedit.');
     }
 
     public function delete($id)
@@ -97,7 +97,7 @@ class BarangController extends BaseController
         $barangModel = new BarangModel();
         $barangModel->delete($id);
 
-        return redirect()->to('/dashboard')->with('success', 'Data berhasil dihapus.');
+        return redirect()->to('/barang')->with('success', 'Data berhasil dihapus.');
     }
 
 }

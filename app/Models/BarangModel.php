@@ -32,15 +32,17 @@ class BarangModel extends Model
     }
 
     // Ambil jenis barang
-    public function getEnumJenisBarang()
+    public function getEnumJenisBarang() //Mengambil semua pilihan ENUM dari kolom database, lalu mengubahnya menjadi array PHP. Biasanya dipakai untuk dropdown form (select option).
     {
-        $db = \Config\Database::connect(); //harus pake ini biar enumnya keambil
+        $db = \Config\Database::connect(); //harus pake ini biar enumnya keambil, koneksi langsung ke database
 
-        $query = $db->query("SHOW COLUMNS FROM barang LIKE 'jenis_barang'");
-        $row = $query->getRow();
+        $query = $db->query("SHOW COLUMNS FROM barang LIKE 'jenis_barang'"); //Query ini meminta info detail kolom jenis_barang, termasuk tipe datanya.
+        $row = $query->getRow(); //Mengambil satu row hasil query.
 
-        preg_match("/^enum\((.*)\)$/", $row->Type, $matches);
-        return str_getcsv($matches[1], ',', "'");
+        //Regex adalah singkatan dari Regular Expression, yaitu pola teks khusus untuk mencari, mencocokkan, mengekstrak, atau memanipulasi string.        
+
+        preg_match("/^enum\((.*)\)$/", $row->Type, $matches); //Regex ini: menghapus kata enum (, menghapus  ), menyisakan isi enum saja.
+        return str_getcsv($matches[1], ',', "'"); //mengubah string menjadi array
     }
 
     // Search + Filter + Pagination

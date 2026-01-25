@@ -5,15 +5,18 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/', 'Home::index');
 $routes->get('/testdb', 'TestDb::index');
 
-$routes->get('/dashboard', 'BarangController::index');
-$routes->get('/dashboard/create', 'BarangController::create');
-$routes->post('/dashboard/store', 'BarangController::store');
+$routes->get('/', 'AuthController::login');
+$routes->post('/barang', 'AuthController::attemptLogin');
+$routes->get('logout', 'AuthController::logout');
 
-$routes->get('/dashboard/edit/(:num)', 'BarangController::edit/$1');
-$routes->post('/dashboard/update/(:num)', 'BarangController::update/$1');
+$routes->group('', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/barang/create', 'BarangController::create');
+    $routes->post('/barang/store', 'BarangController::store');
 
-$routes->get('/dashboard/delete/(:num)', 'BarangController::delete/$1');
+    $routes->get('/barang/edit/(:num)', 'BarangController::edit/$1');
+    $routes->post('/barang/update/(:num)', 'BarangController::update/$1');
 
+    $routes->get('/barang/delete/(:num)', 'BarangController::delete/$1');
+});
