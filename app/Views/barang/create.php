@@ -14,7 +14,6 @@
         <label>Jenis Barang</label><br>
         <select name="jenis_barang" required>
             <option value="">-- Pilih Jenis Barang --</option>
-
             <?php foreach ($jenis_barang as $jenis) : ?>
                 <option value="<?= $jenis ?>">
                     <?= $jenis ?>
@@ -75,7 +74,7 @@
     </p>
 
     <button type="submit">Simpan</button>
-    <a href="<?= base_url('/barang') ?>">Kembali</a>
+    <a href="<?= base_url('index.php/barang') ?>">Kembali</a>
 </form>
 
 </body>

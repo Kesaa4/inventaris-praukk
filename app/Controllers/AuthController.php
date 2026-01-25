@@ -10,9 +10,7 @@ class AuthController extends BaseController
 {
     public function index()
     {
-        if (!in_array(session()->get('role'), ['admin','petugas'])) {
-            throw new \CodeIgniter\Exceptions\PageForbiddenException();
-        }
+        //
     }
 
     public function login()
@@ -39,12 +37,19 @@ class AuthController extends BaseController
 
         session()->set([
             'id_user'    => $user['id_user'],
-            'email'   => $user['email'],
+            'email'      => $user['email'],
             'role'       => $user['role'],
             'isLoggedIn' => true
         ]);
 
-        return redirect()->to('/barang');
+        return redirect()->to('/dashboard');
 
     }
+
+    public function logout()
+    {
+        session()->destroy();
+        return redirect()->to('/')->with('success', 'Berhasil logout');
+    }
+
 }

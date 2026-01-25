@@ -14,8 +14,12 @@
     <button type="submit">Cari</button>
 </form>
 
-<a href="<?= base_url('/barang/create') ?>">Tambah Barang</a>
-<a href="<?= base_url('barang') ?>">Reset</a>
+<?php if (session()->get('role') === 'admin'): ?>
+    <a href="<?= base_url('barang/create') ?>">Tambah Barang</a>
+<?php endif ?>
+<a href="<?= base_url('/barang') ?>">Reset</a>
+<a href="/dashboard">⬅ Kembali ke Dashboard</a>
+<a href="<?= base_url('logout') ?>">Logout</a>
 
 
 <table border="1" cellpadding="8">
@@ -30,7 +34,9 @@
             <th>Kategori Kondisi</th>
             <th>Status</th>
             <th>Keterangan</th>
+            <?php if (session()->get('role') === 'admin'): ?>
             <th>Aksi</th>
+            <?php endif ?>
         </tr>
     </thead>
     <tbody>
@@ -45,11 +51,13 @@
             <td><?= esc($b['kategori_kondisi']) ?></td>
             <td><?= esc($b['status']) ?></td>
             <td><?= esc($b['keterangan']) ?></td>
+            <?php if (session()->get('role') === 'admin'): ?>
             <td>
-                <a href="/barang/edit/<?= $b['id_barang'] ?>">Edit</a> |
-                <a href="/barang/delete/<?= $b['id_barang'] ?>" 
+                <a href="<?= base_url('barang/edit/' . $b['id_barang']) ?>">Edit</a> |
+                <a href="<?= base_url('barang/delete/' . $b['id_barang']) ?>"
                 onclick="return confirm('Yakin hapus?')">Hapus</a>
             </td>
+            <?php endif ?>
         </tr>
         <?php endforeach ?>
     </tbody>

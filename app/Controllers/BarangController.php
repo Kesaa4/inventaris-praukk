@@ -18,7 +18,7 @@ class BarangController extends BaseController
         $kategori = $this->request->getGet('kategori');
 
         // AMBIL barangModel FILTER
-        $barangModel = $barangModel->getBarangFiltered($keyword, $kategori);
+        $barangModel->getBarangFiltered($keyword, $kategori);
 
         // PAGINATE DARI barangModel
         // ->withDeleted() ini buat nampilin dengan barang yang udah dihapus
@@ -34,8 +34,17 @@ class BarangController extends BaseController
         return view('barang/index', $data);
     }
 
+    private function mustAdmin()
+    {
+        if (session()->get('role') !== 'admin') {
+            throw new \CodeIgniter\Exceptions\PageForbiddenException();
+        }
+    }
+
     public function create()
     {
+        $this->mustAdmin();
+
         $kategoriModel = new KategoriModel();
         $barangModel = new BarangModel();
 
@@ -47,6 +56,8 @@ class BarangController extends BaseController
 
     public function store()
     {
+        $this->mustAdmin();
+
         $barangModel = new BarangModel();
 
         $barangModel->insert([
@@ -65,6 +76,8 @@ class BarangController extends BaseController
 
     public function edit($id)
     {
+        $this->mustAdmin();
+
         $barangModel = new BarangModel();
         $kategoriModel = new KategoriModel();
 
@@ -76,6 +89,8 @@ class BarangController extends BaseController
 
     public function update($id)
     {
+        $this->mustAdmin();
+
         $barangModel = new BarangModel();
 
         $barangModel->update($id, [
@@ -94,6 +109,8 @@ class BarangController extends BaseController
 
     public function delete($id)
     {
+        $this->mustAdmin();
+
         $barangModel = new BarangModel();
         $barangModel->delete($id);
 

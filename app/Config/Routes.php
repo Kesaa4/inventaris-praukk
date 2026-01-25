@@ -8,15 +8,36 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/testdb', 'TestDb::index');
 
 $routes->get('/', 'AuthController::login');
-$routes->post('/barang', 'AuthController::attemptLogin');
-$routes->get('logout', 'AuthController::logout');
+$routes->post('/login', 'AuthController::attemptLogin');
+$routes->get('/logout', 'AuthController::logout');
+
+$routes->group('user', ['filter' => 'admin'], function ($routes) {
+    $routes->get('/', 'UserController::index');
+    $routes->get('edit/(:num)', 'UserController::edit/$1');
+    $routes->post('update/(:num)', 'UserController::update/$1');
+    $routes->get('delete/(:num)', 'UserController::delete/$1');
+});
 
 $routes->group('', ['filter' => 'auth'], function ($routes) {
-    $routes->get('/barang/create', 'BarangController::create');
-    $routes->post('/barang/store', 'BarangController::store');
-
-    $routes->get('/barang/edit/(:num)', 'BarangController::edit/$1');
-    $routes->post('/barang/update/(:num)', 'BarangController::update/$1');
-
-    $routes->get('/barang/delete/(:num)', 'BarangController::delete/$1');
+    $routes->get('profile', 'ProfileController::index');
+    $routes->get('profile/edit', 'ProfileController::edit');
+    $routes->post('profile/update', 'ProfileController::update');
 });
+
+$routes->get('/dashboard', 'DashboardController::index', ['filter' => 'auth']);
+
+$routes->group('barang', ['filter' => 'auth'], function ($routes) {
+    $routes->get('/', 'BarangController::index');
+});
+
+$routes->group('barang', ['filter' => 'admin'], function ($routes) {
+    $routes->get('create', 'BarangController::create');
+    $routes->post('store', 'BarangController::store');
+
+    $routes->get('edit/(:num)', 'BarangController::edit/$1');
+    $routes->post('update/(:num)', 'BarangController::update/$1');
+
+    $routes->get('delete/(:num)', 'BarangController::delete/$1');
+});
+
+
