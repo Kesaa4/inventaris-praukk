@@ -6,7 +6,7 @@
     </p>
 <?php endif ?>
 
-<form method="post" action="<?= base_url('/barang') ?>">
+<form method="post" action="<?= base_url('/login') ?>">
     <?= csrf_field() ?>
 
     <p>

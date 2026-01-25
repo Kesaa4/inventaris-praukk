@@ -6,7 +6,7 @@ use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 
-class Auth implements FilterInterface
+class Admin implements FilterInterface
 {
     /**
      * Do whatever processing this filter needs to do.
@@ -27,6 +27,11 @@ class Auth implements FilterInterface
     {
         if (!session()->get('isLoggedIn')) {
             return redirect()->to('/');
+        }
+
+        if (session()->get('role') !== 'admin') {
+            return redirect()->to('/barang')
+                ->with('error', 'Akses ditolak');
         }
     }
 
