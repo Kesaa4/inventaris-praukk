@@ -22,6 +22,48 @@ class UserController extends BaseController
         return view('user/index', compact('users'));
     }
 
+    protected function mustAdmin()
+    {
+        if (session('role') !== 'admin') {
+            throw new \CodeIgniter\Exceptions\PageForbiddenException();
+        }
+    }
+
+    //TAMBAH USER
+    public function create()
+    {
+        $this->mustAdmin();
+        return view('user/create');
+    }
+
+    // SIMPAN USER
+    public function store()
+    {
+        $this->mustAdmin();
+
+        $userModel = new UserModel();
+        $profileModel = new UserProfileModel();
+
+        //insert ke tabel user
+        $userModel->insert([
+            'nama'     => $this->request->getPost('nama'),
+            'email'    => $this->request->getPost('email'),
+            'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+            'role'     => $this->request->getPost('role'),
+        ]);
+
+        // ambil ID user yang BARU dibuat
+        $idUser = $userModel->getInsertID();
+
+        // insert ke userprofile
+        $profileModel->insert([
+            'id_user' => $idUser,
+            'nama'    => $this->request->getPost('nama')
+        ]);
+
+        return redirect()->to('/user')->with('success', 'User berhasil ditambahkan');
+    }
+
     public function edit($id)
     {
         $userModel = new UserModel();

@@ -17,7 +17,7 @@ class UserModel extends Model
         'password',
         'role'
     ];
-
+    
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
 

@@ -10,7 +10,7 @@
 <form action="/pinjam/return-update/<?= $pinjam['id_pinjam'] ?>" method="post">
     <select name="status" required>
         <option value="dikembalikan">Dikembalikan</option>
-        <option value="rusak">Rusak</option>
+        <option  value="tidak tersedia">Rusak</option>
     </select>
 
     <button type="submit">Simpan</button>
