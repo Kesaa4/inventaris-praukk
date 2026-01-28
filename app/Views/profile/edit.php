@@ -8,17 +8,17 @@
     <input type="text" name="nama"
         value="<?= $profile['nama'] ?? '' ?>"
         placeholder="Nama Lengkap" required>
-    </p>
+    </p><br>
 
     <label for="">No Handphone</label>
     <input type="text" name="no_hp"
         value="<?= $profile['no_hp'] ?? '' ?>"
-        placeholder="No HP">
+        placeholder="No HP"><br>
 
     <label for="">Alamat</label>
     <textarea name="alamat"
-        placeholder="Alamat"><?= $profile['alamat'] ?? '' ?></textarea>
+        placeholder="Alamat"><?= $profile['alamat'] ?? '' ?></textarea><br>
 
-    <button type="submit">Simpan</button>
+    <button type="submit">Simpan</button><br>
     <a href="/profile">Kembali</a>
 </form>
