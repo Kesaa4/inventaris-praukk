@@ -24,4 +24,5 @@
     <input type="text" name="keterangan" value="<?= $barang['keterangan'] ?>">
 
     <button type="submit">Update</button>
+    <a href="/barang">Kembali</a>
 </form>

@@ -14,4 +14,5 @@
     </select>
 
     <button type="submit">Simpan</button>
+    <a href="/pinjam">Kembali</a>
 </form>

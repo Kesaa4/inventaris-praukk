@@ -18,7 +18,7 @@
 
 <a href="/dashboard">Kembali ke Dashboard</a>
 
-<?php if (session('role') === 'peminjam'): ?>
+<?php if (in_array(session('role'), ['peminjam','petugas'])): ?>
 <a href="/pinjam/create">Ajukan Pinjaman</a>
 <?php endif ?>
 
