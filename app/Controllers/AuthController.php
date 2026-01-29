@@ -43,12 +43,24 @@ class AuthController extends BaseController
             'isLoggedIn' => true
         ]);
 
+        log_activity(
+            'Login ke sistem',
+            'user',
+            $user['id_user']
+        );
+
         return redirect()->to('/dashboard');
 
     }
 
     public function logout()
     {
+        log_activity(
+            'Logout dari sistem',
+            'user',
+            session('id_user')
+        );
+
         session()->destroy();
         return redirect()->to('/')->with('success', 'Berhasil logout');
     }

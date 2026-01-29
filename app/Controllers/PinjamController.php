@@ -22,6 +22,13 @@ class PinjamController extends BaseController
             throw new \CodeIgniter\Exceptions\PageForbiddenException();
         }
     }
+    
+    protected function mustPeminjamOrPetugas()
+    {
+        if (!in_array(session('role'), ['peminjam', 'petugas'])) {
+            throw new \CodeIgniter\Exceptions\PageForbiddenException();
+        }
+    }
 
     // LIST PEMINJAMAN
     
@@ -45,9 +52,7 @@ class PinjamController extends BaseController
     
     public function create()
     {
-        if (session('role') !== 'peminjam') {
-            throw new \CodeIgniter\Exceptions\PageForbiddenException();
-        }
+        $this->mustPeminjamOrPetugas();
 
         $barangModel = new BarangModel();
 
@@ -62,9 +67,7 @@ class PinjamController extends BaseController
     
     public function store()
     {
-        if (session('role') !== 'peminjam') {
-            throw new \CodeIgniter\Exceptions\PageForbiddenException();
-        }
+        $this->mustPeminjamOrPetugas();
 
         $pinjamModel = new PinjamModel();
         $barangModel = new BarangModel();
@@ -72,12 +75,18 @@ class PinjamController extends BaseController
         $idBarang = $this->request->getPost('id_barang');
 
         // SIMPAN PINJAM
-        $pinjamModel->insert([
+        $id = $pinjamModel->insert([
             'id_barang'   => $this->request->getPost('id_barang'),
             'id_user'     => session('id_user'),
             'tgl_pinjam'  => date('Y-m-d'),
             'status'      => 'menunggu'
         ]);
+
+        log_activity(
+            'Mengajukan peminjaman',
+            'pinjam',
+            $id
+        );
 
         // KUNCI BARANG
         $barangModel->update($idBarang, [
@@ -119,7 +128,6 @@ class PinjamController extends BaseController
         }
 
         $status = $this->request->getPost('status');
-
         $data = ['status' => $status];
 
         if ($status === 'disetujui') {
@@ -129,18 +137,36 @@ class PinjamController extends BaseController
             $barangModel->update($pinjam['id_barang'], [
                 'status' => 'dipinjam'
             ]);
+
+            log_activity(
+                'Menyetujui peminjaman',
+                'pinjam',
+                $id
+            );
         }
 
-        if ($status === 'ditolak') {
+        elseif ($status === 'ditolak') {
             $barangModel->update($pinjam['id_barang'], [
                 'status' => 'tersedia'
             ]);
+
+            log_activity(
+                'Menolak peminjaman',
+                'pinjam',
+                $id
+            );
         }
 
-        if ($status === 'dikembalikan') {
+        elseif ($status === 'dikembalikan') {
             $barangModel->update($pinjam['id_barang'], [
                 'status' => 'tersedia'
             ]);
+
+            log_activity(
+                'Menyetujui pengembalian barang',
+                'pinjam',
+                $id
+            );
         }
 
         $pinjamModel->update($id, $data);
@@ -159,6 +185,13 @@ class PinjamController extends BaseController
         $pinjamModel = new PinjamModel();
         $pinjamModel->delete($id);
 
+        log_activity(
+            'Menghapus data peminjaman',
+            'pinjam',
+            $id
+        );
+
+
         return redirect()->to('/pinjam');
     }
 
@@ -174,6 +207,12 @@ class PinjamController extends BaseController
         $pinjamModel->update($id, [
             'status' => 'pengembalian'
         ]);
+
+        log_activity(
+            'Mengajukan pengembalian barang',
+            'pinjam',
+            $id
+        );
 
         return redirect()->to('/pinjam')->with('success', 'Pengembalian diajukan');
     }
@@ -211,6 +250,12 @@ class PinjamController extends BaseController
             $barangModel->update($pinjam['id_barang'], [
                 'status' => 'tersedia'
             ]);
+
+            log_activity(
+                'Menyetujui pengembalian barang',
+                'pinjam',
+                $id
+            );
         }
 
         return redirect()->to('/pinjam')->with('success', 'Pengembalian diproses');

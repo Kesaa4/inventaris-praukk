@@ -10,13 +10,24 @@
     <?= csrf_field() ?>
 
     <p>
-        <label>Email</label><br>
-        <input type="email" name="email" id="">
+        <input type="email" name="email" id="email" placeholder="Email">
     </p>
 
     <p>
-        <label>Password</label><br>
-        <input type="password" name="password" required>
+        <input type="password" name="password" id="password" placeholder="Password">
+
+    <label>
+    <input type="checkbox" onclick="togglePassword()">
+    Tampilkan password
+    </label>
+
+    <script>
+    function togglePassword() {
+    const pass = document.getElementById("password");
+    pass.type = pass.type === "password" ? "text" : "password";
+    }
+    </script>
+
     </p>
 
     <button type="submit">Login</button>

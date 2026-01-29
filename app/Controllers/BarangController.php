@@ -60,7 +60,7 @@ class BarangController extends BaseController
 
         $barangModel = new BarangModel();
 
-        $barangModel->insert([
+        $id = $barangModel->insert([
             'jenis_barang'  => $this->request->getPost('jenis_barang'),
             'merek_barang'  => $this->request->getPost('merek_barang'),
             'tipe_barang'   => $this->request->getPost('tipe_barang'),
@@ -70,6 +70,12 @@ class BarangController extends BaseController
             'keterangan'    => $this->request->getPost('keterangan'),
             'id_kategori'   => $this->request->getPost('id_kategori')
         ]);
+
+        log_activity(
+            'Menambah barang',
+            'barang',
+            $id
+        );
 
         return redirect()->to('/barang')->with('success', 'Barang berhasil ditambahkan');
     }
@@ -104,6 +110,12 @@ class BarangController extends BaseController
             'keterangan'    => $this->request->getPost('keterangan')
         ]);
 
+        log_activity(
+            'Mengedit barang',
+            'barang',
+            $id
+        );
+
         return redirect()->to('/barang')->with('success', 'Data berhasil diedit.');
     }
 
@@ -113,6 +125,12 @@ class BarangController extends BaseController
 
         $barangModel = new BarangModel();
         $barangModel->delete($id);
+
+        log_activity(
+            'Menghapus barang',
+            'barang',
+            $id
+        );
 
         return redirect()->to('/barang')->with('success', 'Data berhasil dihapus.');
     }

@@ -1,3 +1,11 @@
+<?php if (session()->getFlashdata('errors')): ?>
+    <div style="color:red">
+        <?php foreach (session()->getFlashdata('errors') as $error): ?>
+            <p><?= esc($error) ?></p>
+        <?php endforeach ?>
+    </div>
+<?php endif ?>
+
 <h3>Tambah User</h3>
 
 <a href="/user">Kembali</a>
