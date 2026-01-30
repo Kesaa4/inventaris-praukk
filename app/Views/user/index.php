@@ -20,7 +20,7 @@
 
 <h2>Manajemen User</h2>
 
-<p>Login sebagai: <?= session()->get('nama') ?></b> (<?= session()->get('role') ?>)</p>
+<p>Login sebagai: <?= explode('@', session()->get('email'))[0] ?></b> (<?= session()->get('role') ?>)</p>
 
 <?php if (session()->getFlashdata('success')): ?>
     <p style="color:green"><?= session()->getFlashdata('success') ?></p>
