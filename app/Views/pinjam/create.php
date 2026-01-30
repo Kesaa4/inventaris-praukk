@@ -1,28 +1,72 @@
-<h3>Ajukan Peminjaman</h3>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
 
-<form action="/pinjam/store" method="post">
+<div class="container mt-4">
 
-    <?php if (in_array(session('role'), ['admin', 'petugas'])): ?>
-        <label>Peminjam</label><br>
-        <select name="id_user" required>
-            <option value="">-- Pilih Peminjam --</option>
-            <?php foreach ($users as $u): ?>
-                <option value="<?= $u['id_user'] ?>">
-                    <?= $u['email'] ?>
-                </option>
-            <?php endforeach ?>
-        </select><br><br>
-    <?php endif ?>
+    <!-- Header -->
+    <div class="mb-3">
+        <h4 class="fw-bold">Ajukan Peminjaman</h4>
+        <p class="text-muted mb-0">
+            Silakan pilih barang yang akan dipinjam
+        </p>
+    </div>
 
-    <label>Barang</label><br>
-    <select name="id_barang" required>
-        <?php foreach ($barang as $b): ?>
-            <option value="<?= $b['id_barang'] ?>">
-                <?= $b['jenis_barang'].' - '.$b['merek_barang'].' - '.$b['tipe_barang'] ?>
-            </option>
-        <?php endforeach ?>
-    </select><br><br>
+    <!-- Card Form -->
+    <div class="card shadow-sm">
+        <div class="card-body">
 
-    <button type="submit">Ajukan</button>
-    <a href="/pinjam">Kembali</a>
-</form>
+            <form action="/pinjam/store" method="post">
+                <?= csrf_field() ?>
+
+                <!-- Admin / Petugas pilih peminjam -->
+                <?php if (in_array(session('role'), ['admin', 'petugas'])): ?>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">
+                            Peminjam
+                        </label>
+                        <select name="id_user" class="form-select" required>
+                            <option value="">-- Pilih Peminjam --</option>
+                            <?php foreach ($users as $u): ?>
+                                <option value="<?= $u['id_user'] ?>">
+                                    <?= esc(explode('@', $u['email'])[0]) ?>
+                                </option>
+                            <?php endforeach ?>
+                        </select>
+                    </div>
+                <?php endif ?>
+
+                <!-- Pilih Barang -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">
+                        Barang
+                    </label>
+                    <select name="id_barang" class="form-select" required>
+                        <option value="">-- Pilih Barang --</option>
+                        <?php foreach ($barang as $b): ?>
+                            <option value="<?= $b['id_barang'] ?>">
+                                <?= esc($b['jenis_barang']) ?>
+                                - <?= esc($b['merek_barang']) ?>
+                                - <?= esc($b['tipe_barang']) ?>
+                            </option>
+                        <?php endforeach ?>
+                    </select>
+                </div>
+
+                <!-- Button -->
+                <div class="d-flex justify-content-between">
+                    <a href="/pinjam" class="btn btn-secondary">
+                        ← Kembali
+                    </a>
+
+                    <button type="submit" class="btn btn-success">
+                        Ajukan Peminjaman
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>

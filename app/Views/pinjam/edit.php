@@ -1,45 +1,100 @@
-<!DOCTYPE html>
-<html>
 <head>
-    <title>Ubah Status Peminjaman</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
 
-<h2>Ubah Status Peminjaman</h2>
-<?php if ($pinjam): ?>
-<p><b>Peminjam:</b> <?= esc($pinjam['email']) ?></p>
-<?php endif; ?>
-<p><b>Barang:</b> 
-    <?= esc($pinjam['jenis_barang']) ?> -
-    <?= esc($pinjam['merek_barang']) ?> -
-    <?= esc($pinjam['tipe_barang']) ?>
-</p>
+<div class="container mt-4">
 
-<p><b>Tanggal Pinjam:</b> <?= $pinjam['tgl_pinjam'] ?></p>
-<p><b>Tanggal Kembali:</b> <?= $pinjam['tgl_kembali'] ?></p>
+    <!-- Header -->
+    <div class="mb-3">
+        <h4 class="fw-bold">Ubah Status Peminjaman</h4>
+        <p class="text-muted mb-0">
+            Perbarui status peminjaman sesuai kondisi terbaru
+        </p>
+    </div>
 
-<form action="<?= base_url('pinjam/update/'.$pinjam['id_pinjam']) ?>" method="post">
-    <?= csrf_field() ?>
+    <!-- Card -->
+    <div class="card shadow-sm">
+        <div class="card-body">
 
-    <label>Status</label><br>
+            <!-- Info -->
+            <?php if ($pinjam): ?>
+                <div class="mb-3">
+                    <div class="row mb-2">
+                        <div class="col-md-3 fw-semibold">Peminjam</div>
+                        <div class="col-md-9">
+                            <?= esc(explode('@', $pinjam['email'])[0]) ?>
+                        </div>
+                    </div>
 
-    <select name="status" required>
-        <option value="menunggu" <?= $pinjam['status'] == 'menunggu' ? 'selected' : '' ?>>
-            Menunggu
-        </option>
-        <option value="disetujui" <?= $pinjam['status'] == 'disetujui' ? 'selected' : '' ?>>
-            Disetujui
-        </option>
-        <option value="ditolak" <?= $pinjam['status'] == 'ditolak' ? 'selected' : '' ?>>
-            Ditolak
-        </option>
-    </select>
+                    <div class="row mb-2">
+                        <div class="col-md-3 fw-semibold">Barang</div>
+                        <div class="col-md-9">
+                            <?= esc($pinjam['jenis_barang']) ?> -
+                            <?= esc($pinjam['merek_barang']) ?> -
+                            <?= esc($pinjam['tipe_barang']) ?>
+                        </div>
+                    </div>
 
-    <br><br>
+                    <div class="row mb-2">
+                        <div class="col-md-3 fw-semibold">Tanggal Pinjam</div>
+                        <div class="col-md-9">
+                            <?= date('d-m-Y H:i', strtotime($pinjam['tgl_pinjam'])) ?>
+                        </div>
+                    </div>
 
-    <button type="submit">Simpan Perubahan</button>
-    <a href="<?= base_url('/pinjam') ?>">Kembali</a>
-</form>
+                    <div class="row">
+                        <div class="col-md-3 fw-semibold">Tanggal Kembali</div>
+                        <div class="col-md-9">
+                            <?= $pinjam['tgl_kembali']
+                                ? date('d-m-Y H:i', strtotime($pinjam['tgl_kembali']))
+                                : '-' ?>
+                        </div>
+                    </div>
+                </div>
+            <?php endif; ?>
 
-</body>
-</html>
+            <hr>
+
+            <!-- Form -->
+            <form action="<?= base_url('pinjam/update/'.$pinjam['id_pinjam']) ?>" method="post">
+                <?= csrf_field() ?>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Status Peminjaman</label>
+                    <select name="status" class="form-select" required>
+                        <option value="menunggu"
+                            <?= $pinjam['status'] === 'menunggu' ? 'selected' : '' ?>>
+                            Menunggu
+                        </option>
+                        <option value="disetujui"
+                            <?= $pinjam['status'] === 'disetujui' ? 'selected' : '' ?>>
+                            Disetujui
+                        </option>
+                        <option value="ditolak"
+                            <?= $pinjam['status'] === 'ditolak' ? 'selected' : '' ?>>
+                            Ditolak
+                        </option>
+                        <?php if ($pinjam['status'] === 'dikembalikan'): ?>
+                            <option value="dikembalikan" selected>
+                                Dikembalikan
+                            </option>
+                        <?php endif; ?>
+                    </select>
+                </div>
+
+                <!-- Action -->
+                <div class="d-flex justify-content-between">
+                    <a href="<?= base_url('/pinjam') ?>" class="btn btn-secondary">
+                        ← Kembali
+                    </a>
+
+                    <button type="submit" class="btn btn-primary">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+</div>

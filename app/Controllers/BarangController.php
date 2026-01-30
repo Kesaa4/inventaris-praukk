@@ -24,7 +24,7 @@ class BarangController extends BaseController
         // ->withDeleted() ini buat nampilin dengan barang yang udah dihapus
         $data = [
             'title'     => 'Data Barang',
-            'barang'    => $barangModel->paginate(15, 'barang'),
+            'barang'    => $barangModel->paginate(10, 'barang'),
             'pager'     => $barangModel->pager,
             'kategori'  => $kategoriModel->findAll(),
             'keyword'   => $keyword,

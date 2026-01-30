@@ -1,24 +1,80 @@
-<h2>Edit Profile</h2>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
 
-<form method="post" action="/profile/update">
-    <?= csrf_field() ?>
+<div class="container mt-4">
 
-    <p>
-    <label for="">Nama Lengkap</label><br>
-    <input type="text" name="nama"
-        value="<?= $profile['nama'] ?? '' ?>"
-        placeholder="Nama Lengkap" required>
-    </p><br>
+    <!-- Header -->
+    <div class="mb-3">
+        <h4 class="fw-bold">Edit Profile</h4>
+        <p class="text-muted mb-0">
+            Perbarui data pribadi Anda
+        </p>
+    </div>
 
-    <label for="">No Handphone</label><br>
-    <input type="text" name="no_hp"
-        value="<?= $profile['no_hp'] ?? '' ?>"
-        placeholder="No HP"><br><br>
+    <!-- Card -->
+    <div class="card shadow-sm">
+        <div class="card-body">
 
-    <label for="">Alamat</label><br>
-    <textarea name="alamat"
-        placeholder="Alamat"><?= $profile['alamat'] ?? '' ?></textarea><br><br>
+            <form method="post" action="/profile/update">
+                <?= csrf_field() ?>
 
-    <button type="submit">Simpan</button>
-    <a href="/profile">Kembali</a>
-</form>
+                <!-- Nama -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        Nama Lengkap
+                    </label>
+                    <input
+                        type="text"
+                        name="nama"
+                        class="form-control"
+                        value="<?= esc($profile['nama'] ?? '') ?>"
+                        placeholder="Nama Lengkap"
+                        required
+                    >
+                </div>
+
+                <!-- No HP -->
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">
+                        No Handphone
+                    </label>
+                    <input
+                        type="text"
+                        name="no_hp"
+                        class="form-control"
+                        value="<?= esc($profile['no_hp'] ?? '') ?>"
+                        placeholder="No HP"
+                    >
+                </div>
+
+                <!-- Alamat -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">
+                        Alamat
+                    </label>
+                    <textarea
+                        name="alamat"
+                        class="form-control"
+                        rows="3"
+                        placeholder="Alamat"
+                    ><?= esc($profile['alamat'] ?? '') ?></textarea>
+                </div>
+
+                <!-- Action -->
+                <div class="d-flex justify-content-between">
+                    <a href="/profile" class="btn btn-secondary">
+                        ← Kembali
+                    </a>
+
+                    <button type="submit" class="btn btn-success">
+                        Simpan Perubahan
+                    </button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+</div>

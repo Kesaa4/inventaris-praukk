@@ -1,81 +1,126 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
+    <meta charset="UTF-8">
     <title>Tambah Barang</title>
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-light">
 
-<h2>Tambah Barang</h2>
+<div class="container mt-4 mb-5">
 
-<form action="<?= base_url('/barang/store') ?>" method="post">
-    <?= csrf_field() ?>
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3>Tambah Data Barang</h3>
+        <a href="<?= base_url('barang') ?>" class="btn btn-secondary btn-sm">
+            ← Kembali
+        </a>
+    </div>
 
-    <p>
-        <label>Jenis Barang</label><br>
-        <select name="jenis_barang" required>
-            <option value="">-- Pilih Jenis Barang --</option>
-            <?php foreach ($jenis_barang as $jenis) : ?>
-                <option value="<?= $jenis ?>">
-                    <?= $jenis ?>
-                </option>
-            <?php endforeach; ?>
-        </select>
-    </p>
+    <!-- Form Card -->
+    <div class="card shadow-sm">
+        <div class="card-body">
 
-    <p>
-        <label>Merek Barang</label><br>
-        <input type="text" name="merek_barang" required>
-    </p>
+            <form action="<?= base_url('/barang/store') ?>" method="post">
+                <?= csrf_field() ?>
 
-    <p>
-        <label>Tipe Barang</label><br>
-        <input type="text" name="tipe_barang" required>
-    </p>
+                <div class="row g-3">
 
-    <p>
-        <label>RAM</label><br>
-        <input type="text" name="ram" required>
-    </p>
+                    <!-- Jenis Barang -->
+                    <div class="col-md-6">
+                        <label class="form-label">Jenis Barang</label>
+                        <select name="jenis_barang" class="form-select" required>
+                            <option value="">-- Pilih Jenis Barang --</option>
+                            <?php foreach ($jenis_barang as $jenis): ?>
+                                <option value="<?= esc($jenis) ?>">
+                                    <?= esc($jenis) ?>
+                                </option>
+                            <?php endforeach ?>
+                        </select>
+                    </div>
 
-    <p>
-        <label>ROM</label><br>
-        <input type="text" name="rom" required>
-    </p>
+                    <!-- Merek -->
+                    <div class="col-md-6">
+                        <label class="form-label">Merek Barang</label>
+                        <input type="text" name="merek_barang" class="form-control" required>
+                    </div>
 
-    <p>
-        <label>Kategori Kondisi</label><br>
-        <select name="id_kategori" required>
-            <option value="">-- Pilih Kategori Kondisi --</option>
-            <?php foreach ($kategori as $k) : ?>
-                <option value="<?= $k['id_kategori'] ?>">
-                    <?= esc($k['kategori_kondisi']) ?>
-                </option>
-            <?php endforeach ?>
-        </select>
-    </p>
+                    <!-- Tipe -->
+                    <div class="col-md-6">
+                        <label class="form-label">Tipe Barang</label>
+                        <input type="text" name="tipe_barang" class="form-control" required>
+                    </div>
 
-    <p>
-        <label>Status</label><br>
+                    <!-- RAM -->
+                    <div class="col-md-3">
+                        <label class="form-label">RAM</label>
+                        <input type="text" name="ram" class="form-control" placeholder="contoh: 8 GB" required>
+                    </div>
 
-        <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="status" id="" value="Tersedia" required>
-            <label class="form-check-label" for="status_tersedia">Tersedia</label>
+                    <!-- ROM -->
+                    <div class="col-md-3">
+                        <label class="form-label">ROM</label>
+                        <input type="text" name="rom" class="form-control" placeholder="contoh: 128 GB" required>
+                    </div>
+
+                    <!-- Kategori -->
+                    <div class="col-md-6">
+                        <label class="form-label">Kategori Kondisi</label>
+                        <select name="id_kategori" class="form-select" required>
+                            <option value="">-- Pilih Kategori Kondisi --</option>
+                            <?php foreach ($kategori as $k): ?>
+                                <option value="<?= $k['id_kategori'] ?>">
+                                    <?= esc($k['kategori_kondisi']) ?>
+                                </option>
+                            <?php endforeach ?>
+                        </select>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-6">
+                        <label class="form-label d-block">Status Barang</label>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="status" id="status_tersedia" value="tersedia" required>
+                            <label class="form-check-label" for="status_tersedia">
+                                <span class="badge bg-success">Tersedia</span>
+                            </label>
+                        </div>
+
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="status" id="status_tidak" value="tidak tersedia">
+                            <label class="form-check-label" for="status_tidak">
+                                <span class="badge bg-secondary">Tidak Tersedia</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Keterangan -->
+                    <div class="col-12">
+                        <label class="form-label">Keterangan</label>
+                        <input type="text" name="keterangan" class="form-control" placeholder="Opsional">
+                    </div>
+
+                </div>
+
+                <!-- Action -->
+                <div class="mt-4 d-flex gap-2">
+                    <button type="submit" class="btn btn-success">
+                        Simpan
+                    </button>
+                    <a href="<?= base_url('barang') ?>" class="btn btn-outline-secondary">
+                        Batal
+                    </a>
+                </div>
+
+            </form>
+
         </div>
+    </div>
 
-        <div class="form-check form-check-inline">
-            <input class="form-check-input" type="radio" name="status" id="" value="Tidak Tersedia">
-            <label class="form-check-label" for="status_tidak">Tidak Tersedia</label>
-        </div>
-    </p>
-
-    <p>
-        <label for="">Keterangan</label>
-        <input type="text" name="keterangan" id="">
-    </p>
-
-    <button type="submit">Simpan</button>
-    <a href="<?= base_url('index.php/barang') ?>">Kembali</a>
-</form>
+</div>
 
 </body>
 </html>
