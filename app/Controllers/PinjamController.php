@@ -6,6 +6,7 @@ use App\Controllers\BaseController;
 use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\PinjamModel;
 use App\Models\BarangModel;
+use App\Models\UserProfileModel;
 
 class PinjamController extends BaseController
 {
@@ -30,6 +31,13 @@ class PinjamController extends BaseController
         }
     }
 
+    protected function mustAdminPetugasPeminjam()
+    {
+        if (!in_array(session('role'), ['admin','petugas','peminjam'])) {
+            throw new \CodeIgniter\Exceptions\PageForbiddenException();
+        }
+    }
+
     // LIST PEMINJAMAN
     
     public function index()
@@ -48,47 +56,78 @@ class PinjamController extends BaseController
         return view('pinjam/index', $data);
     }
 
-    // FORM AJUKAN PINJAM (PEMINJAM)
+    // FORM AJUKAN PINJAM
     
     public function create()
     {
-        $this->mustPeminjamOrPetugas();
+        $this->mustAdminPetugasPeminjam();
 
         $barangModel = new BarangModel();
+        $userModel   = new \App\Models\UserModel();
 
-        return view('pinjam/create', [
+        $data = [
             'barang' => $barangModel
                 ->where('status', 'tersedia')
                 ->findAll()
-        ]);
+        ];
+
+        // kalau petugas/admin, kirim data user
+        if (in_array(session('role'), ['admin', 'petugas'])) {
+            $data['users'] = $userModel
+                ->where('role', 'peminjam')
+                ->findAll();
+        }
+
+        return view('pinjam/create', $data);
     }
 
-    // SIMPAN PINJAMAN
+    // SIMPN PINJAMAN
     
     public function store()
     {
-        $this->mustPeminjamOrPetugas();
+        $this->mustAdminPetugasPeminjam();
 
-        $pinjamModel = new PinjamModel();
-        $barangModel = new BarangModel();
+        $pinjamModel        = new PinjamModel();
+        $barangModel        = new BarangModel();
+        $userProfileModel   = new UserProfileModel();
+
+        // USER YANG MEMINJAM
+        if (in_array(session('role'), ['admin', 'petugas'])) {
+            $idUserPeminjam = $this->request->getPost('id_user');
+
+            // CEGAH PINJAM KE DIRI SENDIRI
+            if ($idUserPeminjam == session('id_user')) {
+                return redirect()
+                    ->back()
+                    ->with('error', 'Tidak boleh meminjamkan ke diri sendiri');
+            }
+        } else {
+            $idUserPeminjam = session('id_user');
+        }
 
         $idBarang = $this->request->getPost('id_barang');
 
-        // SIMPAN PINJAM
         $id = $pinjamModel->insert([
-            'id_barang'   => $this->request->getPost('id_barang'),
-            'id_user'     => session('id_user'),
-            'tgl_pinjam'  => date('Y-m-d'),
-            'status'      => 'menunggu'
+            'id_barang'  => $idBarang,
+            'id_user'    => $idUserPeminjam,      // PEMINJAM
+            'created_by' => session('id_user'),   // YANG INPUT
+            'tgl_pinjam' => date('Y-m-d'),
+            'status'     => 'menunggu'
         ]);
 
+        // ambil data peminjam
+        $profile = $userProfileModel
+            ->where('id_user', $idUserPeminjam)
+            ->first();
+
+        $namaPeminjam = $profile['nama'] ?? 'User';
+
         log_activity(
-            'Mengajukan peminjaman',
+            'Menambahkan peminjaman untuk '.$namaPeminjam,
             'pinjam',
             $id
         );
 
-        // KUNCI BARANG
         $barangModel->update($idBarang, [
             'status' => 'dibooking'
         ]);
