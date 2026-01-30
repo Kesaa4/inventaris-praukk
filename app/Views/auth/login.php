@@ -1,34 +1,84 @@
-<h2>Login</h2>
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
 
-<?php if (session()->getFlashdata('error')): ?>
-    <p style="color:red;">
-        <?= session()->getFlashdata('error') ?>
-    </p>
-<?php endif ?>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
 
-<form method="post" action="<?= base_url('/login') ?>">
-    <?= csrf_field() ?>
+<div class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card shadow-sm" style="width: 100%; max-width: 400px;">
+        <div class="card-body p-4">
 
-    <p>
-        <input type="email" name="email" id="email" placeholder="Email">
-    </p>
+            <h3 class="text-center mb-4">Login</h3>
 
-    <p>
-        <input type="password" name="password" id="password" placeholder="Password">
+            <?php if (session()->getFlashdata('error')): ?>
+                <div class="alert alert-danger">
+                    <?= session()->getFlashdata('error') ?>
+                </div>
+            <?php endif ?>
 
-    <label>
-    <input type="checkbox" onclick="togglePassword()">
-    Tampilkan password
-    </label>
+            <form method="post" action="<?= base_url('/login') ?>">
+                <?= csrf_field() ?>
 
-    <script>
-    function togglePassword() {
+                <!-- Email -->
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <input 
+                        type="email" 
+                        name="email" 
+                        id="email" 
+                        class="form-control"
+                        placeholder="Masukkan email"
+                        required
+                    >
+                </div>
+
+                <!-- Password -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input 
+                        type="password" 
+                        name="password" 
+                        id="password" 
+                        class="form-control"
+                        placeholder="Masukkan password"
+                        required
+                    >
+                </div>
+
+                <!-- Show Password -->
+                <div class="form-check mb-3">
+                    <input 
+                        class="form-check-input" 
+                        type="checkbox" 
+                        id="showPassword" 
+                        onclick="togglePassword()"
+                    >
+                    <label class="form-check-label" for="showPassword">
+                        Tampilkan password
+                    </label>
+                </div>
+
+                <!-- Button -->
+                <button type="submit" class="btn btn-primary w-100">
+                    Login
+                </button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword() {
     const pass = document.getElementById("password");
     pass.type = pass.type === "password" ? "text" : "password";
-    }
-    </script>
+}
+</script>
 
-    </p>
-
-    <button type="submit">Login</button>
-</form>
+</body>
+</html>
