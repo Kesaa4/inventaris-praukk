@@ -64,6 +64,18 @@
                         >
                     </div>
 
+                    <!-- Kode -->
+                    <div class="col-md-6">
+                        <label class="form-label">Kode Barang</label>
+                        <input
+                            type="text"
+                            name="kode_barang"
+                            class="form-control"
+                            value="<?= esc($barang['kode_barang']) ?>"
+                            required
+                        >
+                    </div>
+
                     <!-- RAM -->
                     <div class="col-md-3">
                         <label class="form-label">RAM</label>
