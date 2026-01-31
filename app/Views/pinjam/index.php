@@ -42,7 +42,7 @@
                         </tr>
                     </thead>
                     <tbody>
-
+                    <?php if (count($pinjam) > 0): ?>
                     <?php foreach ($pinjam as $p): ?>
 
                         <?php
@@ -135,9 +135,14 @@
 
                             </td>
                         </tr>
-
                     <?php endforeach ?>
-
+                    <?php else: ?>
+                    <tr>
+                        <td colspan="12" class="text-center text-muted">
+                            Data peminjaman kosong
+                        </td>
+                    </tr>
+                    <?php endif ?>
                     </tbody>
                 </table>
             </div>

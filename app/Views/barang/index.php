@@ -76,6 +76,7 @@
                         <th>Jenis</th>
                         <th>Merek</th>
                         <th>Tipe</th>
+                        <th>Kode Barang</th>
                         <th>RAM</th>
                         <th>ROM</th>
                         <th>Kondisi</th>
@@ -87,12 +88,14 @@
                     </tr>
                 </thead>
                 <tbody>
+                    <?php if (count($barang) > 0): ?>
                     <?php $no = 1; foreach ($barang as $b): ?>
                     <tr>
                         <td class="text-center"><?= $no++ ?></td>
                         <td><?= esc($b['jenis_barang']) ?></td>
                         <td><?= esc($b['merek_barang']) ?></td>
                         <td><?= esc($b['tipe_barang']) ?></td>
+                        <td><?= esc($b['kode_barang']) ?></td>
                         <td><?= esc($b['ram']) ?></td>
                         <td><?= esc($b['rom']) ?></td>
                         <td><?= esc($b['kategori_kondisi']) ?></td>
@@ -136,6 +139,13 @@
                         <?php endif ?>
                     </tr>
                     <?php endforeach ?>
+                    <?php else: ?>
+                    <tr>
+                        <td colspan="15" class="text-center text-muted">
+                            Data barang kosong
+                        </td>
+                    </tr>
+                    <?php endif ?>
                 </tbody>
             </table>
 

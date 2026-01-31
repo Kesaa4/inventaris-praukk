@@ -83,7 +83,7 @@
                         <?php endforeach ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="5" class="text-center text-muted">
+                            <td colspan="12" class="text-center text-muted">
                                 Data user belum tersedia
                             </td>
                         </tr>
