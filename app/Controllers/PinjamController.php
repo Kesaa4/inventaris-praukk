@@ -250,13 +250,13 @@ class PinjamController extends BaseController
         $pinjamModel->delete($id);
 
         log_activity(
-            'Menghapus data peminjaman',
+            'Menonaktifkan data peminjaman',
             'pinjam',
             $id
         );
 
 
-        return redirect()->to('/pinjam');
+        return redirect()->to('/pinjam')->with('success', 'Data peminjaman dinonaktifkan');
     }
 
     //pengembalian barang oleh peminjam

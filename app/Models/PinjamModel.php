@@ -10,7 +10,7 @@ class PinjamModel extends Model
     protected $primaryKey       = 'id_pinjam';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
+    protected $useSoftDeletes   = true;
     protected $protectFields    = true;
     protected $allowedFields    = [
         'id_barang',
@@ -58,6 +58,7 @@ class PinjamModel extends Model
             ->join('barang', 'barang.id_barang = pinjam.id_barang')
             ->join('user', 'user.id_user = pinjam.id_user')
             ->where('pinjam.id_pinjam', $id)
+            ->where('pinjam.deleted_at', null)
             ->get()
             ->getRowArray();
     }

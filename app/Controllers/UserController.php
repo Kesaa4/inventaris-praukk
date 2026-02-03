@@ -166,12 +166,12 @@ class UserController extends BaseController
         $userModel->delete($id);
 
         log_activity(
-            'Menghapus user',
+            'Menonaktifkan user',
             'user',
             $id
         );
 
-        return redirect()->to('/user')->with('success', 'User dihapus');
+        return redirect()->to('/user')->with('success', 'User dinonaktifkan');
     
     }
 }

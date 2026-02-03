@@ -129,12 +129,12 @@ class BarangController extends BaseController
         $barangModel->delete($id);
 
         log_activity(
-            'Menghapus barang',
+            'Menonaktifkan barang',
             'barang',
             $id
         );
 
-        return redirect()->to('/barang')->with('success', 'Data berhasil dihapus.');
+        return redirect()->to('/barang')->with('success', 'Data berhasil dinonaktifkan.');
     }
 
 }
