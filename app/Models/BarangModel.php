@@ -49,8 +49,6 @@ class BarangModel extends Model
     // Search + Filter + Pagination
     public function getBarangFiltered($keyword = null, $kategori = null)
     {
-        // $builder = $this->builder();
-
         $builder = $this->select('barang.*, kategori.kategori_kondisi')
                         ->join('kategori', 'kategori.id_kategori = barang.id_kategori');
 

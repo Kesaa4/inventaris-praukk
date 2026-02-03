@@ -12,14 +12,21 @@ class UserController extends BaseController
     public function index()
     {
         $userModel = new UserModel();
-        $profileModel = new UserProfileModel();
 
-        $users = $userModel
-            ->select('user.*, userprofile.nama')
-            ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
-            ->findAll();
+        $keyword = $this->request->getGet('keyword');
+        $role    = $this->request->getGet('role');
 
-        return view('user/index', compact('users'));
+        // APPLY FILTER (tanpa ambil data dulu)
+        $userModel->filterUser($keyword, $role);
+
+        $data = [
+            'users'   => $userModel->paginate(10, 'user'),
+            'pager'   => $userModel->pager,
+            'keyword' => $keyword,
+            'role'    => $role,
+        ];
+
+        return view('user/index', $data);
     }
 
     protected function mustAdmin()

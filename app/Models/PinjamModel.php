@@ -22,25 +22,27 @@ class PinjamModel extends Model
         'approved_by'
     ];
 
+    protected function initialize()
+    {
+        // DEFAULT QUERY (WAJIB untuk paginate + join)
+        $this->select('
+            pinjam.*,
+            barang.jenis_barang,
+            barang.merek_barang,
+            barang.tipe_barang,
+            user.email
+        ')
+        ->join('barang', 'barang.id_barang = pinjam.id_barang', 'left')
+        ->join('user', 'user.id_user = pinjam.id_user', 'left');
+    }
+
     public function getPinjamWithRelasi($userId = null)
     {
-        $builder = $this->db->table('pinjam')
-            ->select('
-                pinjam.*,
-                barang.jenis_barang,
-                barang.merek_barang,
-                barang.tipe_barang,
-                user.email
-            ')
-            ->join('barang', 'barang.id_barang = pinjam.id_barang', 'left')
-            ->join('user', 'user.id_user = pinjam.id_user', 'left');
-            // ->where('pinjam.deleted_at IS NULL', null, false);
-
         if ($userId) {
-            $builder->where('pinjam.id_user', $userId);
+            $this->where('pinjam.id_user', $userId);
         }
 
-        return $builder->get()->getResultArray();
+        return $this->orderBy('pinjam.created_at', 'DESC');
     }
 
     public function getPinjamWithRelasiById($id)
@@ -60,7 +62,35 @@ class PinjamModel extends Model
             ->getRowArray();
     }
 
+    public function filterPinjam(array $filters = [], $userId = null)
+    {
+        if ($userId) {
+            $this->where('pinjam.id_user', $userId);
+        }
 
+        if (!empty($filters['keyword'])) {
+            $this->groupStart()
+                ->like('barang.jenis_barang', $filters['keyword'])
+                ->orLike('barang.merek_barang', $filters['keyword'])
+                ->orLike('barang.tipe_barang', $filters['keyword'])
+                ->orLike('user.email', $filters['keyword'])
+            ->groupEnd();
+        }
+
+        if (!empty($filters['status'])) {
+            $this->where('pinjam.status', $filters['status']);
+        }
+
+        if (!empty($filters['tgl_pinjam'])) {
+            $this->where('DATE(pinjam.tgl_pinjam)', $filters['tgl_pinjam']);
+        }
+
+        if (!empty($filters['tgl_kembali'])) {
+            $this->where('DATE(pinjam.tgl_kembali)', $filters['tgl_kembali']);
+        }
+
+        return $this->orderBy('pinjam.created_at', 'DESC');
+    }
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;

@@ -46,12 +46,37 @@ class PinjamController extends BaseController
 
         $pinjamModel = new PinjamModel();
 
-        if (session('role') === 'peminjam') {
-            $data['pinjam'] = $pinjamModel->getPinjamWithRelasi(session('id_user'));
+        $filters = [
+            'keyword'     => $this->request->getGet('keyword'),
+            'status'      => $this->request->getGet('status'),
+            'tgl_pinjam'  => $this->request->getGet('tgl_pinjam'),
+            'tgl_kembali' => $this->request->getGet('tgl_kembali'),
+        ];
+
+        $isFilter = array_filter($filters);
+
+        if ($isFilter) {
+
+            if (session('role') === 'peminjam') {
+                $pinjamModel->filterPinjam($filters, session('id_user'));
+            } else {
+                $pinjamModel->filterPinjam($filters);
+            }
+
         } else {
-            $data['pinjam'] = $pinjamModel->getPinjamWithRelasi();
+
+            if (session('role') === 'peminjam') {
+                $pinjamModel->getPinjamWithRelasi(session('id_user'));
+            } else {
+                $pinjamModel->getPinjamWithRelasi();
+            }
         }
-        // dd($data['pinjam']);
+
+        $data = [
+            'pinjam' => $pinjamModel->paginate(10, 'pinjam'),
+            'pager'  => $pinjamModel->pager,
+            'filters'=> $filters,
+        ];
 
         return view('pinjam/index', $data);
     }

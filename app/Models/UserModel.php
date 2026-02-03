@@ -17,6 +17,29 @@ class UserModel extends Model
         'password',
         'role'
     ];
+
+    protected function initialize()
+    {
+        // DEFAULT SELECT + JOIN (WAJIB untuk paginate)
+        $this->select('user.*, userprofile.nama')
+             ->join('userprofile', 'userprofile.id_user = user.id_user', 'left');
+    }
+
+    public function filterUser($keyword = null, $role = null)
+    {
+        if ($keyword) {
+            $this->groupStart()
+                ->like('user.email', $keyword)
+                ->orLike('userprofile.nama', $keyword)
+            ->groupEnd();
+        }
+
+        if ($role) {
+            $this->where('user.role', $role);
+        }
+
+        return $this->orderBy('user.id_user', 'DESC');
+    }
     
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;

@@ -37,6 +37,34 @@ class ActivityLogModel extends Model
             ->getResultArray();
     }
 
+    public function getLogFiltered($keyword = null, $role = null)
+{
+    $this->select('
+            activity_log.*,
+            userprofile.nama,
+            user.email,
+            user.role
+        ')
+        ->join('user', 'user.id_user = activity_log.id_user')
+        ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
+        ->orderBy('activity_log.created_at', 'DESC');
+
+    if ($keyword) {
+        $this->groupStart()
+            ->like('userprofile.nama', $keyword)
+            ->orLike('user.email', $keyword)
+            ->orLike('activity_log.aktivitas', $keyword)
+        ->groupEnd();
+    }
+
+    if ($role) {
+        $this->where('user.role', $role);
+    }
+
+    return $this;
+}
+
+
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
 

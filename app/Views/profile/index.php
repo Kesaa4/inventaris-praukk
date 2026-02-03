@@ -1,6 +1,16 @@
+<!DOCTYPE html>
+<html lang="id">
 <head>
+    <meta charset="UTF-8">
+    <title>Profile</title>
+
+    <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- JS 5 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
+<body class="bg-light">
 
 <div class="container mt-4">
 
@@ -11,6 +21,14 @@
             Informasi akun dan data pribadi Anda
         </p>
     </div>
+
+    <!-- Alert Success -->
+    <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?= session()->getFlashdata('success') ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php endif ?>
 
     <!-- Card -->
     <div class="card shadow-sm">
@@ -76,3 +94,6 @@
     </div>
 
 </div>
+
+</body>
+</html>
