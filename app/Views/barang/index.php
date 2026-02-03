@@ -6,6 +6,9 @@
 
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- JS 5 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body class="bg-light">
 
@@ -16,6 +19,14 @@
         <h3>Data Barang</h3>
         <a href="/dashboard" class="btn btn-secondary btn-sm">Kembali Ke Dashboard</a>
     </div>
+
+    <!-- Alert Success -->
+    <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <?= session()->getFlashdata('success') ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php endif ?>
 
     <!-- Filter -->
     <div class="card shadow-sm mb-3">
@@ -152,7 +163,7 @@
         </div>
     </div>
 
-    <!-- Pagination Info -->
+    <!-- Pagination -->
     <div class="d-flex justify-content-between align-items-center mt-3">
         <div>
             Total Data: <b><?= $pager->getTotal('barang') ?></b> |
@@ -163,44 +174,74 @@
 
         <div>
             <?php
-$currentPage = $pager->getCurrentPage('barang');
-$pageCount   = $pager->getPageCount('barang');
-?>
+                $currentPage = $pager->getCurrentPage('barang');
+                $pageCount   = $pager->getPageCount('barang');
+                $range       = 1; // kiri + current + kanan = 3 halaman
 
-<?php if ($pageCount > 1): ?>
-<nav aria-label="Pagination Barang">
-    <ul class="pagination pagination-sm">
+                $start = max(1, $currentPage - $range);
+                $end   = min($pageCount, $currentPage + $range);
+                
+                // jumlah halaman yang dilompati
+                $jump = ($range * 2) + 1;
+            ?>
 
-        <!-- Sebelumnya -->
-        <li class="page-item <?= ($currentPage == 1) ? 'disabled' : '' ?>">
-            <a class="page-link"
-               href="<?= ($currentPage > 1) ? $pager->getPageURI($currentPage - 1, 'barang') : '#' ?>">
-                Sebelumnya
-            </a>
-        </li>
+            <?php if ($pageCount > 1): ?>
+            <nav aria-label="Pagination Barang">
+                <ul class="pagination pagination-sm justify-content-end">
 
-        <!-- Nomor Halaman -->
-        <?php for ($i = 1; $i <= $pageCount; $i++): ?>
-            <li class="page-item <?= ($i == $currentPage) ? 'active' : '' ?>">
-                <a class="page-link"
-                   href="<?= $pager->getPageURI($i, 'barang') ?>">
-                    <?= $i ?>
-                </a>
-            </li>
-        <?php endfor ?>
+                    <!-- Sebelumnya -->
+                    <li class="page-item <?= ($currentPage == 1) ? 'disabled' : '' ?>">
+                        <a class="page-link"
+                        href="<?= ($currentPage > 1) ? $pager->getPageURI($currentPage - 1, 'barang') : '#' ?>">
+                            Sebelumnya
+                        </a>
+                    </li>
 
-        <!-- Selanjutnya -->
-        <li class="page-item <?= ($currentPage == $pageCount) ? 'disabled' : '' ?>">
-            <a class="page-link"
-               href="<?= ($currentPage < $pageCount) ? $pager->getPageURI($currentPage + 1, 'barang') : '#' ?>">
-                Selanjutnya
-            </a>
-        </li>
+                    <!-- TITIK-TITIK KIRI (klik = lompat ke belakang) -->
+                    <?php if ($start > 1): ?>
+                        <?php $prevJump = max(1, $currentPage - $jump); ?>
+                        <li class="page-item">
+                            <a class="page-link"
+                            href="<?= $pager->getPageURI($prevJump, 'log') ?>"
+                            title="Lompat ke halaman <?= $prevJump ?>">
+                                ...
+                            </a>
+                        </li>
+                    <?php endif ?>
 
-    </ul>
-</nav>
-<?php endif ?>
+                    <!-- Nomor Halaman -->
+                    <?php for ($i = $start; $i <= $end; $i++): ?>
+                        <li class="page-item <?= ($i == $currentPage) ? 'active' : '' ?>">
+                            <a class="page-link"
+                            href="<?= $pager->getPageURI($i, 'barang') ?>">
+                                <?= $i ?>
+                            </a>
+                        </li>
+                    <?php endfor ?>
 
+                    <!-- TITIK-TITIK KANAN (klik = lompat ke depan) -->
+                    <?php if ($end < $pageCount): ?>
+                        <?php $nextJump = min($pageCount, $currentPage + $jump); ?>
+                        <li class="page-item">
+                            <a class="page-link"
+                            href="<?= $pager->getPageURI($nextJump, 'log') ?>"
+                            title="Lompat ke halaman <?= $nextJump ?>">
+                                ...
+                            </a>
+                        </li>
+                    <?php endif ?>
+
+                    <!-- Selanjutnya -->
+                    <li class="page-item <?= ($currentPage == $pageCount) ? 'disabled' : '' ?>">
+                        <a class="page-link"
+                        href="<?= ($currentPage < $pageCount) ? $pager->getPageURI($currentPage + 1, 'barang') : '#' ?>">
+                            Selanjutnya
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+            <?php endif ?>
         </div>
     </div>
 
