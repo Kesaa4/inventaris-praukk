@@ -42,6 +42,12 @@ $routes->group('barang', ['filter' => 'admin'], function ($routes) {
     $routes->post('update/(:num)', 'BarangController::update/$1');
 
     $routes->get('delete/(:num)', 'BarangController::delete/$1');
+
+    $routes->get('trash', 'BarangController::trash');
+    $routes->get('restore/(:num)', 'BarangController::restore/$1');
+    $routes->get('force-delete/(:num)', 'BarangController::forceDelete/$1');
+
+
 });
 
 $routes->group('pinjam', ['filter' => 'auth'], function ($routes) {

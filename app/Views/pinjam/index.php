@@ -144,7 +144,7 @@
 
                             <td class="text-center">
                                 <?php if ($status === 'dikembalikan'): ?>
-                                    <?= date('d-m-Y H:i', strtotime($p['tgl_kembali'])) ?>
+                                    <?= date('d-m-Y', strtotime($p['tgl_kembali'])) ?>
                                 <?php elseif ($status === 'pengembalian'): ?>
                                     <span class="fw-semibold">
                                         Menunggu konfirmasi

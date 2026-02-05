@@ -40,7 +40,7 @@ class ProfileController extends BaseController
         $idUser = session()->get('id_user');
 
         $data = [
-            'nama' => $this->request->getPost('nama'),
+            'nama'         => $this->request->getPost('nama'),
             'no_hp'        => $this->request->getPost('no_hp'),
             'alamat'       => $this->request->getPost('alamat'),
         ];
@@ -49,6 +49,12 @@ class ProfileController extends BaseController
 
         if ($existing) {
             $profileModel->update($existing['id_profile'], $data);
+
+            log_activity(
+                'Mengubah profil',
+                'user',
+                $idUser
+            );
         } else {
             $data['id_user'] = $idUser;
             $profileModel->insert($data);

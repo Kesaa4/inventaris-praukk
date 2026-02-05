@@ -8,6 +8,8 @@ use App\Models\PinjamModel;
 use App\Models\BarangModel;
 use App\Models\UserProfileModel;
 
+helper('user');
+
 class PinjamController extends BaseController
 {
     protected function mustLogin()
@@ -140,15 +142,10 @@ class PinjamController extends BaseController
             'status'     => 'menunggu'
         ]);
 
-        // ambil data peminjam
-        $profile = $userProfileModel
-            ->where('id_user', $idUserPeminjam)
-            ->first();
-
-        $namaPeminjam = $profile['nama'] ?? 'User';
+        $namaPeminjam = getNamaUser($idUserPeminjam);
 
         log_activity(
-            'Menambahkan peminjaman untuk '.$namaPeminjam,
+            'Menambahkan peminjaman untuk ' .$namaPeminjam,
             'pinjam',
             $id
         );
@@ -202,8 +199,10 @@ class PinjamController extends BaseController
                 'status' => 'dipinjam'
             ]);
 
+            $namaPeminjam = getNamaUser($pinjam['id_user']);
+
             log_activity(
-                'Menyetujui peminjaman',
+                'Menyetujui peminjaman' .$namaPeminjam,
                 'pinjam',
                 $id
             );
@@ -215,7 +214,7 @@ class PinjamController extends BaseController
             ]);
 
             log_activity(
-                'Menolak peminjaman',
+                'Menolak peminjaman' .$namaPeminjam,
                 'pinjam',
                 $id
             );
@@ -227,7 +226,7 @@ class PinjamController extends BaseController
             ]);
 
             log_activity(
-                'Menyetujui pengembalian barang',
+                'Menyetujui pengembalian barang' .$namaPeminjam,
                 'pinjam',
                 $id
             );
@@ -307,6 +306,7 @@ class PinjamController extends BaseController
         // update pinjam
         $pinjamModel->update($id, [
             'status' => $status,
+            'tgl_kembali' => date('Y-m-d')
         ]);
 
         // update barang
@@ -316,7 +316,7 @@ class PinjamController extends BaseController
             ]);
 
             log_activity(
-                'Menyetujui pengembalian barang',
+                'Menyetujui pengembalian barang' .$namaPeminjam,
                 'pinjam',
                 $id
             );
@@ -324,7 +324,5 @@ class PinjamController extends BaseController
 
         return redirect()->to('/pinjam')->with('success', 'Pengembalian diproses');
     }
-
-    
 
 }

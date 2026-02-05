@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard Petugas</title>
 
     <!-- Bootstrap 5 -->
@@ -22,7 +23,7 @@
 
 <div class="container mt-4">
 
-    <!-- Welcome -->
+    <!-- Welcome Card -->
     <div class="card shadow-sm mb-4">
         <div class="card-body">
             <h4 class="mb-1">
@@ -35,7 +36,7 @@
         </div>
     </div>
 
-    <!-- Menu -->
+    <!-- Menu Cards -->
     <div class="row g-3">
 
         <div class="col-md-4">
