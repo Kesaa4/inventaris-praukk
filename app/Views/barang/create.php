@@ -18,9 +18,6 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3>Tambah Data Barang</h3>
-        <a href="<?= base_url('barang') ?>" class="btn btn-secondary btn-sm">
-            ← Kembali
-        </a>
     </div>
 
     <!-- Form Card -->

@@ -21,7 +21,7 @@
             <h4 class="fw-bold mb-0">Manajemen User</h4>
         </div>
 
-        <a href="/dashboard" class="btn btn-secondary">
+        <a href="/dashboard" class="btn btn-secondary btn-sm">
             Kembali ke Dashboard
         </a>
     </div>
@@ -80,7 +80,7 @@
 
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle mb-0">
-                    <thead class="table-light text-center">
+                    <thead class="table-primary text-center">
                         <tr>
                             <th width="60">No</th>
                             <th>Email</th>

@@ -19,6 +19,13 @@ class PinjamController extends BaseController
         }
     }
 
+    protected function mustAdmin()
+    {
+        if (session('role') !== 'admin') {
+            throw new \CodeIgniter\Exceptions\PageForbiddenException();
+        }
+    }
+
     protected function mustAdminOrPetugas()
     {
         if (!in_array(session('role'), ['admin', 'petugas'])) {
@@ -241,9 +248,7 @@ class PinjamController extends BaseController
 
     public function delete($id)
     {
-        if (session('role') !== 'admin') {
-            throw new \CodeIgniter\Exceptions\PageForbiddenException();
-        }
+        $this->mustAdmin();
 
         $pinjamModel = new PinjamModel();
         $pinjamModel->delete($id);
@@ -323,6 +328,74 @@ class PinjamController extends BaseController
         }
 
         return redirect()->to('/pinjam')->with('success', 'Pengembalian diproses');
+    }
+
+    public function trash()
+    {   
+        $this->mustAdmin();
+
+        $pinjamModel = new PinjamModel();
+
+        $filters = [
+            'keyword'     => $this->request->getGet('keyword'),
+            'status'      => $this->request->getGet('status'),
+            'tgl_pinjam'  => $this->request->getGet('tgl_pinjam'),
+            'tgl_kembali' => $this->request->getGet('tgl_kembali'),
+        ];
+
+        $pinjamModel->onlyDeleted();
+
+        // pakai logic filter YANG SUDAH ADA
+        if (array_filter($filters)) {
+            $pinjamModel->filterPinjam($filters);
+        }
+
+        $data = [
+            'pinjam'  => $pinjamModel->paginate(10, 'trash'),
+            'pager'   => $pinjamModel->pager,
+            'filters' => $filters,
+        ];
+
+        return view('pinjam/trash', $data);
+    }
+
+    public function restore($id)
+    {
+        $this->mustAdmin();
+
+        $pinjamModel = new PinjamModel();
+
+        $pinjamModel->withDeleted()
+        ->where('id_pinjam', $id)
+        ->update(null, [
+            'deleted_at' => null
+        ]);
+
+        log_activity(
+            'Restore data peminjaman',
+            'pinjam',
+            $id
+        );
+
+        return redirect()->back()
+            ->with('success', 'Data peminjaman berhasil direstore');
+    }
+
+    public function forceDelete($id)
+    {
+        $this->mustAdmin();
+
+        $pinjamModel = new PinjamModel();
+        $pinjamModel->delete($id, true);
+
+        log_activity(
+            'Hapus permanen data peminjaman',
+            'pinjam',
+            $id
+        );
+
+        return redirect()->back()
+            ->with('success', 'Data peminjaman dihapus permanen');
     }
 
 }

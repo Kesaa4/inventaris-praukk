@@ -7,6 +7,9 @@
 
     <!-- Bootstrap 5 -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        
+    <!-- JS 5 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body class="bg-light">
 
@@ -16,7 +19,7 @@
         <span class="navbar-brand mb-0 h1">Dashboard Peminjam</span>
         <span class="text-white">
             <?= explode('@', session()->get('email'))[0] ?>
-            (<?= session()->get('role') ?>)
+            <strong>(<?= session()->get('role') ?>)</strong>
         </span>
     </div>
 </nav>
@@ -44,7 +47,7 @@
                 <div class="card-body text-center">
                     <h5>Lihat Barang</h5>
                     <p class="text-muted">
-                        Lihat daftar barang yang tersedia untuk dipinjam.
+                        Lihat daftar barang untuk dipinjam.
                     </p>
                     <a href="<?= base_url('barang') ?>" class="btn btn-outline-success w-100">
                         Lihat Barang

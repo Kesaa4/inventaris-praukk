@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Peminjaman</title>
 
     <!-- Bootstrap 5 -->
@@ -33,7 +34,7 @@
         </div>
     <?php endif ?>
 
-    <!-- Pencarian -->
+    <!-- Filter -->
     <form method="get" class="card shadow-sm mb-4">
 
         <div class="card-body">
@@ -70,17 +71,28 @@
             </div>
         </div>
 
-        <div class="card-footer d-flex justify-content-between align-items-center">
-            <div class="d-flex gap-2">
-                <button class="btn btn-primary">Cari</button>
-                <a href="<?= site_url('pinjam') ?>" class="btn btn-outline-secondary">Reset</a>
+        <div class="card-footer d-flex justify-content-between">
+            <div class="d-flex justify-content-start align-items-center">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary">Cari</button>
+                    <a href="<?= site_url('pinjam') ?>" class="btn btn-outline-secondary">Reset</a>
+                </div>
             </div>
-
-            <?php if (in_array(session('role'), ['admin','peminjam','petugas'])): ?>
-                    <a href="/pinjam/create" class="btn btn-success btn-sm">
-                        Ajukan Pinjaman
-                    </a>
-            <?php endif ?>
+            <div class="d-flex justify-content-end align-items-center gap-2">
+                <?php if (in_array(session('role'), ['admin','peminjam','petugas'])): ?>
+                        <a href="/pinjam/create" class="btn btn-success btn-sm">
+                            Ajukan Pinjaman
+                        </a>
+                <?php endif ?>
+                
+                <?php if (session('role') === 'admin'): ?>
+                    <div class="d-flex gap-2">
+                        <a href="<?= site_url('pinjam/trash') ?>" class="btn btn-danger btn-sm">
+                            Peminjaman Terhapus
+                        </a>
+                    </div>
+                <?php endif ?>
+            </div>
         </div>
     </form>
 
@@ -90,17 +102,17 @@
 
             <div class="table-responsive">
                 <table class="table table-bordered table-hover align-middle mb-0">
-                    <thead class="table-light text-center">
-                        <tr>
+                    <thead class="table-primary text-center">
+                        <tr class="align-middle">
                             <th>Barang</th>
                             <th>Merek</th>
                             <th>Tipe</th>
                             <th>Peminjam</th>
-                            <th>Tgl Pinjam</th>
-                            <th>Tgl Kembali</th>
+                            <th>Tanggal Pinjam</th>
+                            <th>Tanggal Kembali</th>
                             <th>Status</th>
                             <?php if (in_array(session('role'), ['admin','petugas'])): ?>
-                                <th>Aksi</th>
+                                <th style="width:200px;">Aksi</th>
                             <?php endif ?>
                             <th>Pengembalian</th>
                         </tr>

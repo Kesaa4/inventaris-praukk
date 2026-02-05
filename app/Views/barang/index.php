@@ -84,8 +84,8 @@
     <div class="card shadow-sm">
         <div class="card-body table-responsive">
 
-            <table class="table table-bordered table-hover align-middle">
-                <thead class="table-light text-center">
+            <table class="table table-bordered table-hover align-middle mb-0">
+                <thead class="table-primary text-center">
                     <tr>
                         <th>No</th>
                         <th>Jenis</th>
