@@ -112,39 +112,7 @@ class UserController extends BaseController
         $userModel = new UserModel();
         $profileModel = new UserProfileModel();
 
-        // ======================
-        // UPDATE / INSERT PROFILE
-        // ======================
-        $profileData = [
-            'nama'   => $this->request->getPost('nama'),
-            'no_hp'  => $this->request->getPost('no_hp'),
-            'alamat' => $this->request->getPost('alamat')
-        ];
-
-        $existing = $profileModel->where('id_user', $id)->first();
-
-        if ($existing) {
-            $profileModel->update($existing['id_profile'], $profileData);
-
-            log_activity(
-                'Mengubah profil user',
-                'user',
-                $id
-            );
-        } else {
-            $profileData['id_user'] = $id;
-            $profileModel->insert($profileData);
-
-            log_activity(
-                'Menambahkan profil user',
-                'user',
-                $id
-            );
-        }
-
-        // ======================
         // UPDATE ROLE (ADMIN ONLY)
-        // ======================
         if (session()->get('role') === 'admin') {
             $userModel->update($id, [
                 'role' => $this->request->getPost('role')

@@ -21,7 +21,8 @@ class BarangModel extends Model
         'ram',
         'rom',
         'status',
-        'keterangan'
+        'keterangan',
+        'deleted_at'
     ];
 
     // Ambil data barang + nama kategori

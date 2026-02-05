@@ -31,7 +31,7 @@ class UserModel extends Model
             $this->groupStart()
                 ->like('user.email', $keyword)
                 ->orLike('userprofile.nama', $keyword)
-            ->groupEnd();
+                ->groupEnd();
         }
 
         if ($role) {

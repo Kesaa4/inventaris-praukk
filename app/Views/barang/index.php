@@ -2,6 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Data Barang</title>
 
     <!-- Bootstrap 5 -->
@@ -68,6 +69,9 @@
                     <?php if (session()->get('role') === 'admin'): ?>
                         <a href="<?= base_url('barang/create') ?>" class="btn btn-success ms-auto">
                             Tambah Barang
+                        </a>
+                        <a href="<?= site_url('barang/trash') ?>" class="btn btn-danger ms-auto">
+                            Barang Terhapus
                         </a>
                     <?php endif ?>
                 </div>

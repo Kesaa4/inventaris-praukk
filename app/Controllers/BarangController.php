@@ -137,4 +137,80 @@ class BarangController extends BaseController
         return redirect()->to('/barang')->with('success', 'Data berhasil dihapus.');
     }
 
+    public function trash()
+    {
+        $this->mustAdmin();
+
+        $barangModel = new BarangModel();
+
+        $keyword      = $this->request->getGet('keyword');
+        $deletedDate  = $this->request->getGet('deleted_date');
+
+        $builder = $barangModel->onlyDeleted();
+
+        // keyword search
+        if ($keyword) {
+            $builder->groupStart()
+                ->like('jenis_barang', $keyword)
+                ->orLike('merek_barang', $keyword)
+                ->orLike('tipe_barang', $keyword)
+                ->orLike('kode_barang', $keyword)
+                ->groupEnd();
+        }
+
+        // filter tanggal hapus
+        if ($deletedDate) {
+            $builder->where('DATE(deleted_at)', $deletedDate);
+        }
+
+        $data = [
+            'barang'      => $builder->paginate(10, 'trash'),
+            'pager'       => $barangModel->pager,
+            'keyword'     => $keyword,
+            'deletedDate' => $deletedDate
+        ];
+
+        return view('barang/trash', $data);
+    }
+
+    public function restore($id)
+    {
+        $this->mustAdmin();
+
+        $barangModel = new BarangModel();
+
+        $barangModel
+            ->withDeleted()
+            ->where('id_barang', $id)
+            ->set('deleted_at', null)
+            ->update();
+
+        log_activity(
+            'Restore barang',
+            'barang',
+            $id
+        );
+
+        return redirect()->back()
+            ->with('success', 'Barang berhasil direstore');
+    }
+
+    public function forceDelete($id)
+    {
+        $this->mustAdmin();
+
+        $barangModel = new BarangModel();
+
+        $barangModel->delete($id, true);
+
+        log_activity(
+            'Hapus permanen barang',
+            'barang',
+            $id
+        );
+
+        return redirect()->back()
+            ->with('success', 'Barang dihapus permanen');
+    }
+
 }
