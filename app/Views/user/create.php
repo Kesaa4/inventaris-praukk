@@ -66,7 +66,7 @@
 
                             <div class="d-flex justify-content-between">
                                 <a href="/user" class="btn btn-secondary">
-                                    ← Kembali
+                                    Kembali
                                 </a>
                                 <button type="submit" class="btn btn-success">
                                     Simpan

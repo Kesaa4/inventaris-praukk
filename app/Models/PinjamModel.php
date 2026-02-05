@@ -10,7 +10,7 @@ class PinjamModel extends Model
     protected $primaryKey       = 'id_pinjam';
     protected $useAutoIncrement = true;
     protected $returnType       = 'array';
-    protected $useSoftDeletes   = false;
+    protected $useSoftDeletes   = true;
     protected $protectFields    = true;
     protected $allowedFields    = [
         'id_barang',
@@ -19,7 +19,8 @@ class PinjamModel extends Model
         'tgl_kembali',
         'status',
         'approved_at',
-        'approved_by'
+        'approved_by',
+        'deleted_at'
     ];
 
     protected function initialize()

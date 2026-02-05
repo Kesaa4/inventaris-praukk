@@ -67,7 +67,7 @@
                 <!-- Button -->
                 <div class="d-flex justify-content-between">
                     <a href="/pinjam" class="btn btn-secondary">
-                        ← Kembali
+                        Kembali
                     </a>
 
                     <button type="submit" class="btn btn-success">
