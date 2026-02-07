@@ -59,6 +59,7 @@ class PinjamModel extends Model
             ->join('barang', 'barang.id_barang = pinjam.id_barang')
             ->join('user', 'user.id_user = pinjam.id_user')
             ->where('pinjam.id_pinjam', $id)
+            ->where('pinjam.deleted_at', null)
             ->get()
             ->getRowArray();
     }
