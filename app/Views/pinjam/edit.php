@@ -84,6 +84,16 @@
                     </select>
                 </div>
 
+                <div class="mb-3 d-none" id="alasanBox">
+                    <label class="form-label fw-semibold text-danger">
+                        Alasan Penolakan
+                    </label>
+                    <textarea name="alasan_ditolak"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Masukkan alasan penolakan..."><?= esc($pinjam['alasan_ditolak'] ?? '') ?></textarea>
+                </div>
+
                 <!-- Action -->
                 <div class="d-flex justify-content-between">
                     <a href="<?= base_url('/pinjam') ?>" class="btn btn-secondary">
@@ -100,6 +110,27 @@
     </div>
 
 </div>
-    
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const statusSelect = document.querySelector('select[name="status"]');
+    const alasanBox = document.getElementById('alasanBox');
+    const textarea = alasanBox.querySelector('textarea');
+
+    function toggleAlasan() {
+        if (statusSelect.value === 'ditolak') {
+            alasanBox.classList.remove('d-none');
+            textarea.setAttribute('required', 'required');
+        } else {
+            alasanBox.classList.add('d-none');
+            textarea.removeAttribute('required');
+        }
+    }
+
+    toggleAlasan();
+    statusSelect.addEventListener('change', toggleAlasan);
+});
+</script>
+
 </body>
 </html>

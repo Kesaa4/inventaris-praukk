@@ -18,6 +18,7 @@ class PinjamModel extends Model
         'tgl_pinjam',
         'tgl_kembali',
         'status',
+        'alasan_ditolak',
         'approved_at',
         'approved_by',
         'deleted_at'

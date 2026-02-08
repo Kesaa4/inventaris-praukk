@@ -170,6 +170,12 @@
                                 <span class="badge bg-<?= $statusBadge ?>">
                                     <?= ucfirst($p['status']) ?>
                                 </span>
+
+                                <?php if ($status === 'ditolak' && !empty($p['alasan_ditolak'])): ?>
+                                    <div class="small text-danger mt-1">
+                                        (<?= esc($p['alasan_ditolak']) ?>)
+                                    </div>
+                                <?php endif ?>
                             </td>
 
                             <?php if (in_array(session('role'), ['admin','petugas'])): ?>

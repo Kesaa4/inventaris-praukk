@@ -205,7 +205,11 @@ class PinjamController extends BaseController
         $kodeBarang = $barang['kode_barang'] ?? $pinjam['id_barang'];
 
         $status = $this->request->getPost('status');
-        $data = ['status' => $status];
+        $data = [
+            'status' => $status,
+            'alasan_ditolak' => null
+        ];
+
 
         if ($status === 'disetujui') {
             $data['approved_at'] = date('Y-m-d H:i:s');
@@ -223,12 +227,17 @@ class PinjamController extends BaseController
         }
 
         elseif ($status === 'ditolak') {
+
+            $data['alasan_ditolak'] = $this->request->getPost('alasan_ditolak');
+
             $barangModel->update($pinjam['id_barang'], [
                 'status' => 'tersedia'
             ]);
 
             log_activity(
-                'Menolak peminjaman ' . $namaPeminjam . ' - ' . $kodeBarang,
+                'Menolak peminjaman ' . $namaPeminjam . 
+                '||Barang: ' . $kodeBarang .
+                ';Alasan: ' . $data['alasan_ditolak'],
                 'pinjam',
                 $id
             );
