@@ -108,13 +108,13 @@
                             <th>Merek</th>
                             <th>Tipe</th>
                             <th>Peminjam</th>
-                            <th>Tanggal Pinjam</th>
+                            <th style="width:100px;">Tanggal Pinjam</th>
                             <th>Tanggal Kembali</th>
                             <th>Status</th>
                             <?php if (in_array(session('role'), ['admin','petugas'])): ?>
-                                <th style="width:200px;">Aksi</th>
+                                <th style="width:120px;">Aksi</th>
                             <?php endif ?>
-                            <th>Pengembalian</th>
+                            <th style="width:180px;">Pengembalian</th>
                         </tr>
                     </thead>
                     <tbody>

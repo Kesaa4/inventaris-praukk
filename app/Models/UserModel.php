@@ -15,7 +15,8 @@ class UserModel extends Model
     protected $allowedFields    = [
         'email',
         'password',
-        'role'
+        'role',
+        'status'
     ];
 
     protected function initialize()

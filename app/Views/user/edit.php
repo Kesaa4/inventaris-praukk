@@ -30,15 +30,17 @@
                             <div class="mb-3">
                                 <label class="form-label">Role</label>
                                 <select name="role" class="form-select" required>
-                                    <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>
-                                        Admin
-                                    </option>
-                                    <option value="petugas" <?= $user['role'] === 'petugas' ? 'selected' : '' ?>>
-                                        Petugas
-                                    </option>
-                                    <option value="peminjam" <?= $user['role'] === 'peminjam' ? 'selected' : '' ?>>
-                                        Peminjam
-                                    </option>
+                                    <option value="admin" <?= $user['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
+                                    <option value="petugas" <?= $user['role'] === 'petugas' ? 'selected' : '' ?>>Petugas</option>
+                                    <option value="peminjam" <?= $user['role'] === 'peminjam' ? 'selected' : '' ?>>Peminjam</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-select" required>
+                                    <option value="aktif" <?= $user['status'] === 'aktif' ? 'selected' : '' ?>>Aktif</option>
+                                    <option value="tidak aktif" <?= $user['status'] === 'tidak aktif' ? 'selected' : '' ?>>Tidak Aktif</option>
                                 </select>
                             </div>
 

@@ -89,7 +89,8 @@
                             <th>Email</th>
                             <th>Nama Lengkap</th>
                             <th width="120">Role</th>
-                            <th width="160">Aksi</th>
+                            <th width="120">Status</th>
+                            <th>Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -116,16 +117,21 @@
                                         <?= esc($role) ?>
                                     </span>
                                 </td>
+
+                                <td class="text-center">
+                                    <?php
+                                        $status = $u['status'];
+                                        $badge = $status === 'aktif' ? 'bg-success' : 'bg-danger';
+                                    ?>
+                                    <span class="badge <?= $badge ?>">
+                                        <?= esc($status) ?>
+                                    </span>
+                                </td>
+
                                 <td class="text-center">
                                     <a href="/user/edit/<?= $u['id_user'] ?>"
                                        class="btn btn-sm btn-warning">
                                         Edit
-                                    </a>
-
-                                    <a href="/user/delete/<?= $u['id_user'] ?>"
-                                       class="btn btn-sm btn-danger"
-                                       onclick="return confirm('Yakin hapus user ini?')">
-                                        Hapus
                                     </a>
                                 </td>
                             </tr>

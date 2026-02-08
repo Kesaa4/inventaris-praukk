@@ -64,6 +64,14 @@
                                 </select>
                             </div>
 
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                <select name="status" class="form-select" required>
+                                    <option value="aktif">Aktif</option>
+                                    <option value="tidak aktif">Tidak Aktif</option>
+                                </select>
+                            </div>
+
                             <div class="d-flex justify-content-between">
                                 <a href="/user" class="btn btn-secondary">
                                     Kembali

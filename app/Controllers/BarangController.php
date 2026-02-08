@@ -92,7 +92,8 @@ class BarangController extends BaseController
 
         return view('barang/edit', [
             'barang'    => $barangModel->find($id),
-            'kategori'  => $kategoriModel->findAll()
+            'kategori'  => $kategoriModel->findAll(),
+            'jenis_barang' => $barangModel->getEnumJenisBarang()
         ]);
     }
 
@@ -102,22 +103,57 @@ class BarangController extends BaseController
 
         $barangModel = new BarangModel();
 
-        $kodeBarang = $this->request->getPost('kode_barang');
+        // Data lama
+        $old = $barangModel->find($id);
+        if (!$old) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException();
+        }
 
-        $barangModel->update($id, [
-            'jenis_barang'  => $this->request->getPost('jenis_barang'),
-            'id_kategori'   => $this->request->getPost('id_kategori'),
-            'merek_barang'  => $this->request->getPost('merek_barang'),
-            'tipe_barang'   => $this->request->getPost('tipe_barang'),
-            'kode_barang'   => $kodeBarang,
-            'ram'           => $this->request->getPost('ram'),
-            'rom'           => $this->request->getPost('rom'),
-            'status'        => $this->request->getPost('status'),
-            'keterangan'    => $this->request->getPost('keterangan')
-        ]);
+        // Data baru
+        $new = [
+            'jenis_barang' => $this->request->getPost('jenis_barang'),
+            'id_kategori'  => $this->request->getPost('id_kategori'),
+            'merek_barang' => $this->request->getPost('merek_barang'),
+            'tipe_barang'  => $this->request->getPost('tipe_barang'),
+            'kode_barang'  => $this->request->getPost('kode_barang'),
+            'ram'          => $this->request->getPost('ram'),
+            'rom'          => $this->request->getPost('rom'),
+            'status'       => $this->request->getPost('status'),
+            'keterangan'   => $this->request->getPost('keterangan')
+        ];
+
+        $barangModel->update($id, $new);
+
+        // Bandingkan perubahan
+        $changes = [];
+
+        $kategoriModel = new KategoriModel();
+
+        $kategoriOld = $kategoriModel->find($old['id_kategori']);
+        $kategoriNew = $kategoriModel->find($new['id_kategori']);
+
+        $namaKategoriOld = $kategoriOld['kategori_kondisi'] ?? $old['id_kategori'];
+        $namaKategoriNew = $kategoriNew['kategori_kondisi'] ?? $new['id_kategori'];
+
+        foreach ($new as $field => $value) {
+
+            if (($old[$field] ?? null) != $value) {
+
+                if ($field === 'id_kategori') {
+                    $changes[] = 'Kategori: ' . $namaKategoriOld . ' → ' . $namaKategoriNew;
+                } else {
+                    $label = ucwords(str_replace('_', ' ', $field));
+                    $changes[] = $label . ': ' . ($old[$field] ?? '-') . ' → ' . $value;
+                }
+
+            }
+        }
+
+        // SIMPAN FORMAT POPUP
+        $detail = implode('; ', $changes);
 
         log_activity(
-            'Mengedit barang: '.$kodeBarang,
+            'Mengedit barang: ' . $new['kode_barang'] . ' || ' . $detail,
             'barang',
             $id
         );

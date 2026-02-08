@@ -93,6 +93,10 @@
                                 'peminjam' => 'success',
                                 default => 'secondary'
                             };
+
+                            $split = explode('||', $l['aktivitas']);
+                            $ringkas = trim($split[0]);
+                            $detail  = trim($split[1] ?? '');
                         ?>
 
                         <tr>
@@ -117,8 +121,17 @@
 
                             <td class="text-center">
                                 <span class="badge bg-secondary">
-                                    <?= esc($l['aktivitas']) ?>
+                                    <?= esc($ringkas) ?>
                                 </span>
+
+                                <?php if ($detail): ?>
+                                    <br>
+                                    <button class="btn btn-sm btn-outline-secondary mt-1"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#detailModal<?= $l['id_log'] ?>">
+                                        Detail
+                                    </button>
+                                <?php endif; ?>
                             </td>
 
                             <td class="text-center">
@@ -130,6 +143,29 @@
                             </td>
                         </tr>
 
+                        <?php if ($detail): ?>
+                            <div class="modal fade" id="detailModal<?= $l['id_log'] ?>" tabindex="-1">
+                                <div class="modal-dialog modal-lg modal-dialog-centered">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title"><?= esc($ringkas) ?></h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+
+                                        <div class="modal-body">
+                                            <ul class="list-group list-group-flush">
+                                                <?php foreach (explode(';', $detail) as $row): ?>
+                                                    <li class="list-group-item">
+                                                        <?= esc(trim($row)) ?>
+                                                    </li>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <?php endif; ?>
+                        
                     <?php endforeach ?>
                     </tbody>
                 </table>

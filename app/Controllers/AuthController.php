@@ -20,7 +20,7 @@ class AuthController extends BaseController
     }
 
     public function attemptLogin()
-    {
+    {   
         $userModel = new UserModel();
 
         $email = $this->request->getPost('email');
@@ -28,14 +28,22 @@ class AuthController extends BaseController
 
         $user = $userModel->where('email', $email)->first();
 
+        // Cek email
         if (!$user) {
             return redirect()->back()->with('error', 'Email tidak ditemukan');
         }
 
+        // Cek status user
+        if ($user['status'] !== 'aktif') {
+            return redirect()->back()->with('error', 'Akun anda tidak aktif');
+        }
+
+        // Cek password
         if (!password_verify($password, $user['password'])) {
             return redirect()->back()->with('error', 'Password salah');
         }
-
+        
+        // Set session
         session()->set([
             'id_user'    => $user['id_user'],
             'email'      => $user['email'],
@@ -43,25 +51,30 @@ class AuthController extends BaseController
             'isLoggedIn' => true
         ]);
 
+        // Log activity
         log_activity(
             'Login ke sistem',
             'user',
             $user['id_user']
         );
 
+        // Redirect ke dashboard
         return redirect()->to('/dashboard');
 
     }
 
     public function logout()
     {
+        // Log activity
         log_activity(
             'Logout dari sistem',
             'user',
             session('id_user')
         );
 
+        // Hapus session
         session()->destroy();
+        // Redirect ke halaman login
         return redirect()->to('/')->with('success', 'Berhasil logout');
     }
 

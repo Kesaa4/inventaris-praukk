@@ -76,10 +76,12 @@ class UserController extends BaseController
             'email'    => $this->request->getPost('email'),
             'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
             'role'     => $this->request->getPost('role'),
+            'status'   => $this->request->getPost('status'),
         ]);
 
         log_activity(
-            'Menambah user',
+            'Menambah user ' . $this->request->getPost('nama') .
+            ' (' . $this->request->getPost('role') . ')',
             'user',
             $id
         );
@@ -108,25 +110,56 @@ class UserController extends BaseController
     }
 
     public function update($id)
-    {
-        $userModel = new UserModel();
-        $profileModel = new UserProfileModel();
+{
+    $this->mustAdmin();
 
-        // UPDATE ROLE (ADMIN ONLY)
-        if (session()->get('role') === 'admin') {
-            $userModel->update($id, [
-                'role' => $this->request->getPost('role')
-            ]);
+    $userModel = new UserModel();
+    $profileModel = new UserProfileModel();
 
-            log_activity(
-                'Mengubah role user',
-                'user',
-                $id
-            );
-        }
+    $user = $userModel->find($id);
+    $profile = $profileModel->where('id_user', $id)->first();
 
-        return redirect()->to('/user')->with('success', 'User berhasil diupdate');
+    if (!$user) {
+        throw new \CodeIgniter\Exceptions\PageNotFoundException();
     }
+
+    $nama = $profile['nama'] ?? 'Unknown';
+
+    // DATA LAMA
+    $oldRole   = $user['role'];
+    $oldStatus = $user['status'];
+
+    // DATA BARU
+    $newRole   = $this->request->getPost('role');
+    $newStatus = $this->request->getPost('status');
+
+    $userModel->update($id, [
+        'role'   => $newRole,
+        'status' => $newStatus
+    ]);
+
+    // RANGKAI LOG DETAIL
+    $detail = [];
+
+    if ($oldRole !== $newRole) {
+        $detail[] = "role: $oldRole → $newRole";
+    }
+
+    if ($oldStatus !== $newStatus) {
+        $detail[] = "status: $oldStatus → $newStatus";
+    }
+
+    $detailLog = implode(', ', $detail);
+
+    log_activity(
+        'Mengubah data user ' . $nama . ($detailLog ? " ($detailLog)" : ''),
+        'user',
+        $id
+    );
+
+    return redirect()->to('/user')->with('success', 'User berhasil diupdate');
+}
+
     
     public function delete($id)
     {

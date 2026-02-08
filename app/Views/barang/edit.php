@@ -32,13 +32,15 @@
                     <!-- Jenis Barang -->
                     <div class="col-md-6">
                         <label class="form-label">Jenis Barang</label>
-                        <input
-                            type="text"
-                            name="jenis_barang"
-                            class="form-control"
-                            value="<?= esc($barang['jenis_barang']) ?>"
-                            required
-                        >
+                        <select name="jenis_barang" class="form-select" required>
+                            <option value="">-- Pilih Jenis Barang --</option>
+                            <?php foreach ($jenis_barang as $jenis): ?>
+                                <option value="<?= esc($jenis) ?>"
+                                    <?= ($barang['jenis_barang'] === $jenis) ? 'selected' : '' ?>>
+                                    <?= esc($jenis) ?>
+                                </option>
+                            <?php endforeach ?>
+                        </select>
                     </div>
 
                     <!-- Merek -->
