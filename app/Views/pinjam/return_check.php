@@ -44,6 +44,14 @@
                         <?= esc($pinjam['tipe_barang']) ?>
                     </div>
                 </div>
+
+                <div class="row mb-2">
+                    <div class="col-md-3 fw-semibold">Tgl Pengajuan Return</div>
+                    <div class="col-md-9">
+                        <?= date('d-m-Y H:i', strtotime($pinjam['tgl_pengajuan_kembali'])) ?>
+                    </div>
+                </div>
+
             </div>
 
             <hr>

@@ -146,8 +146,6 @@
 
     <!-- Pagination -->
     <div class="d-flex justify-content-between align-items-center mt-3">
-
-        <!-- Info -->
         <div>
             Total Data: <b><?= $pager->getTotal('trash') ?></b> |
             Per Page: <b><?= $pager->getPerPage('trash') ?></b> |
@@ -155,7 +153,6 @@
             <?= $pager->getPageCount('trash') ?>
         </div>
 
-        <!-- Navigasi -->
         <div>
             <?php
                 $currentPage = $pager->getCurrentPage('trash');
@@ -165,9 +162,9 @@
                 $start = max(1, $currentPage - $range);
                 $end   = min($pageCount, $currentPage + $range);
 
-                $jump = ($range * 2) + 1;
+                $jump = ($range * 4) + 1;
 
-                // TAMBAHAN FILTER QUERY STRING
+                //Tambahan Filter Query String
                 $queryString = http_build_query([
                     'keyword'      => $keyword ?? null,
                     'deleted_date' => $deletedDate ?? null
@@ -177,57 +174,74 @@
 
             <?php if ($pageCount > 1): ?>
             <nav aria-label="Pagination Barang Terhapus">
-                <ul class="pagination pagination-sm justify-content-end mb-0">
+                <ul class="pagination pagination-sm justify-content-end">
 
                     <!-- Sebelumnya -->
                     <li class="page-item <?= ($currentPage == 1) ? 'disabled' : '' ?>">
                         <a class="page-link"
                         href="<?= ($currentPage > 1)
-                                ? $pager->getPageURI($currentPage - 1, 'trash') . $queryString
+                                ? $pager->getPageURI($currentPage - 1, 'trash')
                                 : '#' ?>">
-                            Sebelumnya
+                            ‹
                         </a>
                     </li>
 
-                    <!-- Titik kiri -->
+                    <!-- Page Pertama -->
+                    <li class="page-item <?= (1 == $currentPage) ? 'active' : '' ?>">
+                        <a class="page-link" href="<?= $pager->getPageURI(1, 'trash') ?>">1</a>
+                    </li>
+
+                    <!-- TITIK KIRI -->
                     <?php if ($start > 1): ?>
                         <?php $prevJump = max(1, $currentPage - $jump); ?>
                         <li class="page-item">
                             <a class="page-link"
-                            href="<?= $pager->getPageURI($prevJump, 'trash') . $queryString ?>">
+                            href="<?= $pager->getPageURI($prevJump, 'trash') ?>"
+                            title="Lompat ke halaman <?= $prevJump ?>">
                                 ...
                             </a>
                         </li>
                     <?php endif ?>
 
-                    <!-- Nomor halaman -->
+                    <!-- Nomor Halaman -->
                     <?php for ($i = $start; $i <= $end; $i++): ?>
+                        <?php if ($i > 1 && $i < $pageCount): ?>
                         <li class="page-item <?= ($i == $currentPage) ? 'active' : '' ?>">
-                            <a class="page-link"
-                            href="<?= $pager->getPageURI($i, 'trash') . $queryString ?>">
+                            <a class="page-link" href="<?= $pager->getPageURI($i, 'trash') ?>">
                                 <?= $i ?>
                             </a>
                         </li>
+                        <?php endif ?>
                     <?php endfor ?>
 
-                    <!-- Titik kanan -->
+                    <!-- TITIK KANAN -->
                     <?php if ($end < $pageCount): ?>
                         <?php $nextJump = min($pageCount, $currentPage + $jump); ?>
                         <li class="page-item">
                             <a class="page-link"
-                            href="<?= $pager->getPageURI($nextJump, 'trash') . $queryString ?>">
+                            href="<?= $pager->getPageURI($nextJump, 'trash') ?>"
+                            title="Lompat ke halaman <?= $nextJump ?>">
                                 ...
                             </a>
                         </li>
+                    <?php endif ?>
+
+                    <!-- Last page -->
+                    <?php if ($pageCount > 1): ?>
+                    <li class="page-item <?= ($pageCount == $currentPage) ? 'active' : '' ?>">
+                        <a class="page-link" href="<?= $pager->getPageURI($pageCount, 'trash') ?>">
+                            <?= $pageCount ?>
+                        </a>
+                    </li>
                     <?php endif ?>
 
                     <!-- Selanjutnya -->
                     <li class="page-item <?= ($currentPage == $pageCount) ? 'disabled' : '' ?>">
                         <a class="page-link"
                         href="<?= ($currentPage < $pageCount)
-                                ? $pager->getPageURI($currentPage + 1, 'trash') . $queryString
+                                ? $pager->getPageURI($currentPage + 1, 'trash')
                                 : '#' ?>">
-                            Selanjutnya
+                            ›
                         </a>
                     </li>
 

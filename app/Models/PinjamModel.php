@@ -15,8 +15,10 @@ class PinjamModel extends Model
     protected $allowedFields    = [
         'id_barang',
         'id_user',
-        'tgl_pinjam',
-        'tgl_kembali',
+        'tgl_pengajuan',
+        'tgl_disetujui',
+        'tgl_pengajuan_kembali',
+        'tgl_disetujui_kembali',
         'status',
         'alasan_ditolak',
         'approved_at',
@@ -32,6 +34,7 @@ class PinjamModel extends Model
             barang.jenis_barang,
             barang.merek_barang,
             barang.tipe_barang,
+            barang.kode_barang,
             user.email
         ')
         ->join('barang', 'barang.id_barang = pinjam.id_barang', 'left')
@@ -55,6 +58,7 @@ class PinjamModel extends Model
                 barang.jenis_barang,
                 barang.merek_barang,
                 barang.tipe_barang,
+                barang.kode_barang,
                 user.email
             ')
             ->join('barang', 'barang.id_barang = pinjam.id_barang')
@@ -75,6 +79,7 @@ class PinjamModel extends Model
                 ->like('barang.jenis_barang', $filters['keyword'])
                 ->orLike('barang.merek_barang', $filters['keyword'])
                 ->orLike('barang.tipe_barang', $filters['keyword'])
+                ->orLike('barang.kode_barang', $filters['keyword'])
                 ->orLike('user.email', $filters['keyword'])
             ->groupEnd();
         }
@@ -83,12 +88,12 @@ class PinjamModel extends Model
             $this->where('pinjam.status', $filters['status']);
         }
 
-        if (!empty($filters['tgl_pinjam'])) {
-            $this->where('DATE(pinjam.tgl_pinjam)', $filters['tgl_pinjam']);
+        if (!empty($filters['tgl_pengajuan'])) {
+            $this->where('DATE(pinjam.tgl_pengajuan)', $filters['tgl_pengajuan']);
         }
 
-        if (!empty($filters['tgl_kembali'])) {
-            $this->where('DATE(pinjam.tgl_kembali)', $filters['tgl_kembali']);
+        if (!empty($filters['tgl_disetujui_kembali'])) {
+            $this->where('DATE(pinjam.tgl_disetujui_kembali)', $filters['tgl_disetujui_kembali']);
         }
 
         return $this->orderBy('pinjam.created_at', 'DESC');

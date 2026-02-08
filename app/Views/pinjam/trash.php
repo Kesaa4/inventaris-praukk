@@ -46,7 +46,7 @@
                         type="text"
                         name="keyword"
                         class="form-control"
-                        placeholder="Barang / Email"
+                        placeholder="Barang atau email.."
                         value="<?= esc($filters['keyword'] ?? '') ?>"
                     >
                 </div>
@@ -71,14 +71,14 @@
                     </select>
                 </div>
 
-                <!-- Tgl Pinjam -->
+                <!-- Tgl Pengajuan -->
                 <div class="col-md-2">
-                    <label class="form-label">Tanggal Pinjam</label>
+                    <label class="form-label">Tanggal Pengajuan</label>
                     <input
                         type="date"
-                        name="tgl_pinjam"
+                        name="tgl_pengajuan"
                         class="form-control"
-                        value="<?= esc($filters['tgl_pinjam'] ?? '') ?>"
+                        value="<?= esc($filters['tgl_pengajuan'] ?? '') ?>"
                     >
                 </div>
 
@@ -87,9 +87,9 @@
                     <label class="form-label">Tanggal Kembali</label>
                     <input
                         type="date"
-                        name="tgl_kembali"
+                        name="tgl_disetujui_kembali"
                         class="form-control"
-                        value="<?= esc($filters['tgl_kembali'] ?? '') ?>"
+                        value="<?= esc($filters['tgl_disetujui_kembali'] ?? '') ?>"
                     >
                 </div>
 
@@ -116,10 +116,12 @@
                     <thead class="table-dark text-center">
                         <tr class="align-middle">
                             <th style="width:50px;">No</th>
-                            <th>Barang</th>
+                            <th style="min-width:170px" class="text-nowrap text-center">Barang</th>
                             <th>Peminjam</th>
-                            <th>Tanggal Pinjam</th>
-                            <th>Tanggal Kembali</th>
+                            <th style="min-width:170px" class="text-nowrap text-center">Pengajuan Peminjaman</th>
+                            <th style="min-width:170px" class="text-nowrap text-center">Peminjaman Disetujui</th>
+                            <th style="min-width:190px" class="text-nowrap text-center">Ajukan Pengembalian</th>
+                            <th style="min-width:200px" class="text-nowrap text-center">Pengembalian Disetujui</th>
                             <th>Status</th>
                             <th>Dihapus Pada</th>
                             <th style="width:180px;">Aksi</th>
@@ -138,28 +140,49 @@
                         <?php foreach ($pinjam as $i => $p): ?>
                         <tr>
                             <td class="text-center"><?= $i + 1 ?></td>
-                            <td>
-                                <?= esc($p['jenis_barang'].' '.$p['merek_barang'].' '.$p['tipe_barang']) ?>
+
+                            <td class="text-nowrap text-center">
+                                <?= esc($p['jenis_barang'].' '.$p['merek_barang'].' '.$p['tipe_barang'].' '.$p['kode_barang']) ?>
                             </td>
+
                             <td><?= esc($p['email']) ?></td>
-                            <td class="text-center">
-                                <?= date('d-m-Y', strtotime($p['tgl_pinjam'])) ?>
-                            </td>
-                            <td class="text-center">
-                                <?= $p['tgl_kembali']
-                                    ? date('d-m-Y', strtotime($p['tgl_kembali']))
+
+                            <td class="text-nowrap text-center">
+                                <?= $p['tgl_pengajuan']
+                                    ? date('d-m-Y H:i', strtotime($p['tgl_pengajuan']))
                                     : '-' ?>
                             </td>
+
+                            <td class="text-nowrap text-center">
+                                <?= $p['tgl_disetujui']
+                                    ? date('d-m-Y H:i', strtotime($p['tgl_disetujui']))
+                                    : '-' ?>
+                            </td>
+
+                            <td class="text-nowrap text-center">
+                                <?= $p['tgl_pengajuan_kembali']
+                                    ? date('d-m-Y H:i', strtotime($p['tgl_pengajuan_kembali']))
+                                    : '-' ?>
+                            </td>
+
+                            <td class="text-center">
+                                <?= $p['tgl_disetujui_kembali']
+                                    ? date('d-m-Y', strtotime($p['tgl_disetujui_kembali']))
+                                    : '-' ?>
+                            </td>
+
                             <td class="text-center">
                                 <span class="badge bg-secondary">
                                     <?= esc($p['status']) ?>
                                 </span>
                             </td>
+
                             <td class="text-center">
                                 <span class="badge bg-danger">
                                     <?= date('d-m-Y H:i', strtotime($p['deleted_at'])) ?>
                                 </span>
                             </td>
+
                             <td>
                                 <div class="d-flex gap-1 justify-content-center">
                                     <a href="<?= site_url('pinjam/restore/'.$p['id_pinjam']) ?>"
@@ -186,8 +209,6 @@
 
     <!-- Pagination -->
     <div class="d-flex justify-content-between align-items-center mt-3">
-
-        <!-- Info -->
         <div>
             Total Data: <b><?= $pager->getTotal('trash') ?></b> |
             Per Page: <b><?= $pager->getPerPage('trash') ?></b> |
@@ -195,7 +216,6 @@
             <?= $pager->getPageCount('trash') ?>
         </div>
 
-        <!-- Navigasi -->
         <div>
             <?php
                 $currentPage = $pager->getCurrentPage('trash');
@@ -204,40 +224,82 @@
 
                 $start = max(1, $currentPage - $range);
                 $end   = min($pageCount, $currentPage + $range);
-                $jump  = ($range * 2) + 1;
 
                 $queryString = http_build_query(array_filter($filters));
                 $queryString = $queryString ? '&' . $queryString : '';
+                $jump = ($range * 4) + 1;
             ?>
 
             <?php if ($pageCount > 1): ?>
-            <nav>
-                <ul class="pagination pagination-sm mb-0">
+            <nav aria-label="Pagination Peminjaman Terhapus">
+                <ul class="pagination pagination-sm justify-content-end">
 
+                    <!-- Sebelumnya -->
                     <li class="page-item <?= ($currentPage == 1) ? 'disabled' : '' ?>">
                         <a class="page-link"
                         href="<?= ($currentPage > 1)
-                            ? $pager->getPageURI($currentPage - 1, 'trash') . $queryString
-                            : '#' ?>">
-                            Sebelumnya
+                                ? $pager->getPageURI($currentPage - 1, 'trash')
+                                : '#' ?>">
+                            ‹
                         </a>
                     </li>
 
-                    <?php for ($i = $start; $i <= $end; $i++): ?>
-                        <li class="page-item <?= ($i == $currentPage) ? 'active' : '' ?>">
+                    <!-- Page Pertama -->
+                    <li class="page-item <?= (1 == $currentPage) ? 'active' : '' ?>">
+                        <a class="page-link" href="<?= $pager->getPageURI(1, 'trash') ?>">1</a>
+                    </li>
+
+                    <!-- TITIK KIRI -->
+                    <?php if ($start > 1): ?>
+                        <?php $prevJump = max(1, $currentPage - $jump); ?>
+                        <li class="page-item">
                             <a class="page-link"
-                               href="<?= $pager->getPageURI($i, 'trash') . $queryString ?>">
+                            href="<?= $pager->getPageURI($prevJump, 'trash') ?>"
+                            title="Lompat ke halaman <?= $prevJump ?>">
+                                ...
+                            </a>
+                        </li>
+                    <?php endif ?>
+
+                    <!-- Nomor Halaman -->
+                    <?php for ($i = $start; $i <= $end; $i++): ?>
+                        <?php if ($i > 1 && $i < $pageCount): ?>
+                        <li class="page-item <?= ($i == $currentPage) ? 'active' : '' ?>">
+                            <a class="page-link" href="<?= $pager->getPageURI($i, 'trash') ?>">
                                 <?= $i ?>
                             </a>
                         </li>
+                        <?php endif ?>
                     <?php endfor ?>
 
+                    <!-- TITIK KANAN -->
+                    <?php if ($end < $pageCount): ?>
+                        <?php $nextJump = min($pageCount, $currentPage + $jump); ?>
+                        <li class="page-item">
+                            <a class="page-link"
+                            href="<?= $pager->getPageURI($nextJump, 'trash') ?>"
+                            title="Lompat ke halaman <?= $nextJump ?>">
+                                ...
+                            </a>
+                        </li>
+                    <?php endif ?>
+
+                    <!-- Last page -->
+                    <?php if ($pageCount > 1): ?>
+                    <li class="page-item <?= ($pageCount == $currentPage) ? 'active' : '' ?>">
+                        <a class="page-link" href="<?= $pager->getPageURI($pageCount, 'trash') ?>">
+                            <?= $pageCount ?>
+                        </a>
+                    </li>
+                    <?php endif ?>
+
+                    <!-- Selanjutnya -->
                     <li class="page-item <?= ($currentPage == $pageCount) ? 'disabled' : '' ?>">
                         <a class="page-link"
                         href="<?= ($currentPage < $pageCount)
-                            ? $pager->getPageURI($currentPage + 1, 'trash') . $queryString
-                            : '#' ?>">
-                            Selanjutnya
+                                ? $pager->getPageURI($currentPage + 1, 'trash')
+                                : '#' ?>">
+                            ›
                         </a>
                     </li>
 

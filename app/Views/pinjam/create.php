@@ -59,6 +59,7 @@
                                 <?= esc($b['jenis_barang']) ?>
                                 - <?= esc($b['merek_barang']) ?>
                                 - <?= esc($b['tipe_barang']) ?>
+                                - <?= esc($b['kode_barang']) ?>
                             </option>
                         <?php endforeach ?>
                     </select>

@@ -57,14 +57,14 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label">Tanggal Pinjam</label>
-                    <input type="date" name="tgl_pinjam" class="form-control"
-                        value="<?= esc(request()->getGet('tgl_pinjam')) ?>">
+                    <label class="form-label">Tanggal Pengajuan</label>
+                    <input type="date" name="tgl_pengajuan" class="form-control"
+                        value="<?= esc(request()->getGet('tgl_pengajuan')) ?>">
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label">Tanggal Kembali</label>
-                    <input type="date" name="tgl_kembali" class="form-control"
+                    <input type="date" name="tgl_disetujui_kembali" class="form-control"
                         value="<?= esc(request()->getGet('tgl_kembali')) ?>">
                 </div>
 
@@ -101,20 +101,23 @@
         <div class="card-body p-0">
 
             <div class="table-responsive">
-                <table class="table table-bordered table-hover align-middle mb-0">
+                <table class="table table-bordered table-hover table-striped align-middle mb-0">
                     <thead class="table-primary text-center">
                         <tr class="align-middle">
-                            <th>Barang</th>
-                            <th>Merek</th>
-                            <th>Tipe</th>
-                            <th>Peminjam</th>
-                            <th style="width:100px;">Tanggal Pinjam</th>
-                            <th>Tanggal Kembali</th>
+                            <th>Jenis Barang</th>
+                            <th>Merek Barang</th>
+                            <th style="min-width:170px" class="text-nowrap text-center">Tipe Barang</th>
+                            <th>Kode Barang</th>
+                            <th>Nama Peminjam</th>
+                            <th style="min-width:170px" class="text-nowrap text-center">Pengajuan Peminjaman</th>
+                            <th style="min-width:170px" class="text-nowrap text-center">Peminjaman Disetujui</th>
+                            <th style="min-width:190px" class="text-nowrap text-center">Ajukan Pengembalian</th>
+                            <th style="min-width:200px" class="text-nowrap text-center">Pengembalian Disetujui</th>
                             <th>Status</th>
                             <?php if (in_array(session('role'), ['admin','petugas'])): ?>
-                                <th style="width:120px;">Aksi</th>
+                                <th style="width:190px;">Aksi</th>
                             <?php endif ?>
-                            <th style="width:180px;">Pengembalian</th>
+                            <th style="width:120px;">Pengembalian</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -138,25 +141,43 @@
                                 <strong><?= esc($p['jenis_barang']) ?></strong>
                             </td>
 
-                            <td class="text-center">
+                            <td class="text-nowrap text-center">
                                 <?= esc($p['merek_barang']) ?>
                             </td>
 
-                            <td class="text-center">
+                            <td class="text-nowrap text-center">
                                 <?= esc($p['tipe_barang']) ?>
                             </td>
+                            
+                            <td class="text-nowrap text-center">
+                                <?= esc($p['kode_barang']) ?>
+                            </td>
 
-                            <td>
+                            <td class="text-nowrap text-center">
                                 <?= esc(explode('@', $p['email'])[0]) ?>
                             </td>
 
-                            <td class="text-center">
-                                <?= date('d-m-Y', strtotime($p['tgl_pinjam'])) ?>
+                            <td class="text-nowrap text-center">
+                                <?= $p['tgl_pengajuan']
+                                    ? date('d-m-Y H:i', strtotime($p['tgl_pengajuan']))
+                                    : '-' ?>
                             </td>
 
-                            <td class="text-center">
+                            <td class="text-nowrap text-center">
+                                <?= $p['tgl_disetujui']
+                                    ? date('d-m-Y H:i', strtotime($p['tgl_disetujui']))
+                                    : '-' ?>
+                            </td>
+
+                            <td class="text-nowrap text-center">
+                                <?= $p['tgl_pengajuan_kembali']
+                                    ? date('d-m-Y H:i', strtotime($p['tgl_pengajuan_kembali']))
+                                    : '-' ?>
+                            </td>
+
+                            <td class="text-nowrap text-center">
                                 <?php if ($status === 'dikembalikan'): ?>
-                                    <?= date('d-m-Y', strtotime($p['tgl_kembali'])) ?>
+                                    <?= date('d-m-Y H:i', strtotime($p['tgl_disetujui_kembali'])) ?>
                                 <?php elseif ($status === 'pengembalian'): ?>
                                     <span class="fw-semibold">
                                         Menunggu konfirmasi
@@ -166,7 +187,7 @@
                                 <?php endif ?>
                             </td>
 
-                            <td class="text-center">
+                            <td class="text-nowrap text-center">
                                 <span class="badge bg-<?= $statusBadge ?>">
                                     <?= ucfirst($p['status']) ?>
                                 </span>
@@ -179,9 +200,9 @@
                             </td>
 
                             <?php if (in_array(session('role'), ['admin','petugas'])): ?>
-                            <td class="text-center">
+                            <td class="text-nowrap text-center">
                                 <a href="/pinjam/edit/<?= $p['id_pinjam'] ?>"
-                                   class="btn btn-warning btn-sm mb-1">
+                                   class="btn btn-warning btn-sm">
                                     Ubah Status
                                 </a>
 
@@ -195,7 +216,7 @@
                             </td>
                             <?php endif ?>
 
-                            <td class="text-center">
+                            <td class="text-nowrap text-center">
 
                                 <!-- PEMINJAM -->
                                 <?php if (session('role') === 'peminjam' && $status === 'disetujui'): ?>
@@ -245,13 +266,12 @@
             <?php
                 $currentPage = $pager->getCurrentPage('pinjam');
                 $pageCount   = $pager->getPageCount('pinjam');
-                $range       = 1; // kiri + current + kanan = 3 halaman
+                $range       = 1;
 
                 $start = max(1, $currentPage - $range);
                 $end   = min($pageCount, $currentPage + $range);
-                
-                // jumlah halaman yang dilompati
-                $jump = ($range * 2) + 1;
+
+                $jump = ($range * 4) + 1;
             ?>
 
             <?php if ($pageCount > 1): ?>
@@ -264,16 +284,21 @@
                         href="<?= ($currentPage > 1)
                                 ? $pager->getPageURI($currentPage - 1, 'pinjam')
                                 : '#' ?>">
-                            Sebelumnya
+                            ‹
                         </a>
                     </li>
 
-                    <!-- TITIK-TITIK KIRI (klik = lompat ke belakang) -->
+                    <!-- Page Pertama -->
+                    <li class="page-item <?= (1 == $currentPage) ? 'active' : '' ?>">
+                        <a class="page-link" href="<?= $pager->getPageURI(1, 'pinjam') ?>">1</a>
+                    </li>
+
+                    <!-- TITIK KIRI -->
                     <?php if ($start > 1): ?>
                         <?php $prevJump = max(1, $currentPage - $jump); ?>
                         <li class="page-item">
                             <a class="page-link"
-                            href="<?= $pager->getPageURI($prevJump, 'log') ?>"
+                            href="<?= $pager->getPageURI($prevJump, 'pinjam') ?>"
                             title="Lompat ke halaman <?= $prevJump ?>">
                                 ...
                             </a>
@@ -282,24 +307,34 @@
 
                     <!-- Nomor Halaman -->
                     <?php for ($i = $start; $i <= $end; $i++): ?>
+                        <?php if ($i > 1 && $i < $pageCount): ?>
                         <li class="page-item <?= ($i == $currentPage) ? 'active' : '' ?>">
-                            <a class="page-link"
-                            href="<?= $pager->getPageURI($i, 'pinjam') ?>">
+                            <a class="page-link" href="<?= $pager->getPageURI($i, 'pinjam') ?>">
                                 <?= $i ?>
                             </a>
                         </li>
+                        <?php endif ?>
                     <?php endfor ?>
 
-                    <!-- TITIK-TITIK KANAN (klik = lompat ke depan) -->
+                    <!-- TITIK KANAN -->
                     <?php if ($end < $pageCount): ?>
                         <?php $nextJump = min($pageCount, $currentPage + $jump); ?>
                         <li class="page-item">
                             <a class="page-link"
-                            href="<?= $pager->getPageURI($nextJump, 'log') ?>"
+                            href="<?= $pager->getPageURI($nextJump, 'pinjam') ?>"
                             title="Lompat ke halaman <?= $nextJump ?>">
                                 ...
                             </a>
                         </li>
+                    <?php endif ?>
+
+                    <!-- Last page -->
+                    <?php if ($pageCount > 1): ?>
+                    <li class="page-item <?= ($pageCount == $currentPage) ? 'active' : '' ?>">
+                        <a class="page-link" href="<?= $pager->getPageURI($pageCount, 'pinjam') ?>">
+                            <?= $pageCount ?>
+                        </a>
+                    </li>
                     <?php endif ?>
 
                     <!-- Selanjutnya -->
@@ -308,7 +343,7 @@
                         href="<?= ($currentPage < $pageCount)
                                 ? $pager->getPageURI($currentPage + 1, 'pinjam')
                                 : '#' ?>">
-                            Selanjutnya
+                            ›
                         </a>
                     </li>
 

@@ -58,8 +58,8 @@ class PinjamController extends BaseController
         $filters = [
             'keyword'     => $this->request->getGet('keyword'),
             'status'      => $this->request->getGet('status'),
-            'tgl_pinjam'  => $this->request->getGet('tgl_pinjam'),
-            'tgl_kembali' => $this->request->getGet('tgl_kembali'),
+            'tgl_pengajuan'  => $this->request->getGet('tgl_pengajuan'),
+            'tgl_disetujui_kembali' => $this->request->getGet('tgl_disetujui_kembali'),
         ];
 
         $isFilter = array_filter($filters);
@@ -149,7 +149,7 @@ class PinjamController extends BaseController
             'id_barang'  => $idBarang,
             'id_user'    => $idUserPeminjam,      // PEMINJAM
             'created_by' => session('id_user'),   // YANG INPUT
-            'tgl_pinjam' => date('Y-m-d'),
+            'tgl_pengajuan' => date('Y-m-d H:i:s'),
             'status'     => 'menunggu'
         ]);
 
@@ -212,6 +212,7 @@ class PinjamController extends BaseController
 
 
         if ($status === 'disetujui') {
+            $data['tgl_disetujui'] = date('Y-m-d H:i:s');
             $data['approved_at'] = date('Y-m-d H:i:s');
             $data['approved_by'] = session('id_user');
 
@@ -315,7 +316,8 @@ class PinjamController extends BaseController
         $kodeBarang = $barang['kode_barang'] ?? $pinjam['id_barang'];
 
         $pinjamModel->update($id, [
-            'status' => 'pengembalian'
+            'status' => 'pengembalian',
+            'tgl_pengajuan_kembali' => date('Y-m-d H:i:s')
         ]);
 
         log_activity(
@@ -361,8 +363,8 @@ class PinjamController extends BaseController
 
         // update pinjam
         $pinjamModel->update($id, [
-            'status'      => $status,
-            'tgl_kembali'=> date('Y-m-d')
+            'status' => $status,
+            'tgl_disetujui_kembali' => date('Y-m-d H:i:s')
         ]);
 
         // update barang + log
@@ -391,8 +393,8 @@ class PinjamController extends BaseController
         $filters = [
             'keyword'     => $this->request->getGet('keyword'),
             'status'      => $this->request->getGet('status'),
-            'tgl_pinjam'  => $this->request->getGet('tgl_pinjam'),
-            'tgl_kembali' => $this->request->getGet('tgl_kembali'),
+            'tgl_pengajuan'  => $this->request->getGet('tgl_pengajuan'),
+            'tgl_disetujui_kembali' => $this->request->getGet('tgl_disetujui_kembali'),
         ];
 
         $pinjamModel->onlyDeleted();

@@ -47,9 +47,9 @@
                     </div>
 
                     <div class="row mb-2">
-                        <div class="col-md-3 fw-semibold">Tanggal Pinjam</div>
+                        <div class="col-md-3 fw-semibold">Tanggal Pengajuan</div>
                         <div class="col-md-9">
-                            <?= date('d-m-Y', strtotime($pinjam['tgl_pinjam'])) ?>
+                            <?= date('d-m-Y H:i', strtotime($pinjam['tgl_pengajuan'])) ?>
                         </div>
                     </div>
                 </div>

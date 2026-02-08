@@ -163,13 +163,12 @@
             <?php
                 $currentPage = $pager->getCurrentPage('user');
                 $pageCount   = $pager->getPageCount('user');
-                $range       = 1; // 1 kiri + current + 1 kanan = 3 total
+                $range       = 1;
 
                 $start = max(1, $currentPage - $range);
                 $end   = min($pageCount, $currentPage + $range);
-                
-                // jumlah halaman yang dilompati
-                $jump = ($range * 2) + 1;
+
+                $jump = ($range * 4) + 1;
             ?>
 
             <?php if ($pageCount > 1): ?>
@@ -182,16 +181,21 @@
                         href="<?= ($currentPage > 1)
                                 ? $pager->getPageURI($currentPage - 1, 'user')
                                 : '#' ?>">
-                            Sebelumnya
+                            ‹
                         </a>
                     </li>
 
-                    <!-- TITIK-TITIK KIRI (klik = lompat ke belakang) -->
+                    <!-- Page Pertama -->
+                    <li class="page-item <?= (1 == $currentPage) ? 'active' : '' ?>">
+                        <a class="page-link" href="<?= $pager->getPageURI(1, 'user') ?>">1</a>
+                    </li>
+
+                    <!-- TITIK KIRI -->
                     <?php if ($start > 1): ?>
                         <?php $prevJump = max(1, $currentPage - $jump); ?>
                         <li class="page-item">
                             <a class="page-link"
-                            href="<?= $pager->getPageURI($prevJump, 'log') ?>"
+                            href="<?= $pager->getPageURI($prevJump, 'user') ?>"
                             title="Lompat ke halaman <?= $prevJump ?>">
                                 ...
                             </a>
@@ -200,24 +204,34 @@
 
                     <!-- Nomor Halaman -->
                     <?php for ($i = $start; $i <= $end; $i++): ?>
+                        <?php if ($i > 1 && $i < $pageCount): ?>
                         <li class="page-item <?= ($i == $currentPage) ? 'active' : '' ?>">
-                            <a class="page-link"
-                            href="<?= $pager->getPageURI($i, 'user') ?>">
+                            <a class="page-link" href="<?= $pager->getPageURI($i, 'user') ?>">
                                 <?= $i ?>
                             </a>
                         </li>
+                        <?php endif ?>
                     <?php endfor ?>
 
-                    <!-- TITIK-TITIK KANAN (klik = lompat ke depan) -->
+                    <!-- TITIK KANAN -->
                     <?php if ($end < $pageCount): ?>
                         <?php $nextJump = min($pageCount, $currentPage + $jump); ?>
                         <li class="page-item">
                             <a class="page-link"
-                            href="<?= $pager->getPageURI($nextJump, 'log') ?>"
+                            href="<?= $pager->getPageURI($nextJump, 'user') ?>"
                             title="Lompat ke halaman <?= $nextJump ?>">
                                 ...
                             </a>
                         </li>
+                    <?php endif ?>
+
+                    <!-- Last page -->
+                    <?php if ($pageCount > 1): ?>
+                    <li class="page-item <?= ($pageCount == $currentPage) ? 'active' : '' ?>">
+                        <a class="page-link" href="<?= $pager->getPageURI($pageCount, 'user') ?>">
+                            <?= $pageCount ?>
+                        </a>
+                    </li>
                     <?php endif ?>
 
                     <!-- Selanjutnya -->
@@ -226,7 +240,7 @@
                         href="<?= ($currentPage < $pageCount)
                                 ? $pager->getPageURI($currentPage + 1, 'user')
                                 : '#' ?>">
-                            Selanjutnya
+                            ›
                         </a>
                     </li>
 
