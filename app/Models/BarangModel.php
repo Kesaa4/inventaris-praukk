@@ -25,6 +25,12 @@ class BarangModel extends Model
         'deleted_at'
     ];
 
+    // Ambil data barang berdasarkan kategori
+    public function getByKategori($id_kategori)
+    {
+        return $this->where('id_kategori', $id_kategori)->findAll();
+    }
+
     // Ambil data barang + nama kategori
     public function getBarangWithCategory()
     {
@@ -50,9 +56,11 @@ class BarangModel extends Model
     // Search + Filter + Pagination
     public function getBarangFiltered($keyword = null, $kategori = null)
     {
+        // Membangun query dasar dengan join ke tabel kategori
         $builder = $this->select('barang.*, kategori.kategori_kondisi')
                         ->join('kategori', 'kategori.id_kategori = barang.id_kategori');
 
+        // Menambahkan kondisi pencarian jika ada keyword
         if ($keyword) {
             $builder->groupStart()
                     ->like('jenis_barang', $keyword)
@@ -64,7 +72,7 @@ class BarangModel extends Model
                     ->orLike('rom', $keyword)
                     ->groupEnd();
         }
-
+        // Menambahkan filter kategori
         if ($kategori) {
             $builder->where('barang.id_kategori', $kategori);
         }

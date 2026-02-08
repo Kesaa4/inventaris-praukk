@@ -54,7 +54,7 @@ class ActivityLogModel extends Model
             ->like('userprofile.nama', $keyword)
             ->orLike('user.email', $keyword)
             ->orLike('activity_log.aktivitas', $keyword)
-        ->groupEnd();
+            ->groupEnd();
     }
 
     if ($role) {

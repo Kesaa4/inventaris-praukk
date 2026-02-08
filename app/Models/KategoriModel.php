@@ -16,6 +16,11 @@ class KategoriModel extends Model
         'kategori_kondisi'
     ];
 
+    public function getAllKategori()
+    {
+        return $this->findAll();
+    }
+
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
 

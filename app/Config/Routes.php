@@ -46,8 +46,6 @@ $routes->group('barang', ['filter' => 'admin'], function ($routes) {
     $routes->get('trash', 'BarangController::trash');
     $routes->get('restore/(:num)', 'BarangController::restore/$1');
     $routes->get('force-delete/(:num)', 'BarangController::forceDelete/$1');
-
-
 });
 
 $routes->group('pinjam', ['filter' => 'auth'], function ($routes) {
@@ -65,8 +63,10 @@ $routes->group('pinjam', ['filter' => 'auth'], function ($routes) {
     $routes->get('trash', 'PinjamController::trash');
     $routes->get('restore/(:num)', 'PinjamController::restore/$1');
     $routes->get('force-delete/(:num)', 'PinjamController::forceDelete/$1');
-
 });
 
-
+$routes->group('kategori', ['filter' => 'admin'], function ($routes) {
+    $routes->get('/', 'KategoriController::index');
+    $routes->get('(:num)', 'KategoriController::show/$1');
+});
 

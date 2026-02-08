@@ -21,7 +21,6 @@ class BarangController extends BaseController
         $barangModel->getBarangFiltered($keyword, $kategori);
 
         // PAGINATE DARI barangModel
-        // ->withDeleted() ini buat nampilin dengan barang yang udah dihapus
         $data = [
             'title'     => 'Data Barang',
             'barang'    => $barangModel->paginate(10, 'barang'),

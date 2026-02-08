@@ -46,6 +46,9 @@
                     <a href="<?= base_url('activity-log') ?>" class="list-group-item list-group-item-action">
                         Activity Log
                     </a>
+                    <a href="<?= base_url('kategori') ?>" class="list-group-item list-group-item-action">
+                        Kategori Barang
+                    </a>
                 <?php endif ?>
 
                 <a href="<?= base_url('profile') ?>" class="list-group-item list-group-item-action">
