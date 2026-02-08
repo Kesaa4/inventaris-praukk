@@ -115,7 +115,7 @@
                 <!-- Action -->
                 <div class="mt-4 d-flex gap-2">
                     <button type="submit" class="btn btn-success">
-                        Simpan
+                        Tambah
                     </button>
                     <a href="<?= base_url('barang') ?>" class="btn btn-outline-secondary">
                         Batal

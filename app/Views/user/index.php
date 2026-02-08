@@ -58,18 +58,21 @@
                     </select>
                 </div>
 
-                    <div class="col-md-5 d-flex gap-2">
+                <div class="col-md-5 d-flex justify-content-between">
+                    <div class="d-flex gap-2 justify-content-start">
                         <button type="submit" class="btn btn-primary">
                             Cari
                         </button>
                         <a href="<?= base_url('user') ?>" class="btn btn-outline-secondary">
                             Reset
                         </a>
-                        
-                        <a href="/user/create" class="btn btn-success ms-auto">
+                    </div>
+                    <div class="justify-content-end align-middle">
+                        <a href="/user/create" class="btn btn-success ms-auto btn-sm">
                             Tambah User
                         </a>
                     </div>
+                </div>
             </form>
         </div>
     </div>

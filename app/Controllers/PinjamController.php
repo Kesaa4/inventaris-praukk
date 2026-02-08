@@ -141,6 +141,10 @@ class PinjamController extends BaseController
 
         $idBarang = $this->request->getPost('id_barang');
 
+        // Ambil kode barang untuk log
+        $barang = $barangModel->find($idBarang);
+        $kodeBarang = $barang['kode_barang'] ?? $idBarang;
+
         $id = $pinjamModel->insert([
             'id_barang'  => $idBarang,
             'id_user'    => $idUserPeminjam,      // PEMINJAM
@@ -152,7 +156,7 @@ class PinjamController extends BaseController
         $namaPeminjam = getNamaUser($idUserPeminjam);
 
         log_activity(
-            'Menambahkan peminjaman untuk ' .$namaPeminjam,
+            'Menambahkan peminjaman untuk ' . $namaPeminjam . ' - ' . $kodeBarang,
             'pinjam',
             $id
         );
@@ -195,6 +199,11 @@ class PinjamController extends BaseController
             throw new \CodeIgniter\Exceptions\PageNotFoundException();
         }
 
+        // Ambil data pendukung untuk log
+        $namaPeminjam = getNamaUser($pinjam['id_user']);
+        $barang = $barangModel->find($pinjam['id_barang']);
+        $kodeBarang = $barang['kode_barang'] ?? $pinjam['id_barang'];
+
         $status = $this->request->getPost('status');
         $data = ['status' => $status];
 
@@ -206,10 +215,8 @@ class PinjamController extends BaseController
                 'status' => 'dipinjam'
             ]);
 
-            $namaPeminjam = getNamaUser($pinjam['id_user']);
-
             log_activity(
-                'Menyetujui peminjaman' .$namaPeminjam,
+                'Menyetujui peminjaman ' . $namaPeminjam . ' - ' . $kodeBarang,
                 'pinjam',
                 $id
             );
@@ -221,7 +228,7 @@ class PinjamController extends BaseController
             ]);
 
             log_activity(
-                'Menolak peminjaman' .$namaPeminjam,
+                'Menolak peminjaman ' . $namaPeminjam . ' - ' . $kodeBarang,
                 'pinjam',
                 $id
             );
@@ -233,7 +240,7 @@ class PinjamController extends BaseController
             ]);
 
             log_activity(
-                'Menyetujui pengembalian barang' .$namaPeminjam,
+                'Menyetujui pengembalian barang ' . $namaPeminjam . ' - ' . $kodeBarang,
                 'pinjam',
                 $id
             );
@@ -251,14 +258,29 @@ class PinjamController extends BaseController
         $this->mustAdmin();
 
         $pinjamModel = new PinjamModel();
+        $barangModel = new BarangModel();
+
+        // Ambil data pinjam dulu
+        $pinjam = $pinjamModel->find($id);
+        if (!$pinjam) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException();
+        }
+
+        $namaPeminjam = getNamaUser($pinjam['id_user']);
+
+        // Ambil kode barang
+        $barang = $barangModel->find($pinjam['id_barang']);
+        $kodeBarang = $barang['kode_barang'] ?? $pinjam['id_barang'];
+
+        // Hapus data
         $pinjamModel->delete($id);
 
+        // Log detail
         log_activity(
-            'Menghapus data peminjaman',
+            'Menghapus peminjaman ' . $namaPeminjam . ' - ' . $kodeBarang,
             'pinjam',
             $id
         );
-
 
         return redirect()->to('/pinjam');
     }
@@ -271,13 +293,24 @@ class PinjamController extends BaseController
         }
 
         $pinjamModel = new PinjamModel();
+        $barangModel = new BarangModel();
+
+        $pinjam = $pinjamModel->find($id);
+        if (!$pinjam) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException();
+        }
+
+        // Data pendukung log
+        $namaPeminjam = getNamaUser($pinjam['id_user']);
+        $barang = $barangModel->find($pinjam['id_barang']);
+        $kodeBarang = $barang['kode_barang'] ?? $pinjam['id_barang'];
 
         $pinjamModel->update($id, [
             'status' => 'pengembalian'
         ]);
 
         log_activity(
-            'Mengajukan pengembalian barang',
+            'Mengajukan pengembalian barang ' . $kodeBarang,
             'pinjam',
             $id
         );
@@ -306,22 +339,31 @@ class PinjamController extends BaseController
         $barangModel = new BarangModel();
 
         $pinjam = $pinjamModel->find($id);
+        if (!$pinjam) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException();
+        }
+
+        // Data pendukung log
+        $namaPeminjam = getNamaUser($pinjam['id_user']);
+        $barang = $barangModel->find($pinjam['id_barang']);
+        $kodeBarang = $barang['kode_barang'] ?? $pinjam['id_barang'];
+
         $status = $this->request->getPost('status');
 
         // update pinjam
         $pinjamModel->update($id, [
-            'status' => $status,
-            'tgl_kembali' => date('Y-m-d')
+            'status'      => $status,
+            'tgl_kembali'=> date('Y-m-d')
         ]);
 
-        // update barang
+        // update barang + log
         if ($status === 'dikembalikan') {
             $barangModel->update($pinjam['id_barang'], [
                 'status' => 'tersedia'
             ]);
 
             log_activity(
-                'Menyetujui pengembalian barang' .$namaPeminjam,
+                'Menyetujui pengembalian barang ' . $namaPeminjam . ' - ' . $kodeBarang,
                 'pinjam',
                 $id
             );
@@ -330,6 +372,7 @@ class PinjamController extends BaseController
         return redirect()->to('/pinjam')->with('success', 'Pengembalian diproses');
     }
 
+    // TRASH MANAGEMENT (ADMIN ONLY)
     public function trash()
     {   
         $this->mustAdmin();
@@ -359,20 +402,36 @@ class PinjamController extends BaseController
         return view('pinjam/trash', $data);
     }
 
+    // RESTORE PEMINJAMAN
     public function restore($id)
     {
         $this->mustAdmin();
 
-        $pinjamModel = new PinjamModel();
+        $pinjamModel  = new PinjamModel();
+        $barangModel  = new BarangModel();
 
+        // Ambil data dulu (termasuk soft deleted)
+        $pinjam = $pinjamModel->withDeleted()->find($id);
+        if (!$pinjam) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException();
+        }
+
+        $namaPeminjam = getNamaUser($pinjam['id_user']);
+
+        // Ambil kode barang
+        $barang = $barangModel->find($pinjam['id_barang']);
+        $kodeBarang = $barang['kode_barang'] ?? $pinjam['id_barang'];
+
+        // Restore data
         $pinjamModel->withDeleted()
-        ->where('id_pinjam', $id)
-        ->update(null, [
-            'deleted_at' => null
-        ]);
+            ->where('id_pinjam', $id)
+            ->update(null, [
+                'deleted_at' => null
+            ]);
 
+        // Log detail
         log_activity(
-            'Restore data peminjaman',
+            'Restore peminjaman ' . $namaPeminjam . ' - ' . $kodeBarang,
             'pinjam',
             $id
         );
@@ -381,15 +440,33 @@ class PinjamController extends BaseController
             ->with('success', 'Data peminjaman berhasil direstore');
     }
 
+
+    // FORCE DELETE PEMINJAMAN
     public function forceDelete($id)
     {
         $this->mustAdmin();
 
         $pinjamModel = new PinjamModel();
+        $barangModel = new BarangModel();
+
+        // Ambil data dulu sebelum dihapus permanen
+        $pinjam = $pinjamModel->withDeleted()->find($id);
+        if (!$pinjam) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException();
+        }
+
+        $namaPeminjam = getNamaUser($pinjam['id_user']);
+
+        // Ambil kode barang
+        $barang = $barangModel->find($pinjam['id_barang']);
+        $kodeBarang = $barang['kode_barang'] ?? $pinjam['id_barang'];
+
+        // Hapus permanen
         $pinjamModel->delete($id, true);
 
+        // Log detail
         log_activity(
-            'Hapus permanen data peminjaman',
+            'Hapus permanen peminjaman ' . $namaPeminjam . ' - ' . $kodeBarang,
             'pinjam',
             $id
         );

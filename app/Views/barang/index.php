@@ -40,7 +40,7 @@
                         type="text" 
                         name="keyword" 
                         class="form-control"
-                        placeholder="Jenis atau merek..."
+                        placeholder="Cari..."
                         value="<?= esc($keyword) ?>"
                     >
                 </div>
@@ -58,21 +58,25 @@
                     </select>
                 </div>
 
-                <div class="col-md-5 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        Cari
-                    </button>
-                    <a href="<?= base_url('barang') ?>" class="btn btn-outline-secondary">
-                        Reset
-                    </a>
+                <div class="col-md d-flex justify-content-between">
+                    <div class="d-flex justify-content-start align-items-center gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            Cari
+                        </button>
+                        <a href="<?= base_url('barang') ?>" class="btn btn-outline-secondary">
+                            Reset
+                        </a>
+                    </div>
 
                     <?php if (session()->get('role') === 'admin'): ?>
-                        <a href="<?= base_url('barang/create') ?>" class="btn btn-success ms-auto">
-                            Tambah Barang
-                        </a>
-                        <a href="<?= site_url('barang/trash') ?>" class="btn btn-danger ms-auto">
-                            Barang Terhapus
-                        </a>
+                        <div class="d-flex justify-content-end align-items-center align-middle gap-2">
+                            <a href="<?= base_url('barang/create') ?>" class="btn btn-success ms-auto btn-sm">
+                                Tambah Barang
+                            </a>
+                            <a href="<?= site_url('barang/trash') ?>" class="btn btn-danger ms-auto btn-sm">
+                                Barang Terhapus
+                            </a>
+                        </div>
                     <?php endif ?>
                 </div>
 

@@ -60,11 +60,13 @@ class BarangController extends BaseController
 
         $barangModel = new BarangModel();
 
+        $kodeBarang = $this->request->getPost('kode_barang');
+
         $id = $barangModel->insert([
             'jenis_barang'  => $this->request->getPost('jenis_barang'),
             'merek_barang'  => $this->request->getPost('merek_barang'),
             'tipe_barang'   => $this->request->getPost('tipe_barang'),
-            'kode_barang'   => $this->request->getPost('kode_barang'),
+            'kode_barang'   => $kodeBarang,
             'ram'           => $this->request->getPost('ram'),
             'rom'           => $this->request->getPost('rom'),
             'status'        => $this->request->getPost('status'),
@@ -73,7 +75,7 @@ class BarangController extends BaseController
         ]);
 
         log_activity(
-            'Menambah barang',
+            'Menambah barang: '.$kodeBarang,
             'barang',
             $id
         );
@@ -100,12 +102,14 @@ class BarangController extends BaseController
 
         $barangModel = new BarangModel();
 
+        $kodeBarang = $this->request->getPost('kode_barang');
+
         $barangModel->update($id, [
             'jenis_barang'  => $this->request->getPost('jenis_barang'),
             'id_kategori'   => $this->request->getPost('id_kategori'),
             'merek_barang'  => $this->request->getPost('merek_barang'),
             'tipe_barang'   => $this->request->getPost('tipe_barang'),
-            'kode_barang'   => $this->request->getPost('kode_barang'),
+            'kode_barang'   => $kodeBarang,
             'ram'           => $this->request->getPost('ram'),
             'rom'           => $this->request->getPost('rom'),
             'status'        => $this->request->getPost('status'),
@@ -113,7 +117,7 @@ class BarangController extends BaseController
         ]);
 
         log_activity(
-            'Mengedit barang',
+            'Mengedit barang: '.$kodeBarang,
             'barang',
             $id
         );
@@ -126,10 +130,17 @@ class BarangController extends BaseController
         $this->mustAdmin();
 
         $barangModel = new BarangModel();
+
+        // Ambil data dulu sebelum dihapus
+        $barang = $barangModel->find($id);
+        $kodeBarang = $barang['kode_barang'] ?? $id;
+
+        // Hapus data
         $barangModel->delete($id);
 
+        // Log pakai kode barang
         log_activity(
-            'Menghapus barang',
+            'Menghapus barang: ' . $kodeBarang,
             'barang',
             $id
         );
@@ -179,14 +190,20 @@ class BarangController extends BaseController
 
         $barangModel = new BarangModel();
 
+        // Ambil data (termasuk yang terhapus)
+        $barang = $barangModel->withDeleted()->find($id);
+        $kodeBarang = $barang['kode_barang'] ?? $id;
+
+        // Restore data
         $barangModel
             ->withDeleted()
             ->where('id_barang', $id)
             ->set('deleted_at', null)
             ->update();
 
+        // Log pakai kode barang
         log_activity(
-            'Restore barang',
+            'Restore barang: ' . $kodeBarang,
             'barang',
             $id
         );
@@ -201,10 +218,16 @@ class BarangController extends BaseController
 
         $barangModel = new BarangModel();
 
+        // Ambil data dulu (termasuk soft deleted)
+        $barang = $barangModel->withDeleted()->find($id);
+        $kodeBarang = $barang['kode_barang'] ?? $id;
+
+        // Hapus permanen
         $barangModel->delete($id, true);
 
+        // Log pakai kode barang
         log_activity(
-            'Hapus permanen barang',
+            'Hapus permanen barang: ' . $kodeBarang,
             'barang',
             $id
         );

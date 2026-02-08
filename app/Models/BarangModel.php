@@ -58,7 +58,10 @@ class BarangModel extends Model
                     ->like('jenis_barang', $keyword)
                     ->orLike('merek_barang', $keyword)
                     ->orLike('tipe_barang', $keyword)
+                    ->orLike('kode_barang', $keyword)
                     ->orLike('status', $keyword)
+                    ->orLike('ram', $keyword)
+                    ->orLike('rom', $keyword)
                     ->groupEnd();
         }
 
