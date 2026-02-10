@@ -1,30 +1,15 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barang Terhapus</title>
+<?= view('layouts/header', ['title' => 'Barang Terhapus']) ?>
+<?= view('layouts/navbar') ?>
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- JS 5 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body class="bg-light">
+<div class="main-content">
+    <div class="container-fluid px-3 px-md-4">
 
-<div class="container mt-4">
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3"> 
-        <h4 class="text-danger mb-0">
-            <i class="bi bi-trash"></i> <strong>Barang Terhapus</strong>
-        </h4>
-
-        <a href="<?= base_url('barang') ?>" class="btn btn-secondary ms-auto btn-sm">
-            Kembali
-        </a>
-    </div>
+        <!-- Header -->
+        <div class="mb-3"> 
+            <h4 class="text-danger fw-bold">
+                <i class="bi bi-trash"></i> Barang Terhapus
+            </h4>
+        </div>
 
     <!-- Alert Success -->
     <?php if (session()->getFlashdata('success')): ?>
@@ -63,7 +48,7 @@
                 </div>
 
                 <!-- Tombol -->
-                <div class="col-md-4 d-flex gap-2">
+                <div class="col-md-12 col-lg-4 d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
                         Cari
                     </button>
@@ -93,7 +78,6 @@
                             <th>RAM</th>
                             <th>ROM</th>
                             <th>Dihapus Pada</th>
-                            <th style="width:180px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -118,22 +102,6 @@
                                 <span class="badge bg-danger">
                                     <?= date('d-m-Y H:i', strtotime($b['deleted_at'])) ?>
                                 </span>
-                            </td>
-                            <td>
-                                <div class="d-flex gap-1 justify-content-center">
-                                    <!-- Restore -->
-                                    <a href="<?= site_url('barang/restore/' . $b['id_barang']) ?>"
-                                    class="btn btn-success btn-sm d-flex align-items-center justify-content-center"
-                                    onclick="return confirm('Restore barang ini?')">
-                                        <span>Restore</span>
-                                    </a>
-                                    <!-- Hapus Permanen -->
-                                    <a href="<?= site_url('barang/force-delete/' . $b['id_barang']) ?>"
-                                       class="btn btn-dark btn-sm d-flex align-items-center justify-content-center"
-                                       onclick="return confirm('Hapus permanen? Data tidak bisa dikembalikan!')">
-                                        Hapus Permanen
-                                    </a>
-                                </div>
                             </td>
                         </tr>
                         <?php endforeach ?>
@@ -251,7 +219,7 @@
         </div>
     </div>
 
+    </div>
 </div>
 
-</body>
-</html>
+<?= view('layouts/footer') ?>

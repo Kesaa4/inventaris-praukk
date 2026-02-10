@@ -1,24 +1,13 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Edit Barang</title>
+<?= view('layouts/header', ['title' => 'Edit Barang']) ?>
+<?= view('layouts/navbar') ?>
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<div class="main-content">
+    <div class="container-fluid px-3 px-md-4">
 
-    <!-- JS 5 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body class="bg-light">
-
-<div class="container mt-4 mb-5">
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3> Edit Data Barang</h3>
-    </div>
+        <!-- Header -->
+        <div class="mb-3">
+            <h3 class="fw-bold">Edit Data Barang</h3>
+        </div>
 
     <!-- Form Card -->
     <div class="card shadow-sm">
@@ -163,14 +152,14 @@
                             type="text"
                             name="keterangan"
                             class="form-control"
-                            value="<?= esc($barang['keterangan']) ?>"
+                            value="<?= esc($barang['keterangan'] ?? '') ?>"
                         >
                     </div>
 
                 </div>
 
                 <!-- Action -->
-                <div class="mt-4 d-flex gap-2">
+                <div class="mt-4 d-flex flex-column flex-sm-row gap-2">
                     <button type="submit" class="btn btn-warning">
                         Update
                     </button>
@@ -184,7 +173,7 @@
         </div>
     </div>
 
+    </div>
 </div>
 
-</body>
-</html>
+<?= view('layouts/footer') ?>

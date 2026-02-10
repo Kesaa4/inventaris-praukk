@@ -1,30 +1,15 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Peminjaman</title>
+<?= view('layouts/header', ['title' => 'Data Peminjaman']) ?>
+<?= view('layouts/navbar') ?>
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- JS 5 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body class="bg-light">
+<div class="main-content">
+    <div class="container-fluid px-3 px-md-4">
+        <div class="content-wrapper fade-in">
 
-<div class="container mt-4">
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-bold mb-0">Data Peminjaman</h4>
-
-        <div>
-            <a href="/dashboard" class="btn btn-secondary btn-sm">
-                Kembali Ke Dashboard
-            </a>
-        </div>
-    </div>
+            <!-- Header -->
+            <div class="page-header">
+                <h4><i class="bi bi-arrow-left-right me-2"></i>Data Peminjaman</h4>
+                <p class="text-muted">Kelola data peminjaman barang</p>
+            </div>
 
     <!-- Alert Success -->
     <?php if (session()->getFlashdata('success')): ?>
@@ -71,26 +56,22 @@
             </div>
         </div>
 
-        <div class="card-footer d-flex justify-content-between">
-            <div class="d-flex justify-content-start align-items-center">
-                <div class="d-flex gap-2">
-                    <button class="btn btn-primary">Cari</button>
-                    <a href="<?= site_url('pinjam') ?>" class="btn btn-outline-secondary">Reset</a>
-                </div>
+        <div class="card-footer d-flex flex-column flex-lg-row justify-content-between gap-2">
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary">Cari</button>
+                <a href="<?= site_url('pinjam') ?>" class="btn btn-outline-secondary">Reset</a>
             </div>
-            <div class="d-flex justify-content-end align-items-center gap-2">
+            <div class="d-flex flex-column flex-sm-row gap-2">
                 <?php if (in_array(session('role'), ['admin','peminjam','petugas'])): ?>
-                        <a href="/pinjam/create" class="btn btn-success btn-sm">
-                            Ajukan Pinjaman
-                        </a>
+                    <a href="/pinjam/create" class="btn btn-success btn-sm">
+                        Ajukan Pinjaman
+                    </a>
                 <?php endif ?>
                 
                 <?php if (session('role') === 'admin'): ?>
-                    <div class="d-flex gap-2">
-                        <a href="<?= site_url('pinjam/trash') ?>" class="btn btn-danger btn-sm">
-                            Peminjaman Terhapus
-                        </a>
-                    </div>
+                    <a href="<?= site_url('pinjam/trash') ?>" class="btn btn-danger btn-sm">
+                        Peminjaman Terhapus
+                    </a>
                 <?php endif ?>
             </div>
         </div>
@@ -154,7 +135,10 @@
                             </td>
 
                             <td class="text-nowrap text-center">
-                                <?= esc(explode('@', $p['email'])[0]) ?>
+                                <?php 
+                                    $displayName = !empty($p['nama']) ? $p['nama'] : explode('@', $p['email'])[0];
+                                    echo esc($displayName);
+                                ?>
                             </td>
 
                             <td class="text-nowrap text-center">
@@ -210,7 +194,7 @@
                                     <a href="/pinjam/delete/<?= $p['id_pinjam'] ?>"
                                        class="btn btn-danger btn-sm"
                                        onclick="return confirm('Yakin hapus data ini?')">
-                                        Hapus
+                                        Bersihkan
                                     </a>
                                 <?php endif ?>
                             </td>
@@ -353,7 +337,8 @@
         </div>
     </div>
 
+        </div>
+    </div>
 </div>
 
-</body>
-</html>
+<?= view('layouts/footer') ?>

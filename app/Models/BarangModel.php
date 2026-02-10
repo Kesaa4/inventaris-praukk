@@ -77,6 +77,7 @@ class BarangModel extends Model
             $builder->where('barang.id_kategori', $kategori);
         }
 
+        // Mengembalikan query builder untuk pagination atau eksekusi lebih lanjut
         return $builder;
     }
 

@@ -1,27 +1,15 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile</title>
+<?= view('layouts/header', ['title' => 'Profile']) ?>
+<?= view('layouts/navbar') ?>
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<div class="main-content">
+    <div class="container-fluid px-3 px-md-4">
+        <div class="content-wrapper fade-in">
 
-    <!-- JS 5 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body class="bg-light">
-
-<div class="container mt-4">
-
-    <!-- Header -->
-    <div class="mb-3">
-        <h4 class="fw-bold">Profile Saya</h4>
-        <p class="text-muted mb-0">
-            Informasi akun dan data pribadi Anda
-        </p>
-    </div>
+            <!-- Header -->
+            <div class="page-header">
+                <h4><i class="bi bi-person-circle me-2"></i>Profile Saya</h4>
+                <p class="text-muted">Informasi akun dan data pribadi Anda</p>
+            </div>
 
     <!-- Alert Success -->
     <?php if (session()->getFlashdata('success')): ?>
@@ -81,11 +69,7 @@
             </div>
 
             <!-- Action -->
-            <div class="d-flex justify-content-between">
-                <a href="/dashboard" class="btn btn-secondary">
-                    Kembali ke Dashboard
-                </a>
-
+            <div class="d-flex flex-column flex-sm-row justify-content-end gap-2">
                 <a href="/profile/edit" class="btn btn-primary">
                     Edit Profile
                 </a>
@@ -94,7 +78,8 @@
         </div>
     </div>
 
+        </div>
+    </div>
 </div>
 
-</body>
-</html>
+<?= view('layouts/footer') ?>

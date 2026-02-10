@@ -13,12 +13,14 @@ class UserController extends BaseController
     {
         $userModel = new UserModel();
 
+        // Ambil parameter filter dari query string
         $keyword = $this->request->getGet('keyword');
         $role    = $this->request->getGet('role');
 
         // APPLY FILTER (tanpa ambil data dulu)
         $userModel->filterUser($keyword, $role);
 
+        // Siapkan data untuk view
         $data = [
             'users'   => $userModel->paginate(10, 'user'),
             'pager'   => $userModel->pager,
@@ -29,6 +31,7 @@ class UserController extends BaseController
         return view('user/index', $data);
     }
 
+    // Cek apakah user adalah admin
     protected function mustAdmin()
     {
         if (session('role') !== 'admin') {
@@ -39,7 +42,9 @@ class UserController extends BaseController
     //TAMBAH USER
     public function create()
     {
+        // Cek admin
         $this->mustAdmin();
+        // Tampilkan form create user
         return view('user/create');
     }
 
@@ -48,6 +53,7 @@ class UserController extends BaseController
     {
         $this->mustAdmin();
 
+        // Validasi input
         $rules = [
             'email' => [
                 'rules'  => 'required|valid_email|is_unique[user.email]',
@@ -61,7 +67,10 @@ class UserController extends BaseController
             'role' => 'required'
         ];
 
-        if (!$this->validate($rules)) {
+        // Jika validasi gagal
+        if (!$this->validate($rules)) 
+            // Kembali ke form dengan input lama dan pesan error
+        {
             return redirect()->back()
                 ->withInput()
                 ->with('errors', $this->validator->getErrors());
@@ -103,6 +112,7 @@ class UserController extends BaseController
         $userModel = new UserModel();
         $profileModel = new UserProfileModel();
 
+        // Tampilkan form edit user dengan data user dan profil
         return view('user/edit', [
             'user' => $userModel->find($id),
             'profile' => $profileModel->where('id_user', $id)->first()
@@ -110,69 +120,61 @@ class UserController extends BaseController
     }
 
     public function update($id)
-{
-    $this->mustAdmin();
-
-    $userModel = new UserModel();
-    $profileModel = new UserProfileModel();
-
-    $user = $userModel->find($id);
-    $profile = $profileModel->where('id_user', $id)->first();
-
-    if (!$user) {
-        throw new \CodeIgniter\Exceptions\PageNotFoundException();
-    }
-
-    $nama = $profile['nama'] ?? 'Unknown';
-
-    // DATA LAMA
-    $oldRole   = $user['role'];
-    $oldStatus = $user['status'];
-
-    // DATA BARU
-    $newRole   = $this->request->getPost('role');
-    $newStatus = $this->request->getPost('status');
-
-    $userModel->update($id, [
-        'role'   => $newRole,
-        'status' => $newStatus
-    ]);
-
-    // RANGKAI LOG DETAIL
-    $detail = [];
-
-    if ($oldRole !== $newRole) {
-        $detail[] = "role: $oldRole → $newRole";
-    }
-
-    if ($oldStatus !== $newStatus) {
-        $detail[] = "status: $oldStatus → $newStatus";
-    }
-
-    $detailLog = implode(', ', $detail);
-
-    log_activity(
-        'Mengubah data user ' . $nama . ($detailLog ? " ($detailLog)" : ''),
-        'user',
-        $id
-    );
-
-    return redirect()->to('/user')->with('success', 'User berhasil diupdate');
-}
-
-    
-    public function delete($id)
     {
+        $this->mustAdmin();
+
         $userModel = new UserModel();
-        $userModel->delete($id);
+        $profileModel = new UserProfileModel();
+
+        // DATA LAMA
+        $user = $userModel->find($id);
+        // Ambil data profil untuk mendapatkan nama user
+        $profile = $profileModel->where('id_user', $id)->first();
+
+        // Jika user tidak ditemukan
+        if (!$user) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException();
+        }
+
+        // Nama user dari profil atau 'Unknown' jika tidak ada
+        $nama = $profile['nama'] ?? 'Unknown';
+
+        // DATA LAMA
+        $oldRole   = $user['role'];
+        $oldStatus = $user['status'];
+
+        // DATA BARU
+        $newRole   = $this->request->getPost('role');
+        $newStatus = $this->request->getPost('status');
+
+        // Update data user
+        $userModel->update($id, [
+            'role'   => $newRole,
+            'status' => $newStatus
+        ]);
+
+        // RANGKAI LOG DETAIL
+        $detail = [];
+
+        // Cek perubahan role
+        if ($oldRole !== $newRole) {
+            $detail[] = "role: $oldRole → $newRole";
+        }
+
+        // Cek perubahan status
+        if ($oldStatus !== $newStatus) {
+            $detail[] = "status: $oldStatus → $newStatus";
+        }
+
+        // Gabungkan detail log menjadi satu string
+        $detailLog = implode(', ', $detail);
 
         log_activity(
-            'Menghapus user',
+            'Mengubah data user ' . $nama . ($detailLog ? " ($detailLog)" : ''),
             'user',
             $id
         );
 
-        return redirect()->to('/user')->with('success', 'User dihapus');
-    
+        return redirect()->to('/user')->with('success', 'User berhasil diupdate');
     }
 }

@@ -10,18 +10,22 @@ class ActivityLogController extends BaseController
 {
 public function index()
 {
+    // Cek apakah user adalah admin
     if (session('role') !== 'admin') {
         throw new \CodeIgniter\Exceptions\PageForbiddenException();
     }
 
+    // Inisialisasi model
     $logModel = new ActivityLogModel();
 
+    // Ambil parameter filter dari query string
     $keyword = $this->request->getGet('keyword');
     $role    = $this->request->getGet('role');
 
-    // PANGGIL filter (mirip getBarangFiltered)
+    // PANGGIL filter dari model
     $logModel->getLogFiltered($keyword, $role);
 
+    // Siapkan data untuk view
     $data = [
         'title'   => 'Activity Log',
         'logs'    => $logModel->paginate(10, 'log'),
@@ -30,6 +34,7 @@ public function index()
         'role'    => $role,
     ];
 
+    // Tampilkan view dengan data
     return view('activity/index', $data);
 }
 

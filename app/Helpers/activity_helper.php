@@ -6,6 +6,7 @@ function log_activity($aktivitas, $tabel = null, $id_data = null, $idUser = null
 {
     $logModel = new ActivityLogModel();
 
+    // Simpan log aktivitas ke database
     $logModel->insert([
         'id_user'   => $idUser ?? session('id_user'),
         'role'      => session('role'),

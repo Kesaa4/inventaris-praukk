@@ -1,42 +1,36 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kategori Barang</title>
+<?= view('layouts/header', ['title' => 'Kategori Barang']) ?>
+<?= view('layouts/navbar') ?>
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<div class="main-content">
+    <div class="container-fluid px-3 px-md-4">
+        <div class="content-wrapper fade-in">
 
-    <!-- JS 5 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body>
-    
-<div class="container py-4">
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="mb-4"><?= $title ?></h3>
-        <a href="/dashboard" class="btn btn-secondary btn-sm">Kembali Ke Dashboard</a>
-    </div>
-
-    <!-- Card -->
-    <div class="row">
-        <?php foreach($kategori_list as $k): ?>
-            <div class="col-md-4 mb-3">
-                <div class="card shadow-sm h-100">
-                    <div class="card-body d-flex flex-column justify-content-between">
-                        <h5 class="card-title"><?= esc($k['kategori_kondisi']) ?></h5>
-                        <a href="<?= site_url('kategori/'.$k['id_kategori']) ?>" class="btn btn-primary mt-3">
-                            Lihat Barang
-                        </a>
-                    </div>
-                </div>
+            <!-- Header -->
+            <div class="page-header">
+                <h3><i class="bi bi-tags me-2"></i><?= $title ?></h3>
+                <p class="text-muted">Pilih kategori untuk melihat barang</p>
             </div>
-        <?php endforeach; ?>
-    </div>
-</div>    
 
-</body>
-</html>
+            <!-- Card -->
+            <div class="row">
+                <?php foreach($kategori_list as $k): ?>
+                    <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body d-flex flex-column justify-content-between text-center">
+                                <div>
+                                    <i class="bi bi-tag-fill" style="font-size: 3rem; color: var(--primary);"></i>
+                                    <h5 class="card-title mt-3"><?= esc($k['kategori_kondisi']) ?></h5>
+                                </div>
+                                <a href="<?= site_url('kategori/'.$k['id_kategori']) ?>" class="btn btn-primary mt-3">
+                                    <i class="bi bi-eye me-1"></i>Lihat Barang
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<?= view('layouts/footer') ?>

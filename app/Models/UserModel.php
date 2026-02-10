@@ -19,6 +19,7 @@ class UserModel extends Model
         'status'
     ];
 
+    // Inisialisasi query default dengan join ke userprofile
     protected function initialize()
     {
         // DEFAULT SELECT + JOIN (WAJIB untuk paginate)
@@ -26,8 +27,10 @@ class UserModel extends Model
              ->join('userprofile', 'userprofile.id_user = user.id_user', 'left');
     }
 
+    // Filter data user
     public function filterUser($keyword = null, $role = null)
     {
+        // Query dengan join ke tabel userprofile
         if ($keyword) {
             $this->groupStart()
                 ->like('user.email', $keyword)
@@ -35,10 +38,12 @@ class UserModel extends Model
                 ->groupEnd();
         }
 
+        // Filter berdasarkan role
         if ($role) {
             $this->where('user.role', $role);
         }
 
+        // Urutkan berdasarkan id_user DESC
         return $this->orderBy('user.id_user', 'DESC');
     }
     

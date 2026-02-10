@@ -21,8 +21,10 @@ class ActivityLogModel extends Model
         'created_at'
     ];
 
+    // Ambil log aktivitas beserta info user yang terkait
     public function getWithUser()
     {
+        // Query dengan join ke tabel user dan userprofile
         return $this->db->table('activity_log')
             ->select('
                 activity_log.*,
@@ -37,32 +39,37 @@ class ActivityLogModel extends Model
             ->getResultArray();
     }
 
+    // Ambil log aktivitas dengan filter keyword dan role user
     public function getLogFiltered($keyword = null, $role = null)
-{
-    $this->select('
-            activity_log.*,
-            userprofile.nama,
-            user.email,
-            user.role
-        ')
-        ->join('user', 'user.id_user = activity_log.id_user')
-        ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
-        ->orderBy('activity_log.created_at', 'DESC');
+    {
+        // Query dengan join ke tabel user dan userprofile
+        $this->select('
+                activity_log.*,
+                userprofile.nama,
+                user.email,
+                user.role
+            ')
+            ->join('user', 'user.id_user = activity_log.id_user')
+            ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
+            ->orderBy('activity_log.created_at', 'DESC');
 
-    if ($keyword) {
-        $this->groupStart()
-            ->like('userprofile.nama', $keyword)
-            ->orLike('user.email', $keyword)
-            ->orLike('activity_log.aktivitas', $keyword)
-            ->groupEnd();
+        // Terapkan filter
+        if ($keyword) {
+            $this->groupStart()
+                ->like('userprofile.nama', $keyword)
+                ->orLike('user.email', $keyword)
+                ->orLike('activity_log.aktivitas', $keyword)
+                ->groupEnd();
+        }
+
+        // Filter berdasarkan role user
+        if ($role) {
+            $this->where('user.role', $role);
+        }
+
+        // Eksekusi query dan kembalikan hasil
+        return $this;
     }
-
-    if ($role) {
-        $this->where('user.role', $role);
-    }
-
-    return $this;
-}
 
 
     protected bool $allowEmptyInserts = false;

@@ -1,30 +1,15 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manajemen User</title>
+<?= view('layouts/header', ['title' => 'Manajemen User']) ?>
+<?= view('layouts/navbar') ?>
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- JS 5 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body class="bg-light">
+<div class="main-content">
+    <div class="container-fluid px-3 px-md-4">
+        <div class="content-wrapper fade-in">
 
-<div class="container mt-4">
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <div>
-            <h4 class="fw-bold mb-0">Manajemen User</h4>
-        </div>
-
-        <a href="/dashboard" class="btn btn-secondary btn-sm">
-            Kembali ke Dashboard
-        </a>
-    </div>
+            <!-- Header -->
+            <div class="page-header">
+                <h4><i class="bi bi-people me-2"></i>Manajemen User</h4>
+                <p class="text-muted">Kelola data pengguna sistem</p>
+            </div>
 
     <!-- Alert Success -->
     <?php if (session()->getFlashdata('success')): ?>
@@ -58,8 +43,8 @@
                     </select>
                 </div>
 
-                <div class="col-md-5 d-flex justify-content-between">
-                    <div class="d-flex gap-2 justify-content-start">
+                <div class="col-md-12 col-lg-5 d-flex flex-column flex-lg-row justify-content-between gap-2">
+                    <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
                             Cari
                         </button>
@@ -67,8 +52,8 @@
                             Reset
                         </a>
                     </div>
-                    <div class="justify-content-end align-middle">
-                        <a href="/user/create" class="btn btn-success ms-auto btn-sm">
+                    <div>
+                        <a href="/user/create" class="btn btn-success btn-sm w-100 w-lg-auto">
                             Tambah User
                         </a>
                     </div>
@@ -250,7 +235,8 @@
         </div>
     </div>
 
+        </div>
+    </div>
 </div>
 
-</body>
-</html>
+<?= view('layouts/footer') ?>

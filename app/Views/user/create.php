@@ -1,22 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Tambah User</title>
-    
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<?= view('layouts/header', ['title' => 'Tambah User']) ?>
+<?= view('layouts/navbar') ?>
 
-    <!-- JS 5 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body class="bg-light">
-
+<div class="main-content">
     <!-- Card Form -->
-    <div class="container mt-4">
+    <div class="container-fluid px-3 px-md-4">
         <div class="row justify-content-center">
-            <div class="col-md-6">
+            <div class="col-12 col-md-8 col-lg-6">
 
                 <div class="card shadow-sm">
                     <div class="card-header bg-primary text-white">
@@ -51,7 +40,20 @@
 
                             <div class="mb-3">
                                 <label class="form-label">Password</label>
-                                <input type="password" name="password" class="form-control" required>
+                                <input type="password" name="password" id="password" class="form-control" required>
+                            </div>
+
+                            <!-- Show Password -->
+                            <div class="form-check mb-3">
+                                <input 
+                                    class="form-check-input" 
+                                    type="checkbox" 
+                                    id="showPassword" 
+                                    onclick="togglePassword()"
+                                >
+                                <label class="form-check-label" for="showPassword">
+                                    Tampilkan password
+                                </label>
                             </div>
 
                             <div class="mb-3">
@@ -72,7 +74,7 @@
                                 </select>
                             </div>
 
-                            <div class="d-flex justify-content-between">
+                            <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
                                 <a href="/user" class="btn btn-secondary">
                                     Kembali
                                 </a>
@@ -88,6 +90,13 @@
             </div>
         </div>
     </div>
-    
-</body>
-</html>
+</div>
+
+<script>
+function togglePassword() {
+    const pass = document.getElementById("password");
+    pass.type = pass.type === "password" ? "text" : "password";
+}
+</script>
+
+<?= view('layouts/footer') ?>

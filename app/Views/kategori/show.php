@@ -1,24 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Kategori</title>
+<?= view('layouts/header', ['title' => 'Detail Kategori']) ?>
+<?= view('layouts/navbar') ?>
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- JS 5 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body>
-
-    <div class="container py-4">
+<div class="main-content">
+    <div class="container-fluid px-3 px-md-4">
         
         <!-- Header -->
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h3 class="mb-4"><?= $title ?></h3>
-            <a href="/kategori" class="btn btn-secondary btn-sm">Kembali Ke Kategori</a>
+        <div class="mb-3">
+            <h3 class="fw-bold"><?= $title ?></h3>
         </div>
 
         <!-- Table -->
@@ -162,6 +150,6 @@
         </div>
 
     </div>
-    
-</body>
-</html>
+</div>
+
+<?= view('layouts/footer') ?>

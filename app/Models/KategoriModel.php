@@ -16,6 +16,7 @@ class KategoriModel extends Model
         'kategori_kondisi'
     ];
 
+    // Ambil semua kategori
     public function getAllKategori()
     {
         return $this->findAll();

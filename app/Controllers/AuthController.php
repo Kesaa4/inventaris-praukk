@@ -14,18 +14,23 @@ class AuthController extends BaseController
         //
     }
 
+    // Menampilkan login form
     public function login()
     {
         return view('auth/login');
     }
 
+    // Menangani proses login
     public function attemptLogin()
     {   
+        // Inisialisasi model
         $userModel = new UserModel();
 
+        // Ambil data dari form
         $email = $this->request->getPost('email');
         $password = $this->request->getPost('password');
-
+        
+        // Cari user berdasarkan email
         $user = $userModel->where('email', $email)->first();
 
         // Cek email

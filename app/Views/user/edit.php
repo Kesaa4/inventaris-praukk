@@ -1,22 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Form Edit User</title>
+<?= view('layouts/header', ['title' => 'Edit User']) ?>
+<?= view('layouts/navbar') ?>
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- JS 5 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body class="bg-light">
-
+<div class="main-content">
     <!-- Card Form -->
-    <div class="container mt-4">
+    <div class="container-fluid px-3 px-md-4">
         <div class="row justify-content-center">
-            <div class="col-md-7">
+            <div class="col-12 col-md-8 col-lg-6">
 
                 <div class="card shadow-sm">
                     <div class="card-header bg-warning text-dark">
@@ -44,7 +33,7 @@
                                 </select>
                             </div>
 
-                            <div class="d-flex justify-content-between">
+                            <div class="d-flex flex-column flex-sm-row justify-content-between gap-2">
                                 <a href="/user" class="btn btn-secondary">
                                     Kembali
                                 </a>
@@ -60,6 +49,6 @@
             </div>
         </div>
     </div>
-    
-</body>
-</html>
+</div>
+
+<?= view('layouts/footer') ?>

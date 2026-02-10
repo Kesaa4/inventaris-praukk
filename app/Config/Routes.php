@@ -6,21 +6,39 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 $routes->get('/testdb', 'TestDb::index');
+$routes->get('/test-navbar', function() {
+    return view('test_navbar');
+});
+$routes->get('/test-barang', function() {
+    return view('barang/index', [
+        'barang' => [],
+        'kategori' => [],
+        'keyword' => '',
+        'catFilter' => '',
+        'pager' => service('pager')
+    ]);
+});
 
+// Authentication Routes
 $routes->get('/', 'AuthController::login');
 $routes->post('/login', 'AuthController::attemptLogin');
 $routes->get('/logout', 'AuthController::logout');
 
+// Activity Log Route
 $routes->get('/activity-log', 'ActivityLogController::index', ['filter' => 'auth']);
 
+// Dashboard Route
 $routes->get('/dashboard', 'DashboardController::index', ['filter' => 'auth']);
+$routes->get('/dashboard/cetak-laporan', 'DashboardController::cetakLaporan', ['filter' => 'auth']);
 
+// Profile Routes
 $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('profile', 'ProfileController::index');
     $routes->get('profile/edit', 'ProfileController::edit');
     $routes->post('profile/update', 'ProfileController::update');
 });
 
+// User Management Routes for Admin
 $routes->group('user', ['filter' => 'admin'], function ($routes) {
     $routes->get('/', 'UserController::index');
     $routes->get('create', 'UserController::create');
@@ -30,10 +48,12 @@ $routes->group('user', ['filter' => 'admin'], function ($routes) {
     $routes->get('delete/(:num)', 'UserController::delete/$1');
 });
 
+// Barang Routes
 $routes->group('barang', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'BarangController::index');
 });
 
+// Barang Management Routes for Admin
 $routes->group('barang', ['filter' => 'admin'], function ($routes) {
     $routes->get('create', 'BarangController::create');
     $routes->post('store', 'BarangController::store');
@@ -48,6 +68,7 @@ $routes->group('barang', ['filter' => 'admin'], function ($routes) {
     $routes->get('force-delete/(:num)', 'BarangController::forceDelete/$1');
 });
 
+// Pinjam Routes
 $routes->group('pinjam', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'PinjamController::index');
     $routes->get('create', 'PinjamController::create');
@@ -65,6 +86,7 @@ $routes->group('pinjam', ['filter' => 'auth'], function ($routes) {
     $routes->get('force-delete/(:num)', 'PinjamController::forceDelete/$1');
 });
 
+// Kategori Routes for Admin
 $routes->group('kategori', ['filter' => 'admin'], function ($routes) {
     $routes->get('/', 'KategoriController::index');
     $routes->get('(:num)', 'KategoriController::show/$1');

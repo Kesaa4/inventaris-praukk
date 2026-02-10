@@ -1,25 +1,15 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Barang</title>
+<?= view('layouts/header', ['title' => 'Data Barang']) ?>
+<?= view('layouts/navbar') ?>
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- JS 5 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body class="bg-light">
+<div class="main-content">
+    <div class="container-fluid px-3 px-md-4">
+        <div class="content-wrapper fade-in">
 
-<div class="container mt-4">
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Data Barang</h3>
-        <a href="/dashboard" class="btn btn-secondary btn-sm">Kembali Ke Dashboard</a>
-    </div>
+            <!-- Header -->
+            <div class="page-header">
+                <h3><i class="bi bi-box me-2"></i>Data Barang</h3>
+                <p class="text-muted">Kelola data barang inventaris</p>
+            </div>
 
     <!-- Alert Success -->
     <?php if (session()->getFlashdata('success')): ?>
@@ -58,8 +48,8 @@
                     </select>
                 </div>
 
-                <div class="col-md d-flex justify-content-between">
-                    <div class="d-flex justify-content-start align-items-center gap-2">
+                <div class="col-md-12 col-lg d-flex flex-column flex-lg-row justify-content-between gap-2">
+                    <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary">
                             Cari
                         </button>
@@ -69,11 +59,11 @@
                     </div>
 
                     <?php if (session()->get('role') === 'admin'): ?>
-                        <div class="d-flex justify-content-end align-items-center align-middle gap-2">
-                            <a href="<?= base_url('barang/create') ?>" class="btn btn-success ms-auto btn-sm">
+                        <div class="d-flex gap-2">
+                            <a href="<?= base_url('barang/create') ?>" class="btn btn-success btn-sm">
                                 Tambah Barang
                             </a>
-                            <a href="<?= site_url('barang/trash') ?>" class="btn btn-danger ms-auto btn-sm">
+                            <a href="<?= site_url('barang/trash') ?>" class="btn btn-danger btn-sm">
                                 Barang Terhapus
                             </a>
                         </div>
@@ -91,18 +81,18 @@
             <table class="table table-bordered table-hover align-middle mb-0">
                 <thead class="table-primary text-center">
                     <tr>
-                        <th>No</th>
-                        <th>Jenis</th>
-                        <th>Merek</th>
-                        <th>Tipe</th>
-                        <th>Kode Barang</th>
-                        <th>RAM</th>
-                        <th>ROM</th>
-                        <th>Kondisi</th>
-                        <th>Status</th>
-                        <th>Keterangan</th>
+                        <th class="text-nowrap">No</th>
+                        <th class="text-nowrap">Jenis</th>
+                        <th class="text-nowrap">Merek</th>
+                        <th class="text-nowrap">Tipe</th>
+                        <th class="text-nowrap">Kode Barang</th>
+                        <th class="text-nowrap">RAM</th>
+                        <th class="text-nowrap">ROM</th>
+                        <th class="text-nowrap">Kondisi</th>
+                        <th class="text-nowrap">Status</th>
+                        <th class="text-nowrap">Keterangan</th>
                         <?php if (session()->get('role') === 'admin'): ?>
-                            <th width="120">Aksi</th>
+                            <th class="text-nowrap" width="120">Aksi</th>
                         <?php endif ?>
                     </tr>
                 </thead>
@@ -110,15 +100,15 @@
                     <?php if (count($barang) > 0): ?>
                     <?php $no = 1; foreach ($barang as $b): ?>
                     <tr>
-                        <td class="text-center"><?= $no++ ?></td>
-                        <td><?= esc($b['jenis_barang']) ?></td>
-                        <td><?= esc($b['merek_barang']) ?></td>
-                        <td><?= esc($b['tipe_barang']) ?></td>
-                        <td><?= esc($b['kode_barang']) ?></td>
-                        <td><?= esc($b['ram']) ?></td>
-                        <td><?= esc($b['rom']) ?></td>
-                        <td><?= esc($b['kategori_kondisi']) ?></td>
-                        <td class="text-center">
+                        <td class="text-center text-nowrap"><?= $no++ ?></td>
+                        <td class="text-nowrap"><?= esc($b['jenis_barang']) ?></td>
+                        <td class="text-nowrap"><?= esc($b['merek_barang']) ?></td>
+                        <td class="text-nowrap"><?= esc($b['tipe_barang']) ?></td>
+                        <td class="text-nowrap"><?= esc($b['kode_barang']) ?></td>
+                        <td class="text-nowrap"><?= esc($b['ram']) ?></td>
+                        <td class="text-nowrap"><?= esc($b['rom']) ?></td>
+                        <td class="text-nowrap"><?= esc($b['kategori_kondisi']) ?></td>
+                        <td class="text-center text-nowrap">
                             <?php
                                 $status = strtolower($b['status']);
                                 $badge = 'secondary';
@@ -140,10 +130,10 @@
                                 <?= esc($b['status']) ?>
                             </span>
                     </td>
-                        <td><?= esc($b['keterangan']) ?></td>
+                        <td class="text-nowrap"><?= esc($b['keterangan']) ?></td>
 
                         <?php if (session()->get('role') === 'admin'): ?>
-                        <td class="text-center">
+                        <td class="text-center text-nowrap">
                             <a href="<?= base_url('barang/edit/' . $b['id_barang']) ?>" class="btn btn-sm btn-warning">
                                 Edit
                             </a>
@@ -271,7 +261,8 @@
         </div>
     </div>
 
+        </div>
+    </div>
 </div>
 
-</body>
-</html>
+<?= view('layouts/footer') ?>

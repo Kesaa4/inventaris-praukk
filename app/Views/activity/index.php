@@ -1,27 +1,15 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Activity Log</title>
+<?= view('layouts/header', ['title' => 'Activity Log']) ?>
+<?= view('layouts/navbar') ?>
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-        
-    <!-- JS 5 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</head>
-<body class="bg-light">
+<div class="main-content">
+    <div class="container-fluid px-3 px-md-4">
+        <div class="content-wrapper fade-in">
 
-<div class="container mt-4">
-
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-bold mb-0">Activity Log</h4>
-        <a href="/dashboard" class="btn btn-secondary btn-sm">
-            Kembali ke Dashboard
-        </a>
-    </div>
+            <!-- Header -->
+            <div class="page-header">
+                <h4><i class="bi bi-clock-history me-2"></i>Activity Log</h4>
+                <p class="text-muted">Riwayat aktivitas pengguna sistem</p>
+            </div>
 
     <!-- Filter -->
     <div class="card shadow-sm mb-3">
@@ -51,7 +39,7 @@
                     </select>
                 </div>
 
-                <div class="col-md-5 d-flex gap-2">
+                <div class="col-md-12 col-lg-5 d-flex gap-2">
                     <button type="submit" class="btn btn-primary">
                         Cari
                     </button>
@@ -94,6 +82,7 @@
                                 default => 'secondary'
                             };
 
+                            // Pisah ringkasan dan detail aktivitas
                             $split = explode('||', $l['aktivitas']);
                             $ringkas = trim($split[0]);
                             $detail  = trim($split[1] ?? '');
@@ -273,7 +262,8 @@
         </div>
     </div>
 
+        </div>
+    </div>
 </div>
 
-</body>
-</html>
+<?= view('layouts/footer') ?>
