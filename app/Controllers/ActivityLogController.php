@@ -38,5 +38,57 @@ public function index()
     return view('activity/index', $data);
 }
 
+public function exportExcel()
+{
+    // Cek apakah user adalah admin
+    if (session('role') !== 'admin') {
+        throw new \CodeIgniter\Exceptions\PageForbiddenException();
+    }
+
+    helper('excel');
+
+    $logModel = new ActivityLogModel();
+
+    // Ambil parameter filter
+    $keyword = $this->request->getGet('keyword');
+    $role    = $this->request->getGet('role');
+
+    // Filter data
+    $logModel->getLogFiltered($keyword, $role);
+    $logs = $logModel->findAll();
+
+    // Siapkan data untuk export
+    $data = [];
+    foreach ($logs as $log) {
+        $data[] = [
+            date('d-m-Y H:i', strtotime($log['created_at'])),
+            $log['nama'] ?? explode('@', $log['email'])[0],
+            $log['email'],
+            $log['role'] ?? '-',
+            str_replace('||', ' - ', $log['aktivitas']),
+            $log['tabel'],
+            $log['id_data']
+        ];
+    }
+
+    // Headers
+    $headers = [
+        'Waktu',
+        'Nama User',
+        'Email',
+        'Role',
+        'Aktivitas',
+        'Tabel',
+        'ID Data'
+    ];
+
+    // Filename
+    $filename = 'Activity_Log_' . date('Y-m-d_His') . '.xlsx';
+
+    // Export
+    exportToExcel($data, $headers, $filename, 'ACTIVITY LOG SISTEM');
+}
+
+
 
 }

@@ -54,6 +54,12 @@
                         <a href="<?= base_url('barang') ?>" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-clockwise me-1"></i>Reset
                         </a>
+                        <?php if (session()->get('role') === 'admin'): ?>
+                            <a href="<?= base_url('barang/export-excel?' . http_build_query(['keyword' => $keyword, 'kategori' => $catFilter])) ?>" 
+                               class="btn btn-success">
+                                <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
+                            </a>
+                        <?php endif ?>
                     </div>
 
                     <?php if (session()->get('role') === 'admin'): ?>
@@ -111,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <th class="text-nowrap">RAM</th>
                         <th class="text-nowrap">ROM</th>
                         <th class="text-nowrap">Kondisi</th>
+                        <th class="text-nowrap">Foto</th>
                         <th class="text-nowrap">Status</th>
                         <th class="text-nowrap">Keterangan</th>
                         <?php if (session()->get('role') === 'admin'): ?>
@@ -130,6 +137,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         <td class="text-nowrap"><?= esc($b['ram']) ?></td>
                         <td class="text-nowrap"><?= esc($b['rom']) ?></td>
                         <td class="text-nowrap"><?= esc($b['kategori_kondisi']) ?></td>
+                        <td class="text-center">
+                            <?php helper('upload'); ?>
+                            <img src="<?= getFotoBarang($b['foto'] ?? null) ?>" 
+                                 alt="<?= esc($b['kode_barang']) ?>"
+                                 class="img-thumbnail"
+                                 style="width: 60px; height: 60px; object-fit: cover; cursor: pointer;"
+                                 data-bs-toggle="modal"
+                                 data-bs-target="#fotoModal<?= $b['id_barang'] ?>">
+                        </td>
                         <td class="text-center text-nowrap">
                             <?php
                                 $status = strtolower($b['status']);
@@ -156,6 +172,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         <?php if (session()->get('role') === 'admin'): ?>
                         <td class="text-center text-nowrap">
+                            <a href="<?= base_url('barang/history/' . $b['id_barang']) ?>" 
+                               class="btn btn-sm btn-info"
+                               title="Lihat Riwayat Peminjaman">
+                                <i class="bi bi-clock-history"></i>
+                            </a>
                             <a href="<?= base_url('barang/edit/' . $b['id_barang']) ?>" class="btn btn-sm btn-warning">
                                 Edit
                             </a>
@@ -170,9 +191,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         <?php endif ?>
                     </tr>
                     <?php endforeach ?>
+                    
                     <?php else: ?>
                     <tr>
-                        <td colspan="15" class="text-center text-muted">
+                        <td colspan="12" class="text-center text-muted">
                             Data barang kosong
                         </td>
                     </tr>
@@ -182,6 +204,33 @@ document.addEventListener('DOMContentLoaded', function() {
 
         </div>
     </div>
+
+    <!-- Modal Foto Barang -->
+    <?php if (count($barang) > 0): ?>
+        <?php foreach ($barang as $b): ?>
+        <div class="modal fade" id="fotoModal<?= $b['id_barang'] ?>" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Foto: <?= esc($b['kode_barang']) ?></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <img src="<?= getFotoBarang($b['foto'] ?? null) ?>" 
+                             alt="<?= esc($b['kode_barang']) ?>"
+                             class="img-fluid"
+                             style="max-height: 500px;">
+                        <div class="mt-2">
+                            <small class="text-muted">
+                                <?= esc($b['jenis_barang']) ?> - <?= esc($b['merek_barang']) ?> - <?= esc($b['tipe_barang']) ?>
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endforeach ?>
+    <?php endif ?>
 
     <!-- Pagination -->
     <div class="d-flex justify-content-between align-items-center mt-3">

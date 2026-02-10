@@ -232,7 +232,16 @@ class PinjamController extends BaseController
 
         // Jika disetujui maka 
         if ($status === 'disetujui') {
+            // Ambil durasi dari form atau default 7 hari
+            $durasi = $this->request->getPost('durasi_pinjam') ?: 7;
+            $durasi = max(1, min(30, (int)$durasi)); // Batasi 1-30 hari
+            
+            // Hitung tanggal jatuh tempo
+            $tglJatuhTempo = date('Y-m-d H:i:s', strtotime("+{$durasi} days"));
+            
             $data['tgl_disetujui'] = date('Y-m-d H:i:s');
+            $data['tgl_jatuh_tempo'] = $tglJatuhTempo;
+            $data['durasi_pinjam'] = $durasi;
             $data['approved_at'] = date('Y-m-d H:i:s');
             $data['approved_by'] = session('id_user');
 
@@ -242,7 +251,8 @@ class PinjamController extends BaseController
             ]);
 
             log_activity(
-                'Menyetujui peminjaman ' . $namaPeminjam . ' - ' . $kodeBarang,
+                'Menyetujui peminjaman ' . $namaPeminjam . ' - ' . $kodeBarang . 
+                '||Durasi: ' . $durasi . ' hari;Jatuh tempo: ' . date('d-m-Y', strtotime($tglJatuhTempo)),
                 'pinjam',
                 $id
             );
@@ -573,6 +583,95 @@ class PinjamController extends BaseController
         return view('pinjam/cetak_detail', [
             'pinjam' => $pinjam
         ]);
+    }
+
+    // Export data peminjaman ke Excel
+    public function exportExcel()
+    {
+        // Pastikan admin atau petugas
+        $this->mustAdminOrPetugas();
+
+        $pinjamModel = new PinjamModel();
+
+        // Ambil parameter filter
+        $filters = [
+            'keyword' => $this->request->getGet('keyword'),
+            'status' => $this->request->getGet('status'),
+            'tgl_pengajuan' => $this->request->getGet('tgl_pengajuan'),
+            'tgl_disetujui_kembali' => $this->request->getGet('tgl_disetujui_kembali')
+        ];
+
+        // Ambil data peminjaman dengan filter (sudah include join dari initialize())
+        $pinjam = $pinjamModel->filterPinjam($filters)->findAll();
+
+        // Load helper
+        helper(['excel', 'pinjam']);
+
+        // Siapkan headers
+        $headers = [
+            'No',
+            'Peminjam',
+            'Email',
+            'Barang',
+            'Kode Barang',
+            'Tgl Pengajuan',
+            'Tgl Disetujui',
+            'Durasi (Hari)',
+            'Jatuh Tempo',
+            'Tgl Dikembalikan',
+            'Status',
+            'Keterlambatan'
+        ];
+
+        // Siapkan data
+        $data = [];
+        $no = 1;
+        foreach ($pinjam as $p) {
+            $status = strtolower(trim($p['status']));
+            
+            // Hitung keterlambatan
+            $keterlambatan = '-';
+            if ($status === 'dikembalikan' && $p['tgl_jatuh_tempo']) {
+                if (isLate($p['tgl_jatuh_tempo'], $status, $p['tgl_disetujui_kembali'])) {
+                    $hari = hitungHariTerlambat($p['tgl_jatuh_tempo'], $status, $p['tgl_disetujui_kembali']);
+                    $keterlambatan = "Terlambat {$hari} hari";
+                } else {
+                    $keterlambatan = 'Tepat Waktu';
+                }
+            } elseif ($status === 'disetujui' && $p['tgl_jatuh_tempo']) {
+                if (isLate($p['tgl_jatuh_tempo'], $status)) {
+                    $hari = hitungHariTerlambat($p['tgl_jatuh_tempo'], $status);
+                    $keterlambatan = "Terlambat {$hari} hari";
+                } else {
+                    $keterlambatan = sisaWaktu($p['tgl_jatuh_tempo'], $status);
+                }
+            }
+
+            $data[] = [
+                $no++,
+                $p['nama'] ?? explode('@', $p['email'])[0],
+                $p['email'],
+                $p['jenis_barang'] . ' - ' . $p['merek_barang'] . ' - ' . $p['tipe_barang'],
+                $p['kode_barang'],
+                $p['tgl_pengajuan'] ? date('d-m-Y H:i', strtotime($p['tgl_pengajuan'])) : '-',
+                $p['tgl_disetujui'] ? date('d-m-Y H:i', strtotime($p['tgl_disetujui'])) : '-',
+                $p['durasi_pinjam'] ?? '-',
+                $p['tgl_jatuh_tempo'] ? date('d-m-Y H:i', strtotime($p['tgl_jatuh_tempo'])) : '-',
+                $p['tgl_disetujui_kembali'] ? date('d-m-Y H:i', strtotime($p['tgl_disetujui_kembali'])) : '-',
+                ucfirst($p['status']),
+                $keterlambatan
+            ];
+        }
+
+        // Generate filename
+        $filename = 'Data_Peminjaman_' . date('Y-m-d_His') . '.xlsx';
+        $title = 'DATA PEMINJAMAN BARANG';
+
+        // Log activity
+        log_activity('Export data peminjaman ke Excel', 'pinjam', 0);
+
+        // Export
+        exportToExcel($data, $headers, $filename, $title);
     }
 
 

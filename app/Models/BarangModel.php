@@ -22,6 +22,7 @@ class BarangModel extends Model
         'rom',
         'status',
         'keterangan',
+        'foto',
         'deleted_at'
     ];
 

@@ -74,7 +74,7 @@ class BarangController extends BaseController
         // Ambil kode barang dari form
         $kodeBarang = $this->request->getPost('kode_barang');
 
-        // Simpan data
+        // Simpan data barang dulu
         $id = $barangModel->insert([
             'jenis_barang'  => $this->request->getPost('jenis_barang'),
             'merek_barang'  => $this->request->getPost('merek_barang'),
@@ -86,6 +86,25 @@ class BarangController extends BaseController
             'keterangan'    => $this->request->getPost('keterangan'),
             'id_kategori'   => $this->request->getPost('id_kategori')
         ]);
+
+        // Handle foto upload
+        helper('upload');
+        $file = $this->request->getFile('foto');
+        
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+            // Validasi foto
+            $validation = validateFotoBarang($file);
+            
+            if ($validation['valid']) {
+                // Upload foto
+                $fotoName = uploadFotoBarang($file, $id);
+                
+                if ($fotoName) {
+                    // Update dengan nama foto
+                    $barangModel->update($id, ['foto' => $fotoName]);
+                }
+            }
+        }
 
         // Log pakai kode barang
         log_activity(
@@ -144,6 +163,29 @@ class BarangController extends BaseController
             'keterangan'   => trim($this->request->getPost('keterangan') ?? '')
         ];
 
+        // Handle foto upload
+        helper('upload');
+        $file = $this->request->getFile('foto');
+        
+        if ($file && $file->isValid() && !$file->hasMoved()) {
+            // Validasi foto
+            $validation = validateFotoBarang($file);
+            
+            if ($validation['valid']) {
+                // Hapus foto lama jika ada
+                if (!empty($old['foto'])) {
+                    deleteFotoBarang($old['foto']);
+                }
+                
+                // Upload foto baru
+                $fotoName = uploadFotoBarang($file, $id);
+                
+                if ($fotoName) {
+                    $new['foto'] = $fotoName;
+                }
+            }
+        }
+
         // Update data
         $barangModel->update($id, $new);
 
@@ -169,6 +211,10 @@ class BarangController extends BaseController
                 if ($field === 'id_kategori') {
                     $changes[] = 'Kategori: ' . $namaKategoriOld . ' → ' . $namaKategoriNew;
                 } 
+                // Khusus untuk foto, tampilkan info upload
+                elseif ($field === 'foto') {
+                    $changes[] = 'Foto: ' . ($old[$field] ? 'Diganti' : 'Ditambahkan');
+                }
                 // Khusus untuk keterangan, tampilkan dengan format berbeda 
                 else {
                     $label = ucwords(str_replace('_', ' ', $field));
@@ -318,5 +364,156 @@ class BarangController extends BaseController
         // Redirect dengan pesan sukses
         return redirect()->back()->with('success', 'Barang dihapus permanen');
     }
+
+    // Riwayat peminjaman barang
+    public function history($id)
+    {
+        // Inisialisasi model
+        $barangModel = new BarangModel();
+        $pinjamModel = new \App\Models\PinjamModel();
+
+        // Ambil data barang
+        $barang = $barangModel->find($id);
+        
+        if (!$barang) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Barang tidak ditemukan');
+        }
+
+        // Ambil riwayat peminjaman barang ini
+        $riwayat = $pinjamModel
+            ->select('
+                pinjam.*,
+                user.email,
+                userprofile.nama
+            ')
+            ->join('user', 'user.id_user = pinjam.id_user', 'left')
+            ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
+            ->where('pinjam.id_barang', $id)
+            ->orderBy('pinjam.created_at', 'DESC')
+            ->findAll();
+
+        // Hitung statistik
+        $totalPinjam = count($riwayat);
+        $totalDikembalikan = count(array_filter($riwayat, fn($r) => $r['status'] === 'dikembalikan'));
+        $totalTerlambat = 0;
+        
+        // Load helper untuk cek keterlambatan
+        helper('pinjam');
+        
+        foreach ($riwayat as $r) {
+            if ($r['status'] === 'dikembalikan' && isLate($r['tgl_jatuh_tempo'], $r['status'], $r['tgl_disetujui_kembali'])) {
+                $totalTerlambat++;
+            }
+        }
+
+        // Siapkan data untuk view
+        $data = [
+            'barang' => $barang,
+            'riwayat' => $riwayat,
+            'totalPinjam' => $totalPinjam,
+            'totalDikembalikan' => $totalDikembalikan,
+            'totalTerlambat' => $totalTerlambat
+        ];
+
+        return view('barang/history', $data);
+    }
+
+    // Export data barang ke Excel
+    public function exportExcel()
+    {
+        // Inisialisasi model
+        $barangModel = new BarangModel();
+
+        // Ambil parameter filter
+        $keyword = $this->request->getGet('keyword');
+        $kategori = $this->request->getGet('kategori');
+
+        // Ambil data barang dengan filter
+        $barang = $barangModel->getBarangFiltered($keyword, $kategori)->findAll();
+
+        // Load helper
+        helper('excel');
+
+        // Siapkan headers
+        $headers = [
+            'No',
+            'Jenis Barang',
+            'Merek',
+            'Tipe',
+            'Kode Barang',
+            'RAM',
+            'ROM',
+            'Kategori',
+            'Status',
+            'Keterangan'
+        ];
+
+        // Siapkan data
+        $data = [];
+        $no = 1;
+        foreach ($barang as $b) {
+            $data[] = [
+                $no++,
+                $b['jenis_barang'],
+                $b['merek_barang'],
+                $b['tipe_barang'],
+                $b['kode_barang'],
+                $b['ram'],
+                $b['rom'],
+                $b['kategori_kondisi'],
+                ucfirst($b['status']),
+                $b['keterangan'] ?? '-'
+            ];
+        }
+
+        // Generate filename
+        $filename = 'Data_Barang_' . date('Y-m-d_His') . '.xlsx';
+        $title = 'DATA BARANG INVENTARIS';
+
+        // Log activity
+        log_activity('Export data barang ke Excel', 'barang', 0);
+
+        // Export
+        exportToExcel($data, $headers, $filename, $title);
+    }
+
+    // Hapus foto barang
+    public function deleteFoto($id)
+    {
+        // Cek admin
+        $this->mustAdmin();
+
+        helper('upload');
+        $barangModel = new BarangModel();
+
+        // Ambil data barang
+        $barang = $barangModel->find($id);
+
+        if (!$barang) {
+            return redirect()->back()->with('error', 'Barang tidak ditemukan');
+        }
+
+        if (empty($barang['foto'])) {
+            return redirect()->back()->with('error', 'Barang tidak memiliki foto');
+        }
+
+        // Hapus file dari server
+        if (deleteFotoBarang($barang['foto'])) {
+            // Update database
+            $barangModel->update($id, ['foto' => null]);
+
+            // Log activity
+            log_activity(
+                'Menghapus foto barang: ' . $barang['kode_barang'],
+                'barang',
+                $id
+            );
+
+            return redirect()->back()->with('success', 'Foto berhasil dihapus');
+        }
+
+        return redirect()->back()->with('error', 'Gagal menghapus foto');
+    }
+
 
 }

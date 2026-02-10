@@ -55,9 +55,9 @@
                         <form action="<?= base_url('pinjam/update/'.$pinjam['id_pinjam']) ?>" method="post">
                             <?= csrf_field() ?>
 
-                            <div class="mb-4">
+                            <div class="mb-3">
                                 <label class="form-label fw-semibold">Status Peminjaman</label>
-                                <select name="status" class="form-select" required>
+                                <select name="status" class="form-select" id="statusSelect" required>
                                     <option value="menunggu"
                                         <?= $pinjam['status'] === 'menunggu' ? 'selected' : '' ?>>
                                         Menunggu
@@ -76,6 +76,23 @@
                                         </option>
                                     <?php endif; ?>
                                 </select>
+                            </div>
+
+                            <!-- Durasi Peminjaman (muncul jika disetujui) -->
+                            <div class="mb-3" id="durasiBox" style="display: <?= $pinjam['status'] === 'disetujui' ? 'block' : 'none' ?>;">
+                                <label class="form-label fw-semibold">
+                                    Durasi Peminjaman (Hari)
+                                </label>
+                                <input type="number" 
+                                    name="durasi_pinjam" 
+                                    class="form-control" 
+                                    value="<?= $pinjam['durasi_pinjam'] ?? 7 ?>"
+                                    min="1"
+                                    max="30"
+                                    placeholder="Masukkan durasi dalam hari">
+                                <small class="text-muted">
+                                    Batas waktu pengembalian akan dihitung otomatis
+                                </small>
                             </div>
 
                             <div class="mb-3 d-none" id="alasanBox">
@@ -110,11 +127,13 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const statusSelect = document.querySelector('select[name="status"]');
+    const statusSelect = document.getElementById('statusSelect');
     const alasanBox = document.getElementById('alasanBox');
+    const durasiBox = document.getElementById('durasiBox');
     const textarea = alasanBox.querySelector('textarea');
 
-    function toggleAlasan() {
+    function toggleFields() {
+        // Toggle alasan ditolak
         if (statusSelect.value === 'ditolak') {
             alasanBox.classList.remove('d-none');
             textarea.setAttribute('required', 'required');
@@ -122,10 +141,17 @@ document.addEventListener('DOMContentLoaded', function () {
             alasanBox.classList.add('d-none');
             textarea.removeAttribute('required');
         }
+        
+        // Toggle durasi peminjaman
+        if (statusSelect.value === 'disetujui') {
+            durasiBox.style.display = 'block';
+        } else {
+            durasiBox.style.display = 'none';
+        }
     }
 
-    toggleAlasan();
-    statusSelect.addEventListener('change', toggleAlasan);
+    toggleFields();
+    statusSelect.addEventListener('change', toggleFields);
 });
 </script>
 

@@ -244,10 +244,169 @@
                 </div>
             </div>
 
+            <!-- Grafik & Statistik Lanjutan -->
+            <div class="row g-4 mb-4">
+                <!-- Grafik Peminjaman per Bulan -->
+                <div class="col-lg-8">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0"><i class="bi bi-graph-up me-2"></i>Trend Peminjaman (6 Bulan Terakhir)</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="chartPeminjaman" height="80"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Barang Paling Populer -->
+                <div class="col-lg-4">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0"><i class="bi bi-star me-2"></i>Barang Terpopuler</h5>
+                        </div>
+                        <div class="card-body">
+                            <?php if (!empty($barangPopuler)): ?>
+                                <div class="list-group list-group-flush">
+                                    <?php foreach ($barangPopuler as $index => $barang): ?>
+                                        <div class="list-group-item px-0 d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <div class="fw-bold"><?= $index + 1 ?>. <?= esc($barang['jenis_barang']) ?></div>
+                                                <small class="text-muted"><?= esc($barang['merek_barang']) ?> - <?= esc($barang['kode_barang']) ?></small>
+                                            </div>
+                                            <span class="badge bg-primary rounded-pill"><?= $barang['total'] ?>x</span>
+                                        </div>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php else: ?>
+                                <p class="text-muted text-center">Belum ada data</p>
+                            <?php endif ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- User Paling Aktif -->
+            <div class="row g-4 mb-4">
+                <div class="col-12">
+                    <div class="card shadow-sm">
+                        <div class="card-header bg-white">
+                            <h5 class="mb-0"><i class="bi bi-trophy me-2"></i>User Paling Aktif</h5>
+                        </div>
+                        <div class="card-body">
+                            <?php if (!empty($userAktif)): ?>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th width="50">Rank</th>
+                                                <th>Nama</th>
+                                                <th>Email</th>
+                                                <th width="150" class="text-center">Total Peminjaman</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($userAktif as $index => $user): ?>
+                                                <tr>
+                                                    <td class="text-center">
+                                                        <?php if ($index === 0): ?>
+                                                            <i class="bi bi-trophy-fill text-warning" style="font-size: 1.5rem;"></i>
+                                                        <?php elseif ($index === 1): ?>
+                                                            <i class="bi bi-trophy-fill text-secondary" style="font-size: 1.3rem;"></i>
+                                                        <?php elseif ($index === 2): ?>
+                                                            <i class="bi bi-trophy-fill text-danger" style="font-size: 1.1rem;"></i>
+                                                        <?php else: ?>
+                                                            <span class="badge bg-secondary"><?= $index + 1 ?></span>
+                                                        <?php endif ?>
+                                                    </td>
+                                                    <td>
+                                                        <strong><?= esc($user['nama'] ?? explode('@', $user['email'])[0]) ?></strong>
+                                                    </td>
+                                                    <td><?= esc($user['email']) ?></td>
+                                                    <td class="text-center">
+                                                        <span class="badge bg-primary"><?= $user['total'] ?> kali</span>
+                                                    </td>
+                                                </tr>
+                                            <?php endforeach ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            <?php else: ?>
+                                <p class="text-muted text-center">Belum ada data</p>
+                            <?php endif ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>
 
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+// Grafik Peminjaman per Bulan
+const ctx = document.getElementById('chartPeminjaman');
+const chartData = <?= json_encode($peminjamanPerBulan) ?>;
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: chartData.map(item => item.bulan),
+        datasets: [{
+            label: 'Jumlah Peminjaman',
+            data: chartData.map(item => item.total),
+            borderColor: '#5a67d8',
+            backgroundColor: 'rgba(90, 103, 216, 0.1)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.4,
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            pointBackgroundColor: '#5a67d8',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'top',
+            },
+            tooltip: {
+                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                padding: 12,
+                titleFont: {
+                    size: 14
+                },
+                bodyFont: {
+                    size: 13
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                },
+                grid: {
+                    color: 'rgba(0, 0, 0, 0.05)'
+                }
+            },
+            x: {
+                grid: {
+                    display: false
+                }
+            }
+        }
+    }
+});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

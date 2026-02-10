@@ -14,7 +14,7 @@
     <div class="card shadow-sm">
         <div class="card-body">
 
-            <form action="<?= base_url('/barang/update/' . $barang['id_barang']) ?>" method="post">
+            <form action="<?= base_url('/barang/update/' . $barang['id_barang']) ?>" method="post" enctype="multipart/form-data">
                 <?= csrf_field() ?>
 
                 <div class="row g-3">
@@ -157,6 +157,51 @@
                         >
                     </div>
 
+                    <!-- Foto Barang -->
+                    <div class="col-12">
+                        <label class="form-label">Foto Barang</label>
+                        
+                        <?php helper('upload'); ?>
+                        
+                        <!-- Current Photo -->
+                        <?php if (!empty($barang['foto'])): ?>
+                            <div class="mb-3">
+                                <label class="form-label small text-muted">Foto Saat Ini:</label>
+                                <div>
+                                    <img src="<?= getFotoBarang($barang['foto']) ?>" 
+                                         alt="Current" 
+                                         class="img-thumbnail" 
+                                         style="max-width: 200px; max-height: 200px; object-fit: cover;">
+                                </div>
+                                <div class="mt-2">
+                                    <a href="<?= base_url('barang/delete-foto/' . $barang['id_barang']) ?>" 
+                                       class="btn btn-sm btn-danger"
+                                       onclick="return confirm('Yakin hapus foto ini?')">
+                                        <i class="bi bi-trash"></i> Hapus Foto
+                                    </a>
+                                </div>
+                            </div>
+                        <?php endif ?>
+                        
+                        <!-- Upload New -->
+                        <input type="file" 
+                               name="foto" 
+                               class="form-control" 
+                               accept="image/jpeg,image/jpg,image/png,image/gif"
+                               id="fotoInput">
+                        <small class="text-muted">
+                            <?= !empty($barang['foto']) ? 'Upload foto baru untuk mengganti' : 'Format: JPG, PNG, GIF. Maksimal 2MB' ?>
+                        </small>
+                        
+                        <!-- Preview -->
+                        <div id="fotoPreview" class="mt-3" style="display: none;">
+                            <label class="form-label small text-muted">Preview Foto Baru:</label>
+                            <div>
+                                <img id="previewImage" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px;">
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
 
                 <!-- Action -->
@@ -176,5 +221,40 @@
 
     </div>
 </div>
+
+<script>
+// Preview image before upload
+document.getElementById('fotoInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        // Validate size (2MB = 2048000 bytes)
+        if (file.size > 2048000) {
+            alert('Ukuran file maksimal 2MB');
+            this.value = '';
+            document.getElementById('fotoPreview').style.display = 'none';
+            return;
+        }
+        
+        // Validate type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+        if (!allowedTypes.includes(file.type)) {
+            alert('Format file harus JPG, PNG, atau GIF');
+            this.value = '';
+            document.getElementById('fotoPreview').style.display = 'none';
+            return;
+        }
+        
+        // Show preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById('previewImage').src = e.target.result;
+            document.getElementById('fotoPreview').style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    } else {
+        document.getElementById('fotoPreview').style.display = 'none';
+    }
+});
+</script>
 
 <?= view('layouts/footer') ?>

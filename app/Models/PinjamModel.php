@@ -17,6 +17,8 @@ class PinjamModel extends Model
         'id_user',
         'tgl_pengajuan',
         'tgl_disetujui',
+        'tgl_jatuh_tempo',
+        'durasi_pinjam',
         'tgl_pengajuan_kembali',
         'tgl_disetujui_kembali',
         'status',

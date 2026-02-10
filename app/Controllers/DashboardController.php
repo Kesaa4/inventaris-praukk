@@ -59,6 +59,44 @@ class DashboardController extends BaseController
         // Statistik User
         $totalUser = $db->table('user')->countAllResults();
 
+        // Statistik Peminjaman per Bulan (6 bulan terakhir)
+        $peminjamanPerBulan = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $bulan = date('Y-m', strtotime("-$i month"));
+            $count = $db->table('pinjam')
+                ->where('deleted_at IS NULL')
+                ->where("DATE_FORMAT(tgl_pengajuan, '%Y-%m')", $bulan)
+                ->countAllResults();
+            
+            $peminjamanPerBulan[] = [
+                'bulan' => date('M Y', strtotime($bulan . '-01')),
+                'total' => $count
+            ];
+        }
+
+        // Barang Paling Sering Dipinjam (Top 5)
+        $barangPopuler = $db->table('pinjam')
+            ->select('barang.jenis_barang, barang.merek_barang, barang.kode_barang, COUNT(pinjam.id_pinjam) as total')
+            ->join('barang', 'barang.id_barang = pinjam.id_barang')
+            ->where('pinjam.deleted_at IS NULL')
+            ->groupBy('pinjam.id_barang')
+            ->orderBy('total', 'DESC')
+            ->limit(5)
+            ->get()
+            ->getResultArray();
+
+        // User Paling Aktif (Top 5)
+        $userAktif = $db->table('pinjam')
+            ->select('user.email, userprofile.nama, COUNT(pinjam.id_pinjam) as total')
+            ->join('user', 'user.id_user = pinjam.id_user')
+            ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
+            ->where('pinjam.deleted_at IS NULL')
+            ->groupBy('pinjam.id_user')
+            ->orderBy('total', 'DESC')
+            ->limit(5)
+            ->get()
+            ->getResultArray();
+
         // Tampilkan view dengan data
         return view('dashboard/admin', [
             'nama' => $nama,
@@ -70,7 +108,10 @@ class DashboardController extends BaseController
             'peminjamanMenunggu' => $peminjamanMenunggu,
             'peminjamanDisetujui' => $peminjamanDisetujui,
             'peminjamanDikembalikan' => $peminjamanDikembalikan,
-            'totalUser' => $totalUser
+            'totalUser' => $totalUser,
+            'peminjamanPerBulan' => $peminjamanPerBulan,
+            'barangPopuler' => $barangPopuler,
+            'userAktif' => $userAktif
         ]);
     }
 

@@ -1,6 +1,11 @@
 <?= view('layouts/header', ['title' => 'Data Peminjaman']) ?>
 <?= view('layouts/navbar') ?>
 
+<?php 
+// Load helper
+helper('pinjam');
+?>
+
 <div class="main-content">
     <div class="container-fluid px-3 px-md-4">
         <div class="content-wrapper">
@@ -61,6 +66,17 @@
                 <a href="<?= site_url('pinjam') ?>" class="btn btn-outline-secondary">
                     <i class="bi bi-arrow-clockwise me-1"></i>Reset
                 </a>
+                <?php if (in_array(session('role'), ['admin', 'petugas'])): ?>
+                    <a href="<?= base_url('pinjam/export-excel?' . http_build_query([
+                        'keyword' => request()->getGet('keyword'),
+                        'status' => request()->getGet('status'),
+                        'tgl_pengajuan' => request()->getGet('tgl_pengajuan'),
+                        'tgl_disetujui_kembali' => request()->getGet('tgl_disetujui_kembali')
+                    ])) ?>" 
+                       class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
+                    </a>
+                <?php endif ?>
             </div>
             <div class="d-flex flex-column flex-sm-row gap-2">
                 <?php if (in_array(session('role'), ['admin','peminjam','petugas'])): ?>
@@ -129,6 +145,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <th>Nama Peminjam</th>
                             <th style="min-width:170px" class="text-nowrap text-center">Pengajuan Peminjaman</th>
                             <th style="min-width:170px" class="text-nowrap text-center">Peminjaman Disetujui</th>
+                            <th style="min-width:150px" class="text-nowrap text-center">Jatuh Tempo</th>
                             <th style="min-width:190px" class="text-nowrap text-center">Ajukan Pengembalian</th>
                             <th style="min-width:200px" class="text-nowrap text-center">Pengembalian Disetujui</th>
                             <th>Status</th>
@@ -191,6 +208,33 @@ document.addEventListener('DOMContentLoaded', function() {
                                 <?= $p['tgl_disetujui']
                                     ? date('d-m-Y H:i', strtotime($p['tgl_disetujui']))
                                     : '-' ?>
+                            </td>
+
+                            <td class="text-nowrap text-center">
+                                <?php if ($p['tgl_jatuh_tempo'] && $status === 'disetujui'): ?>
+                                    <?= date('d-m-Y H:i', strtotime($p['tgl_jatuh_tempo'])) ?>
+                                    <br>
+                                    <?php 
+                                        $sisa = sisaWaktu($p['tgl_jatuh_tempo'], $status);
+                                        $isLateNow = isLate($p['tgl_jatuh_tempo'], $status);
+                                    ?>
+                                    <small class="badge bg-<?= $isLateNow ? 'danger' : 'info' ?>">
+                                        <?= $sisa ?>
+                                    </small>
+                                <?php elseif ($p['tgl_jatuh_tempo'] && $status === 'dikembalikan'): ?>
+                                    <?= date('d-m-Y H:i', strtotime($p['tgl_jatuh_tempo'])) ?>
+                                    <?php if (isLate($p['tgl_jatuh_tempo'], $status, $p['tgl_disetujui_kembali'])): ?>
+                                        <br>
+                                        <small class="badge bg-danger">
+                                            Terlambat <?= hitungHariTerlambat($p['tgl_jatuh_tempo'], $status, $p['tgl_disetujui_kembali']) ?> hari
+                                        </small>
+                                    <?php else: ?>
+                                        <br>
+                                        <small class="badge bg-success">Tepat Waktu</small>
+                                    <?php endif ?>
+                                <?php else: ?>
+                                    -
+                                <?php endif ?>
                             </td>
 
                             <td class="text-nowrap text-center">

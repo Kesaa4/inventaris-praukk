@@ -44,6 +44,10 @@
                     <a href="<?= base_url('activity-log') ?>" class="btn btn-outline-secondary">
                         <i class="bi bi-arrow-clockwise me-1"></i>Reset
                     </a>
+                    <a href="<?= base_url('activity-log/export-excel?' . http_build_query(['keyword' => $keyword ?? '', 'role' => $role ?? ''])) ?>" 
+                       class="btn btn-success">
+                        <i class="bi bi-file-earmark-excel me-1"></i>Export Excel
+                    </a>
                 </div>
 
             </form>

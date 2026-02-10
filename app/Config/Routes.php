@@ -24,8 +24,9 @@ $routes->get('/', 'AuthController::login');
 $routes->post('/login', 'AuthController::attemptLogin');
 $routes->get('/logout', 'AuthController::logout');
 
-// Activity Log Route
+// Activity Log Routes
 $routes->get('/activity-log', 'ActivityLogController::index', ['filter' => 'auth']);
+$routes->get('/activity-log/export-excel', 'ActivityLogController::exportExcel', ['filter' => 'admin']);
 
 // Dashboard Route
 $routes->get('/dashboard', 'DashboardController::index', ['filter' => 'auth']);
@@ -51,6 +52,8 @@ $routes->group('user', ['filter' => 'admin'], function ($routes) {
 // Barang Routes
 $routes->group('barang', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'BarangController::index');
+    $routes->get('history/(:num)', 'BarangController::history/$1');
+    $routes->get('export-excel', 'BarangController::exportExcel');
 });
 
 // Barang Management Routes for Admin
@@ -62,6 +65,7 @@ $routes->group('barang', ['filter' => 'admin'], function ($routes) {
     $routes->post('update/(:num)', 'BarangController::update/$1');
 
     $routes->get('delete/(:num)', 'BarangController::delete/$1');
+    $routes->get('delete-foto/(:num)', 'BarangController::deleteFoto/$1');
 
     $routes->get('trash', 'BarangController::trash');
     $routes->get('restore/(:num)', 'BarangController::restore/$1');
@@ -82,6 +86,7 @@ $routes->group('pinjam', ['filter' => 'auth'], function ($routes) {
     $routes->post('return-update/(:num)', 'PinjamController::returnUpdate/$1');
 
     $routes->get('cetak-detail/(:num)', 'PinjamController::cetakDetail/$1');
+    $routes->get('export-excel', 'PinjamController::exportExcel');
 
     $routes->get('trash', 'PinjamController::trash');
     $routes->get('restore/(:num)', 'PinjamController::restore/$1');
