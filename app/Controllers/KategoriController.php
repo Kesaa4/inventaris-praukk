@@ -26,7 +26,7 @@ class KategoriController extends BaseController
         // Siapkan data untuk view
         $data = [
             'title' => 'Kategori Barang',
-            'kategori_list' => $this->kategoriModel->getAllKategori()
+            'kategori_list' => $this->kategoriModel->getAllKategoriWithCount()
         ];
 
         // Tampilkan view dengan data

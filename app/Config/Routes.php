@@ -81,13 +81,15 @@ $routes->group('pinjam', ['filter' => 'auth'], function ($routes) {
     $routes->get('return-check/(:num)', 'PinjamController::returnCheck/$1');
     $routes->post('return-update/(:num)', 'PinjamController::returnUpdate/$1');
 
+    $routes->get('cetak-detail/(:num)', 'PinjamController::cetakDetail/$1');
+
     $routes->get('trash', 'PinjamController::trash');
     $routes->get('restore/(:num)', 'PinjamController::restore/$1');
     $routes->get('force-delete/(:num)', 'PinjamController::forceDelete/$1');
 });
 
-// Kategori Routes for Admin
-$routes->group('kategori', ['filter' => 'admin'], function ($routes) {
+// Kategori Routes (untuk semua user yang login)
+$routes->group('kategori', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'KategoriController::index');
     $routes->get('(:num)', 'KategoriController::show/$1');
 });

@@ -8,8 +8,9 @@
             <div class="col-12 col-md-8 col-lg-6">
 
                 <div class="card shadow-sm">
-                    <div class="card-header bg-primary text-white">
+                    <div class="card-header bg-primary text-white text-center">
                         <h5 class="mb-0">Tambah User</h5>
+                        <p class="mb-0 small">Buat akun pengguna baru</p>
                     </div>
 
                     <div class="card-body">

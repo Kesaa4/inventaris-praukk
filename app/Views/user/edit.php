@@ -8,8 +8,9 @@
             <div class="col-12 col-md-8 col-lg-6">
 
                 <div class="card shadow-sm">
-                    <div class="card-header bg-warning text-dark">
+                    <div class="card-header bg-warning text-dark text-center">
                         <h5 class="mb-0">Edit Role User</h5>
+                        <p class="mb-0 small">Ubah role dan status pengguna</p>
                     </div>
 
                     <div class="card-body">

@@ -102,7 +102,7 @@
                         <tr class="align-middle">
                             <th style="width:50px;">No</th>
                             <th style="min-width:170px" class="text-nowrap text-center">Barang</th>
-                            <th>Peminjam</th>
+                            <th style="min-width:170px" class="text-nowrap text-center">Peminjam</th>
                             <th style="min-width:170px" class="text-nowrap text-center">Pengajuan Peminjaman</th>
                             <th style="min-width:170px" class="text-nowrap text-center">Peminjaman Disetujui</th>
                             <th style="min-width:190px" class="text-nowrap text-center">Ajukan Pengembalian</th>
@@ -129,7 +129,7 @@
                                 <?= esc($p['jenis_barang'].' '.$p['merek_barang'].' '.$p['tipe_barang'].' '.$p['kode_barang']) ?>
                             </td>
 
-                            <td>
+                            <td class="text-nowrap text-center">
                                 <?php 
                                     $displayName = !empty($p['nama']) ? $p['nama'] : explode('@', $p['email'])[0];
                                     echo esc($displayName);

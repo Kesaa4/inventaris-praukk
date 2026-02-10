@@ -23,6 +23,8 @@ class PinjamModel extends Model
         'alasan_ditolak',
         'approved_at',
         'approved_by',
+        'kondisi_barang',
+        'keterangan_kondisi',
         'deleted_at'
     ];
 

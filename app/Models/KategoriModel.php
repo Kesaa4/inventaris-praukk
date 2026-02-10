@@ -22,6 +22,15 @@ class KategoriModel extends Model
         return $this->findAll();
     }
 
+    // Ambil semua kategori dengan jumlah barang
+    public function getAllKategoriWithCount()
+    {
+        return $this->select('kategori.*, COUNT(barang.id_barang) as jumlah_barang')
+            ->join('barang', 'barang.id_kategori = kategori.id_kategori', 'left')
+            ->groupBy('kategori.id_kategori')
+            ->findAll();
+    }
+
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
 

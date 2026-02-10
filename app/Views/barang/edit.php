@@ -5,8 +5,9 @@
     <div class="container-fluid px-3 px-md-4">
 
         <!-- Header -->
-        <div class="mb-3">
+        <div class="mb-4 text-center">
             <h3 class="fw-bold">Edit Data Barang</h3>
+            <p class="text-muted mb-0">Perbarui informasi barang</p>
         </div>
 
     <!-- Form Card -->

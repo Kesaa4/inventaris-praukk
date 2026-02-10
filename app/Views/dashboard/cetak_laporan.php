@@ -220,6 +220,7 @@
                 <th>Tgl Disetujui</th>
                 <th>Tgl Kembali</th>
                 <th style="width: 100px;">Status</th>
+                <th style="width: 100px;">Kondisi</th>
             </tr>
         </thead>
         <tbody>
@@ -248,6 +249,24 @@
                     <span class="status-badge status-<?= esc($pinjam['status']) ?>">
                         <?= ucfirst(esc($pinjam['status'])) ?>
                     </span>
+                </td>
+                <td style="text-align: center;">
+                    <?php if ($pinjam['status'] === 'dikembalikan'): ?>
+                        <?php if (!empty($pinjam['kondisi_barang'])): ?>
+                            <?php if ($pinjam['kondisi_barang'] === 'baik'): ?>
+                                <span style="color: #155724; font-weight: bold;">✓ Baik</span>
+                            <?php else: ?>
+                                <span style="color: #721c24; font-weight: bold;">✗ Rusak</span>
+                                <?php if (!empty($pinjam['keterangan_kondisi'])): ?>
+                                    <br><small style="color: #856404;"><?= esc($pinjam['keterangan_kondisi']) ?></small>
+                                <?php endif ?>
+                            <?php endif ?>
+                        <?php else: ?>
+                            <span style="color: #666;">-</span>
+                        <?php endif ?>
+                    <?php else: ?>
+                        <span style="color: #666;">-</span>
+                    <?php endif ?>
                 </td>
             </tr>
             <?php endforeach; ?>

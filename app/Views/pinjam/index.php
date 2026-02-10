@@ -3,7 +3,7 @@
 
 <div class="main-content">
     <div class="container-fluid px-3 px-md-4">
-        <div class="content-wrapper fade-in">
+        <div class="content-wrapper">
 
             <!-- Header -->
             <div class="page-header">
@@ -20,20 +20,20 @@
     <?php endif ?>
 
     <!-- Filter -->
-    <form method="get" class="card shadow-sm mb-4">
+    <form method="get" class="card shadow-sm mb-4" id="filterForm">
 
         <div class="card-body">
             <div class="row g-3">
 
                 <div class="col-md-4">
                     <label class="form-label">Cari Data</label>
-                    <input type="text" name="keyword" class="form-control"
+                    <input type="text" name="keyword" class="form-control" id="keywordInput"
                         value="<?= esc(request()->getGet('keyword')) ?>" placeholder="Barang atau peminjam...">
                 </div>
 
                 <div class="col-md-2">
                     <label class="form-label">Status</label>
-                    <select name="status" class="form-select">
+                    <select name="status" class="form-select" id="statusSelect">
                         <option value="">Semua</option>
                         <option value="menunggu" <?= request()->getGet('status')=='menunggu'?'selected':'' ?>>Menunggu</option>
                         <option value="dipinjam" <?= request()->getGet('status')=='dipinjam'?'selected':'' ?>>Dipinjam</option>
@@ -43,13 +43,13 @@
 
                 <div class="col-md-3">
                     <label class="form-label">Tanggal Pengajuan</label>
-                    <input type="date" name="tgl_pengajuan" class="form-control"
+                    <input type="date" name="tgl_pengajuan" class="form-control" id="tglPengajuanInput"
                         value="<?= esc(request()->getGet('tgl_pengajuan')) ?>">
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label">Tanggal Kembali</label>
-                    <input type="date" name="tgl_disetujui_kembali" class="form-control"
+                    <input type="date" name="tgl_disetujui_kembali" class="form-control" id="tglKembaliInput"
                         value="<?= esc(request()->getGet('tgl_kembali')) ?>">
                 </div>
 
@@ -58,8 +58,9 @@
 
         <div class="card-footer d-flex flex-column flex-lg-row justify-content-between gap-2">
             <div class="d-flex gap-2">
-                <button class="btn btn-primary">Cari</button>
-                <a href="<?= site_url('pinjam') ?>" class="btn btn-outline-secondary">Reset</a>
+                <a href="<?= site_url('pinjam') ?>" class="btn btn-outline-secondary">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Reset
+                </a>
             </div>
             <div class="d-flex flex-column flex-sm-row gap-2">
                 <?php if (in_array(session('role'), ['admin','peminjam','petugas'])): ?>
@@ -76,6 +77,42 @@
             </div>
         </div>
     </form>
+
+<script>
+// Auto filter untuk peminjaman
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('filterForm');
+    const keywordInput = document.getElementById('keywordInput');
+    const statusSelect = document.getElementById('statusSelect');
+    const tglPengajuanInput = document.getElementById('tglPengajuanInput');
+    const tglKembaliInput = document.getElementById('tglKembaliInput');
+    
+    let timeout = null;
+    
+    // Auto submit saat mengetik keyword (dengan delay 500ms)
+    keywordInput.addEventListener('input', function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(function() {
+            form.submit();
+        }, 500);
+    });
+    
+    // Auto submit saat memilih status
+    statusSelect.addEventListener('change', function() {
+        form.submit();
+    });
+    
+    // Auto submit saat memilih tanggal pengajuan
+    tglPengajuanInput.addEventListener('change', function() {
+        form.submit();
+    });
+    
+    // Auto submit saat memilih tanggal kembali
+    tglKembaliInput.addEventListener('change', function() {
+        form.submit();
+    });
+});
+</script>
 
     <!-- Table -->
     <div class="card shadow-sm">
@@ -99,6 +136,9 @@
                                 <th style="width:190px;">Aksi</th>
                             <?php endif ?>
                             <th style="width:120px;">Pengembalian</th>
+                            <?php if (session('role') === 'petugas'): ?>
+                                <th style="width:100px;">Cetak</th>
+                            <?php endif ?>
                         </tr>
                     </thead>
                     <tbody>
@@ -181,6 +221,15 @@
                                         (<?= esc($p['alasan_ditolak']) ?>)
                                     </div>
                                 <?php endif ?>
+
+                                <?php if ($status === 'dikembalikan'): ?>
+                                    <button type="button" 
+                                        class="btn btn-sm btn-outline-info mt-1" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#detailModal<?= $p['id_pinjam'] ?>">
+                                        <i class="bi bi-info-circle"></i> Detail
+                                    </button>
+                                <?php endif ?>
                             </td>
 
                             <?php if (in_array(session('role'), ['admin','petugas'])): ?>
@@ -221,11 +270,22 @@
                                 <?php endif; ?>
 
                             </td>
+
+                            <?php if (session('role') === 'petugas'): ?>
+                            <td class="text-nowrap text-center">
+                                <a href="/pinjam/cetak-detail/<?= $p['id_pinjam'] ?>"
+                                   class="btn btn-info btn-sm"
+                                   target="_blank"
+                                   title="Cetak Detail Peminjaman">
+                                    <i class="bi bi-printer"></i> Cetak
+                                </a>
+                            </td>
+                            <?php endif ?>
                         </tr>
                     <?php endforeach ?>
                     <?php else: ?>
                     <tr>
-                        <td colspan="12" class="text-center text-muted">
+                        <td colspan="<?= session('role') === 'petugas' ? '13' : '12' ?>" class="text-center text-muted">
                             Data peminjaman kosong
                         </td>
                     </tr>
@@ -236,6 +296,61 @@
 
         </div>
     </div>
+
+    <!-- Modal Detail Kondisi Barang -->
+    <?php foreach ($pinjam as $p): ?>
+        <?php if ($p['status'] === 'dikembalikan'): ?>
+        <div class="modal fade" id="detailModal<?= $p['id_pinjam'] ?>" tabindex="-1" aria-labelledby="detailModalLabel<?= $p['id_pinjam'] ?>" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detailModalLabel<?= $p['id_pinjam'] ?>">
+                            <i class="bi bi-info-circle-fill text-info"></i> Detail Pengembalian
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <strong>Barang:</strong><br>
+                            <?= esc($p['jenis_barang']) ?> - <?= esc($p['merek_barang']) ?> - <?= esc($p['tipe_barang']) ?><br>
+                            <small class="text-muted">Kode: <?= esc($p['kode_barang']) ?></small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <strong>Tanggal Dikembalikan:</strong><br>
+                            <?= date('d-m-Y H:i', strtotime($p['tgl_disetujui_kembali'])) ?>
+                        </div>
+
+                        <div class="mb-3">
+                            <strong>Kondisi Barang:</strong><br>
+                            <?php if (!empty($p['kondisi_barang'])): ?>
+                                <?php if ($p['kondisi_barang'] === 'baik'): ?>
+                                    <span class="badge bg-success">Baik (Normal)</span>
+                                <?php else: ?>
+                                    <span class="badge bg-danger">Rusak</span>
+                                <?php endif ?>
+                            <?php else: ?>
+                                <span class="text-muted">-</span>
+                            <?php endif ?>
+                        </div>
+
+                        <?php if (!empty($p['keterangan_kondisi'])): ?>
+                        <div class="mb-3">
+                            <strong>Keterangan Kerusakan:</strong><br>
+                            <div class="alert alert-warning mb-0">
+                                <?= nl2br(esc($p['keterangan_kondisi'])) ?>
+                            </div>
+                        </div>
+                        <?php endif ?>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif ?>
+    <?php endforeach ?>
 
     <!-- Pagination -->
     <div class="d-flex justify-content-between align-items-center mt-3">

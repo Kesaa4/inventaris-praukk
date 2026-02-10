@@ -5,7 +5,7 @@
     <div class="container-fluid px-3 px-md-4">
 
         <!-- Header -->
-        <div class="mb-3">
+        <div class="mb-4 text-center">
             <h4 class="fw-bold">Ubah Status Peminjaman</h4>
             <p class="text-muted mb-0">
                 Perbarui status peminjaman sesuai kondisi terbaru

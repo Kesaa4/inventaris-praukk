@@ -3,7 +3,7 @@
 
 <div class="main-content">
     <div class="container-fluid px-3 px-md-4">
-        <div class="content-wrapper fade-in">
+        <div class="content-wrapper">
 
             <!-- Header -->
             <div class="page-header">
@@ -14,7 +14,7 @@
     <!-- Filter -->
     <div class="card shadow-sm mb-3">
         <div class="card-body">
-            <form method="get" class="row g-2 align-items-end">
+            <form method="get" class="row g-2 align-items-end" id="filterForm">
 
                 <div class="col-md-4">
                     <label class="form-label small text-muted">
@@ -24,14 +24,15 @@
                         name="keyword"
                         class="form-control"
                         placeholder="Nama, email, aktivitas..."
-                        value="<?= esc($keyword ?? '') ?>">
+                        value="<?= esc($keyword ?? '') ?>"
+                        id="keywordInput">
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label small text-muted">
                         Role
                     </label>
-                    <select name="role" class="form-select">
+                    <select name="role" class="form-select" id="roleSelect">
                         <option value="">Semua Role</option>
                         <option value="admin" <?= ($role ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
                         <option value="petugas" <?= ($role ?? '') === 'petugas' ? 'selected' : '' ?>>Petugas</option>
@@ -40,18 +41,38 @@
                 </div>
 
                 <div class="col-md-12 col-lg-5 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        Cari
-                    </button>
-
                     <a href="<?= base_url('activity-log') ?>" class="btn btn-outline-secondary">
-                        Reset
+                        <i class="bi bi-arrow-clockwise me-1"></i>Reset
                     </a>
                 </div>
 
             </form>
         </div>
     </div>
+
+<script>
+// Auto filter untuk activity log
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('filterForm');
+    const keywordInput = document.getElementById('keywordInput');
+    const roleSelect = document.getElementById('roleSelect');
+    
+    let timeout = null;
+    
+    // Auto submit saat mengetik (dengan delay 500ms)
+    keywordInput.addEventListener('input', function() {
+        clearTimeout(timeout);
+        timeout = setTimeout(function() {
+            form.submit();
+        }, 500);
+    });
+    
+    // Auto submit saat memilih role
+    roleSelect.addEventListener('change', function() {
+        form.submit();
+    });
+});
+</script>
 
     <!-- Table -->
     <div class="card shadow-sm">

@@ -5,8 +5,14 @@
     <div class="container-fluid px-3 px-md-4">
         
         <!-- Header -->
-        <div class="mb-3">
-            <h3 class="fw-bold"><?= $title ?></h3>
+        <div class="mb-3 d-flex justify-content-between align-items-center">
+            <div>
+                <h3 class="fw-bold mb-1"><?= $title ?></h3>
+                <p class="text-muted mb-0">Daftar barang dalam kategori ini</p>
+            </div>
+            <a href="/kategori" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Kembali
+            </a>
         </div>
 
         <!-- Table -->
@@ -23,24 +29,39 @@
                                 <th>Kode Barang</th>
                                 <th>RAM</th>
                                 <th>ROM</th>
+                                <th>Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             <?php if($barang_list): ?>
-                                <?php $no = 1; foreach($barang_list as $b): ?>
+                                <?php $no = 1 + (($currentPage - 1) * $perPage); foreach($barang_list as $b): ?>
                                     <tr>
                                         <td class="text-center"><?= $no++ ?></td>
                                         <td><?= esc($b['jenis_barang']) ?></td>
                                         <td><?= esc($b['merek_barang']) ?></td>
                                         <td><?= esc($b['tipe_barang']) ?></td>
                                         <td><?= esc($b['kode_barang']) ?></td>
-                                        <td><?= esc($b['ram']) ?></td>
-                                        <td><?= esc($b['rom']) ?></td>
+                                        <td class="text-center"><?= esc($b['ram']) ?></td>
+                                        <td class="text-center"><?= esc($b['rom']) ?></td>
+                                        <td class="text-center">
+                                            <?php
+                                                $statusBadge = match($b['status']) {
+                                                    'tersedia' => 'success',
+                                                    'dipinjam' => 'warning',
+                                                    'dibooking' => 'info',
+                                                    'tidak tersedia' => 'danger',
+                                                    default => 'secondary'
+                                                };
+                                            ?>
+                                            <span class="badge bg-<?= $statusBadge ?>">
+                                                <?= ucfirst(esc($b['status'])) ?>
+                                            </span>
+                                        </td>
                                     </tr>
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="12" class="text-center py-3">
+                                    <td colspan="8" class="text-center py-3">
                                         Belum ada barang di kategori ini.
                                     </td>
                                 </tr>
