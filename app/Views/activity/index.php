@@ -7,7 +7,7 @@
 
             <!-- Header -->
             <div class="page-header">
-                <h4><i class="bi bi-clock-history me-2"></i>Activity Log</h4>
+                <h4>Activity Log</h4>
                 <p class="text-muted">Riwayat aktivitas pengguna sistem</p>
             </div>
 

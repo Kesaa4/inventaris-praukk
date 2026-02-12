@@ -7,7 +7,7 @@
 
             <!-- Header -->
             <div class="page-header">
-                <h3><i class="bi bi-box me-2"></i>Data Barang</h3>
+                <h3>Data Barang</h3>
                 <p class="text-muted">Kelola data barang inventaris</p>
             </div>
 

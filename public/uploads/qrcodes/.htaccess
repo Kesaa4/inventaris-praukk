@@ -1,0 +1,16 @@
+# Allow access to QR code images
+<IfModule authz_core_module>
+    Require all granted
+</IfModule>
+<IfModule !authz_core_module>
+    Order allow,deny
+    Allow from all
+</IfModule>
+
+# Prevent directory listing
+Options -Indexes
+
+# Only allow image files
+<FilesMatch "\.(png|jpg|jpeg|gif)$">
+    Allow from all
+</FilesMatch>

@@ -12,38 +12,38 @@
             <ul class="navbar-nav ms-auto">
                 <li class="nav-item">
                     <a class="nav-link <?= (current_url() == base_url('dashboard')) ? 'active' : '' ?>" href="/dashboard">
-                        <i class="bi bi-speedometer2 me-1"></i>Dashboard
+                        Dashboard
                     </a>
                 </li>
                 
                 <li class="nav-item">
                     <a class="nav-link <?= (strpos(current_url(), 'barang') !== false) ? 'active' : '' ?>" href="/barang">
-                        <i class="bi bi-box me-1"></i>Barang
+                        Barang
                     </a>
                 </li>
                 
                 <li class="nav-item">
                     <a class="nav-link <?= (strpos(current_url(), 'kategori') !== false) ? 'active' : '' ?>" href="/kategori">
-                        <i class="bi bi-tags me-1"></i>Kategori
+                        Kategori
                     </a>
                 </li>
                 
                 <li class="nav-item">
                     <a class="nav-link <?= (strpos(current_url(), 'pinjam') !== false) ? 'active' : '' ?>" href="/pinjam">
-                        <i class="bi bi-arrow-left-right me-1"></i>Peminjaman
+                        Peminjaman
                     </a>
                 </li>
                 
                 <?php if (session()->get('role') === 'admin'): ?>
                 <li class="nav-item">
                     <a class="nav-link <?= (strpos(current_url(), 'user') !== false) ? 'active' : '' ?>" href="/user">
-                        <i class="bi bi-people me-1"></i>User
+                        User
                     </a>
                 </li>
                 
                 <li class="nav-item">
                     <a class="nav-link <?= (strpos(current_url(), 'activity-log') !== false) ? 'active' : '' ?>" href="/activity-log">
-                        <i class="bi bi-clock-history me-1"></i>Activity Log
+                        Activity Log
                     </a>
                 </li>
                 <?php endif; ?>

@@ -12,7 +12,7 @@ helper('pinjam');
 
             <!-- Header -->
             <div class="page-header">
-                <h4><i class="bi bi-arrow-left-right me-2"></i>Data Peminjaman</h4>
+                <h4>Data Peminjaman</h4>
                 <p class="text-muted">Kelola data peminjaman barang</p>
             </div>
 

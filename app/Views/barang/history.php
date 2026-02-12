@@ -1,8 +1,6 @@
 <?= view('layouts/header', ['title' => 'Riwayat Peminjaman Barang']) ?>
 <?= view('layouts/navbar') ?>
 
-<?php helper('pinjam'); ?>
-
 <div class="main-content">
     <div class="container-fluid px-3 px-md-4">
         <div class="content-wrapper fade-in">
@@ -27,7 +25,7 @@
 
             <!-- Statistik -->
             <div class="row mb-4">
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6 mb-3">
                     <div class="card shadow-sm border-primary">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
@@ -43,7 +41,7 @@
                     </div>
                 </div>
 
-                <div class="col-md-4 mb-3">
+                <div class="col-md-6 mb-3">
                     <div class="card shadow-sm border-success">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
@@ -53,22 +51,6 @@
                                 <div>
                                     <h6 class="text-muted mb-1">Dikembalikan</h6>
                                     <h3 class="mb-0"><?= $totalDikembalikan ?></h3>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-4 mb-3">
-                    <div class="card shadow-sm border-danger">
-                        <div class="card-body">
-                            <div class="d-flex align-items-center">
-                                <div class="icon bg-danger text-white rounded-circle p-3 me-3">
-                                    <i class="bi bi-exclamation-triangle" style="font-size: 1.5rem;"></i>
-                                </div>
-                                <div>
-                                    <h6 class="text-muted mb-1">Terlambat</h6>
-                                    <h3 class="mb-0"><?= $totalTerlambat ?></h3>
                                 </div>
                             </div>
                         </div>
@@ -90,7 +72,6 @@
                                     <th>Jatuh Tempo</th>
                                     <th>Tgl Dikembalikan</th>
                                     <th>Status</th>
-                                    <th>Keterlambatan</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -130,34 +111,11 @@
                                                     <?= ucfirst($r['status']) ?>
                                                 </span>
                                             </td>
-                                            <td class="text-center">
-                                                <?php if ($status === 'dikembalikan' && $r['tgl_jatuh_tempo']): ?>
-                                                    <?php if (isLate($r['tgl_jatuh_tempo'], $status, $r['tgl_disetujui_kembali'])): ?>
-                                                        <span class="badge bg-danger">
-                                                            Terlambat <?= hitungHariTerlambat($r['tgl_jatuh_tempo'], $status, $r['tgl_disetujui_kembali']) ?> hari
-                                                        </span>
-                                                    <?php else: ?>
-                                                        <span class="badge bg-success">Tepat Waktu</span>
-                                                    <?php endif ?>
-                                                <?php elseif ($status === 'disetujui' && $r['tgl_jatuh_tempo']): ?>
-                                                    <?php if (isLate($r['tgl_jatuh_tempo'], $status)): ?>
-                                                        <span class="badge bg-danger">
-                                                            Terlambat <?= hitungHariTerlambat($r['tgl_jatuh_tempo'], $status) ?> hari
-                                                        </span>
-                                                    <?php else: ?>
-                                                        <span class="badge bg-info">
-                                                            <?= sisaWaktu($r['tgl_jatuh_tempo'], $status) ?>
-                                                        </span>
-                                                    <?php endif ?>
-                                                <?php else: ?>
-                                                    -
-                                                <?php endif ?>
-                                            </td>
                                         </tr>
                                     <?php endforeach ?>
                                 <?php else: ?>
                                     <tr>
-                                        <td colspan="8" class="text-center text-muted py-4">
+                                        <td colspan="7" class="text-center text-muted py-4">
                                             <i class="bi bi-inbox" style="font-size: 3rem;"></i>
                                             <p class="mt-2">Barang ini belum pernah dipinjam</p>
                                         </td>

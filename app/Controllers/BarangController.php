@@ -370,7 +370,6 @@ class BarangController extends BaseController
     {
         // Inisialisasi model
         $barangModel = new BarangModel();
-        $pinjamModel = new \App\Models\PinjamModel();
 
         // Ambil data barang
         $barang = $barangModel->find($id);
@@ -379,8 +378,9 @@ class BarangController extends BaseController
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Barang tidak ditemukan');
         }
 
-        // Ambil riwayat peminjaman barang ini
-        $riwayat = $pinjamModel
+        // Ambil riwayat peminjaman barang ini menggunakan query builder langsung
+        $db = \Config\Database::connect();
+        $riwayat = $db->table('pinjam')
             ->select('
                 pinjam.*,
                 user.email,
@@ -389,30 +389,21 @@ class BarangController extends BaseController
             ->join('user', 'user.id_user = pinjam.id_user', 'left')
             ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
             ->where('pinjam.id_barang', $id)
+            ->where('pinjam.deleted_at', null)
             ->orderBy('pinjam.created_at', 'DESC')
-            ->findAll();
+            ->get()
+            ->getResultArray();
 
         // Hitung statistik
         $totalPinjam = count($riwayat);
         $totalDikembalikan = count(array_filter($riwayat, fn($r) => $r['status'] === 'dikembalikan'));
-        $totalTerlambat = 0;
-        
-        // Load helper untuk cek keterlambatan
-        helper('pinjam');
-        
-        foreach ($riwayat as $r) {
-            if ($r['status'] === 'dikembalikan' && isLate($r['tgl_jatuh_tempo'], $r['status'], $r['tgl_disetujui_kembali'])) {
-                $totalTerlambat++;
-            }
-        }
 
         // Siapkan data untuk view
         $data = [
             'barang' => $barang,
             'riwayat' => $riwayat,
             'totalPinjam' => $totalPinjam,
-            'totalDikembalikan' => $totalDikembalikan,
-            'totalTerlambat' => $totalTerlambat
+            'totalDikembalikan' => $totalDikembalikan
         ];
 
         return view('barang/history', $data);
@@ -514,6 +505,11 @@ class BarangController extends BaseController
 
         return redirect()->back()->with('error', 'Gagal menghapus foto');
     }
+
+    // Generate QR Code untuk barang
+
+    // Download QR Code
+
 
 
 }

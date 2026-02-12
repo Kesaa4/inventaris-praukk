@@ -7,7 +7,7 @@
 
             <!-- Header -->
             <div class="page-header">
-                <h4><i class="bi bi-people me-2"></i>Manajemen User</h4>
+                <h4>Manajemen User</h4>
                 <p class="text-muted">Kelola data pengguna sistem</p>
             </div>
 

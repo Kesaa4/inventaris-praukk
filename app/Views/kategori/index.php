@@ -7,7 +7,7 @@
 
             <!-- Header -->
             <div class="page-header">
-                <h3><i class="bi bi-tags me-2"></i><?= $title ?></h3>
+                <h3><?= $title ?></h3>
                 <p class="text-muted">Pilih kategori untuk melihat daftar barang berdasarkan kondisi</p>
             </div>
 
@@ -26,7 +26,7 @@
                                         </p>
                                     </div>
                                     <a href="<?= site_url('kategori/'.$k['id_kategori']) ?>" class="btn btn-primary mt-3">
-                                        <i class="bi bi-eye me-1"></i>Lihat Barang
+                                        Lihat Barang
                                     </a>
                                 </div>
                             </div>

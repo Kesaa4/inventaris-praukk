@@ -17,62 +17,8 @@
 <body>
 
 <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-dark navbar-custom">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="/dashboard">
-            <i class="bi bi-box-seam me-2"></i>Sistem Peminjaman
-        </a>
-        
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link active" href="/dashboard">
-                        <i class="bi bi-speedometer2 me-1"></i>Dashboard
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/barang">
-                        <i class="bi bi-box me-1"></i>Barang
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/kategori">
-                        <i class="bi bi-tags me-1"></i>Kategori
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/pinjam">
-                        <i class="bi bi-arrow-left-right me-1"></i>Peminjaman
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/user">
-                        <i class="bi bi-people me-1"></i>User
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/activity-log">
-                        <i class="bi bi-clock-history me-1"></i>Activity Log
-                    </a>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-person-circle me-1"></i><?= esc($nama) ?>
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="/profile"><i class="bi bi-person me-2"></i>Profile</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="/logout"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+<?= view('layouts/header', ['title' => 'Dashboard Admin']) ?>
+<?= view('layouts/navbar') ?>
 
 <div class="main-content">
     <div class="container-fluid px-3 px-md-4">
@@ -80,7 +26,7 @@
 
             <!-- Header -->
             <div class="page-header">
-                <h3><i class="bi bi-speedometer2 me-2"></i>Dashboard Admin</h3>
+                <h3>Dashboard Admin</h3>
                 <p class="text-muted">Selamat datang, <?= esc($nama) ?></p>
             </div>
 
