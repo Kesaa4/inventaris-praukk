@@ -58,7 +58,7 @@ class BarangController extends BaseController
         // Tampilkan view dengan data kategori
         return view('barang/create', [
             'kategori' => $kategoriModel->findAll(),
-            'jenis_barang' => $barangModel->getEnumJenisBarang()
+            'kondisi_list' => $barangModel->getEnumKondisi()
         ]);
     }
 
@@ -76,15 +76,15 @@ class BarangController extends BaseController
 
         // Simpan data barang dulu
         $id = $barangModel->insert([
-            'jenis_barang'  => $this->request->getPost('jenis_barang'),
+            'id_kategori'   => $this->request->getPost('id_kategori'),
             'merek_barang'  => $this->request->getPost('merek_barang'),
             'tipe_barang'   => $this->request->getPost('tipe_barang'),
             'kode_barang'   => $kodeBarang,
             'ram'           => $this->request->getPost('ram'),
             'rom'           => $this->request->getPost('rom'),
+            'kondisi'       => $this->request->getPost('kondisi'),
             'status'        => $this->request->getPost('status'),
-            'keterangan'    => $this->request->getPost('keterangan'),
-            'id_kategori'   => $this->request->getPost('id_kategori')
+            'keterangan'    => $this->request->getPost('keterangan')
         ]);
 
         // Handle foto upload
@@ -131,7 +131,8 @@ class BarangController extends BaseController
         return view('barang/edit', [
             'barang'    => $barangModel->find($id),
             'kategori'  => $kategoriModel->findAll(),
-            'jenis_barang' => $barangModel->getEnumJenisBarang()
+            'jenis_barang' => $barangModel->getEnumJenisBarang(),
+            'kondisi_list' => $barangModel->getEnumKondisi()
         ]);
     }
 
