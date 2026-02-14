@@ -3,178 +3,338 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\UserModel;
 use App\Models\UserProfileModel;
 
 class UserController extends BaseController
 {
+    protected $userModel;
+    protected $profileModel;
+
+    public function __construct()
+    {
+        $this->userModel = new UserModel();
+        $this->profileModel = new UserProfileModel();
+    }
+
+    /**
+     * Halaman daftar user dengan filter dan pagination
+     */
     public function index()
     {
-        $userModel = new UserModel();
-
-        // Ambil parameter filter dari query string
         $keyword = $this->request->getGet('keyword');
-        $role    = $this->request->getGet('role');
+        $role = $this->request->getGet('role');
+        $status = $this->request->getGet('status');
 
-        // APPLY FILTER (tanpa ambil data dulu)
-        $userModel->filterUser($keyword, $role);
+        $this->userModel->filterUser($keyword, $role, $status);
 
-        // Siapkan data untuk view
         $data = [
-            'users'   => $userModel->paginate(10, 'user'),
-            'pager'   => $userModel->pager,
+            'users' => $this->userModel->paginate(10, 'user'),
+            'pager' => $this->userModel->pager,
             'keyword' => $keyword,
-            'role'    => $role,
+            'role' => $role,
+            'status' => $status,
         ];
 
         return view('user/index', $data);
     }
 
-    // Cek apakah user adalah admin
-    protected function mustAdmin()
-    {
-        if (session('role') !== 'admin') {
-            throw new \CodeIgniter\Exceptions\PageForbiddenException();
-        }
-    }
-
-    //TAMBAH USER
+    /**
+     * Form tambah user baru
+     */
     public function create()
     {
-        // Cek admin
         $this->mustAdmin();
-        // Tampilkan form create user
         return view('user/create');
     }
 
-    // SIMPAN USER
+    /**
+     * Simpan user baru ke database
+     */
     public function store()
     {
         $this->mustAdmin();
 
-        // Validasi input
         $rules = [
-            'email' => [
-                'rules'  => 'required|valid_email|is_unique[user.email]',
+            'nama' => [
+                'rules' => 'required|min_length[3]|max_length[100]',
                 'errors' => [
-                    'required'    => 'Email wajib diisi',
-                    'valid_email' => 'Format email tidak valid',
-                    'is_unique'   => 'Email sudah terdaftar'
+                    'required' => 'Nama lengkap wajib diisi',
+                    'min_length' => 'Nama minimal 3 karakter',
+                    'max_length' => 'Nama maksimal 100 karakter'
                 ]
             ],
-            'password' => 'required|min_length[6]',
-            'role' => 'required'
+            'email' => [
+                'rules' => 'required|valid_email|is_unique[user.email]',
+                'errors' => [
+                    'required' => 'Email wajib diisi',
+                    'valid_email' => 'Format email tidak valid',
+                    'is_unique' => 'Email sudah terdaftar'
+                ]
+            ],
+            'password' => [
+                'rules' => 'required|min_length[6]',
+                'errors' => [
+                    'required' => 'Password wajib diisi',
+                    'min_length' => 'Password minimal 6 karakter'
+                ]
+            ],
+            'role' => [
+                'rules' => 'required|in_list[admin,petugas,peminjam]',
+                'errors' => [
+                    'required' => 'Role wajib dipilih',
+                    'in_list' => 'Role tidak valid'
+                ]
+            ],
+            'status' => [
+                'rules' => 'required|in_list[aktif,tidak aktif]',
+                'errors' => [
+                    'required' => 'Status wajib dipilih',
+                    'in_list' => 'Status tidak valid'
+                ]
+            ]
         ];
 
-        // Jika validasi gagal
-        if (!$this->validate($rules)) 
-            // Kembali ke form dengan input lama dan pesan error
-        {
+        if (!$this->validate($rules)) {
             return redirect()->back()
                 ->withInput()
                 ->with('errors', $this->validator->getErrors());
         }
 
-        $userModel = new UserModel();
-        $profileModel = new UserProfileModel();
+        $db = \Config\Database::connect();
+        $db->transStart();
 
-        //insert ke tabel user
-        $id = $userModel->insert([
-            'nama'     => $this->request->getPost('nama'),
-            'email'    => $this->request->getPost('email'),
-            'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
-            'role'     => $this->request->getPost('role'),
-            'status'   => $this->request->getPost('status'),
-        ]);
+        try {
+            $nama = $this->request->getPost('nama');
+            $email = $this->request->getPost('email');
+            $role = $this->request->getPost('role');
 
-        log_activity(
-            'Menambah user ' . $this->request->getPost('nama') .
-            ' (' . $this->request->getPost('role') . ')',
-            'user',
-            $id
-        );
+            // Insert user
+            $this->userModel->insert([
+                'email' => $email,
+                'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT),
+                'role' => $role,
+                'status' => $this->request->getPost('status'),
+            ]);
 
-        // ambil ID user yang BARU dibuat
-        $idUser = $userModel->getInsertID();
+            $idUser = $this->userModel->getInsertID();
 
-        // insert ke userprofile
-        $profileModel->insert([
-            'id_user' => $idUser,
-            'nama'    => $this->request->getPost('nama')
-        ]);
+            // Insert profile
+            $this->profileModel->insert([
+                'id_user' => $idUser,
+                'nama' => $nama
+            ]);
 
-        return redirect()->to('/user')->with('success', 'User berhasil ditambahkan');
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                throw new \Exception('Gagal menyimpan data user');
+            }
+
+            log_activity("Menambah user $nama ($role)", 'user', $idUser);
+
+            return redirect()->to('/user')->with('success', 'User berhasil ditambahkan');
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal menambahkan user: ' . $e->getMessage());
+        }
     }
 
+    /**
+     * Form edit user
+     */
     public function edit($id)
     {
-        $userModel = new UserModel();
-        $profileModel = new UserProfileModel();
+        $this->mustAdmin();
 
-        // Tampilkan form edit user dengan data user dan profil
-        return view('user/edit', [
-            'user' => $userModel->find($id),
-            'profile' => $profileModel->where('id_user', $id)->first()
-        ]);
+        $user = $this->userModel->getUserWithProfile($id);
+
+        if (!$user) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException("User dengan ID $id tidak ditemukan");
+        }
+
+        return view('user/edit', ['user' => $user]);
     }
 
+    /**
+     * Update data user
+     */
     public function update($id)
     {
         $this->mustAdmin();
 
-        $userModel = new UserModel();
-        $profileModel = new UserProfileModel();
+        $user = $this->userModel->getUserWithProfile($id);
 
-        // DATA LAMA
-        $user = $userModel->find($id);
-        // Ambil data profil untuk mendapatkan nama user
-        $profile = $profileModel->where('id_user', $id)->first();
-
-        // Jika user tidak ditemukan
         if (!$user) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException();
+            throw new \CodeIgniter\Exceptions\PageNotFoundException("User dengan ID $id tidak ditemukan");
         }
 
-        // Nama user dari profil atau 'Unknown' jika tidak ada
-        $nama = $profile['nama'] ?? 'Unknown';
+        $rules = [
+            'nama' => [
+                'rules' => 'required|min_length[3]|max_length[100]',
+                'errors' => [
+                    'required' => 'Nama lengkap wajib diisi',
+                    'min_length' => 'Nama minimal 3 karakter',
+                    'max_length' => 'Nama maksimal 100 karakter'
+                ]
+            ],
+            'role' => [
+                'rules' => 'required|in_list[admin,petugas,peminjam]',
+                'errors' => [
+                    'required' => 'Role wajib dipilih',
+                    'in_list' => 'Role tidak valid'
+                ]
+            ],
+            'status' => [
+                'rules' => 'required|in_list[aktif,tidak aktif]',
+                'errors' => [
+                    'required' => 'Status wajib dipilih',
+                    'in_list' => 'Status tidak valid'
+                ]
+            ]
+        ];
 
-        // DATA LAMA
-        $oldRole   = $user['role'];
-        $oldStatus = $user['status'];
+        // Validasi password jika diisi
+        if ($this->request->getPost('password')) {
+            $rules['password'] = [
+                'rules' => 'min_length[6]',
+                'errors' => [
+                    'min_length' => 'Password minimal 6 karakter'
+                ]
+            ];
+        }
 
-        // DATA BARU
-        $newRole   = $this->request->getPost('role');
-        $newStatus = $this->request->getPost('status');
+        if (!$this->validate($rules)) {
+            return redirect()->back()
+                ->withInput()
+                ->with('errors', $this->validator->getErrors());
+        }
 
-        // Update data user
-        $userModel->update($id, [
-            'role'   => $newRole,
-            'status' => $newStatus
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
+            $nama = $this->request->getPost('nama');
+            $role = $this->request->getPost('role');
+            $status = $this->request->getPost('status');
+            $password = $this->request->getPost('password');
+
+            // Update user
+            $updateData = [
+                'role' => $role,
+                'status' => $status
+            ];
+
+            if ($password) {
+                $updateData['password'] = password_hash($password, PASSWORD_DEFAULT);
+            }
+
+            $this->userModel->update($id, $updateData);
+
+            // Update profile
+            $this->profileModel->where('id_user', $id)->set(['nama' => $nama])->update();
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                throw new \Exception('Gagal mengupdate data user');
+            }
+
+            // Log perubahan
+            $changes = [];
+            if ($user['nama'] !== $nama) $changes[] = "nama: {$user['nama']} → $nama";
+            if ($user['role'] !== $role) $changes[] = "role: {$user['role']} → $role";
+            if ($user['status'] !== $status) $changes[] = "status: {$user['status']} → $status";
+            if ($password) $changes[] = "password diubah";
+
+            $detailLog = $changes ? ' (' . implode(', ', $changes) . ')' : '';
+            log_activity("Mengubah data user $nama$detailLog", 'user', $id);
+
+            return redirect()->to('/user')->with('success', 'User berhasil diupdate');
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal mengupdate user: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Hapus user (soft delete atau hard delete)
+     */
+    public function delete($id)
+    {
+        $this->mustAdmin();
+
+        $user = $this->userModel->getUserWithProfile($id);
+
+        if (!$user) {
+            return redirect()->to('/user')->with('error', 'User tidak ditemukan');
+        }
+
+        // Cegah hapus diri sendiri
+        if ($id == session('id_user')) {
+            return redirect()->to('/user')->with('error', 'Tidak dapat menghapus akun sendiri');
+        }
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        try {
+            // Hapus profile
+            $this->profileModel->where('id_user', $id)->delete();
+
+            // Hapus user
+            $this->userModel->delete($id);
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                throw new \Exception('Gagal menghapus data user');
+            }
+
+            log_activity("Menghapus user {$user['nama']} ({$user['role']})", 'user', $id);
+
+            return redirect()->to('/user')->with('success', 'User berhasil dihapus');
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return redirect()->to('/user')->with('error', 'Gagal menghapus user: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Reset password user
+     */
+    public function resetPassword($id)
+    {
+        $this->mustAdmin();
+
+        $user = $this->userModel->getUserWithProfile($id);
+
+        if (!$user) {
+            return redirect()->to('/user')->with('error', 'User tidak ditemukan');
+        }
+
+        // Password default: 123456
+        $defaultPassword = '123456';
+        $this->userModel->update($id, [
+            'password' => password_hash($defaultPassword, PASSWORD_DEFAULT)
         ]);
 
-        // RANGKAI LOG DETAIL
-        $detail = [];
+        log_activity("Reset password user {$user['nama']}", 'user', $id);
 
-        // Cek perubahan role
-        if ($oldRole !== $newRole) {
-            $detail[] = "role: $oldRole → $newRole";
+        return redirect()->to('/user')->with('success', "Password user {$user['nama']} berhasil direset menjadi: $defaultPassword");
+    }
+
+    /**
+     * Validasi hanya admin yang bisa akses
+     */
+    protected function mustAdmin()
+    {
+        if (session('role') !== 'admin') {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Halaman tidak ditemukan');
         }
-
-        // Cek perubahan status
-        if ($oldStatus !== $newStatus) {
-            $detail[] = "status: $oldStatus → $newStatus";
-        }
-
-        // Gabungkan detail log menjadi satu string
-        $detailLog = implode(', ', $detail);
-
-        log_activity(
-            'Mengubah data user ' . $nama . ($detailLog ? " ($detailLog)" : ''),
-            'user',
-            $id
-        );
-
-        return redirect()->to('/user')->with('success', 'User berhasil diupdate');
     }
 }

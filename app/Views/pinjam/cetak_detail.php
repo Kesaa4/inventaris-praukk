@@ -202,8 +202,8 @@
                     <div class="info-value"><?= esc($pinjam['kode_barang']) ?></div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">Jenis Barang</div>
-                    <div class="info-value"><?= esc($pinjam['jenis_barang']) ?></div>
+                    <div class="info-label">Kategori</div>
+                    <div class="info-value"><?= esc($pinjam['nama_kategori']) ?></div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Merek</div>

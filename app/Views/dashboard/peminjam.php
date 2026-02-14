@@ -1,123 +1,153 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Peminjam</title>
+<?= view('layouts/dashboard_header', ['title' => 'Dashboard Peminjam']) ?>
 
-    <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
-    <!-- Custom CSS -->
-    <link rel="stylesheet" href="<?= base_url('assets/css/style.css') ?>">
-</head>
-<body>
-
-<!-- Navbar -->
-<?= view('layouts/header', ['title' => 'Dashboard Peminjam']) ?>
-<?= view('layouts/navbar') ?>
+<!-- Sidebar -->
+<?= view('layouts/sidebar') ?>
 
 <div class="main-content">
-    <div class="container-fluid px-3 px-md-4">
-        <div class="content-wrapper fade-in">
-
-            <!-- Header -->
-            <div class="page-header">
-                <h3><i class="bi bi-speedometer2 me-2"></i>Dashboard Peminjam</h3>
-                <p class="text-muted">Selamat datang, <?= esc($nama) ?></p>
-            </div>
-
-            <!-- Welcome Card -->
-            <div class="card mb-4" style="background: var(--success); color: white; border: none;">
-                <div class="card-body p-4">
-                    <div class="row align-items-center">
-                        <div class="col-md-9">
-                            <h4 class="mb-2">Halo, <?= esc($nama) ?></h4>
-                            <p class="mb-0">Silakan kelola peminjaman barang Anda di sini. Pastikan mengembalikan barang tepat waktu.</p>
-                        </div>
-                        <div class="col-md-3 text-center">
-                            <i class="bi bi-person-check-fill" style="font-size: 4rem; opacity: 0.2;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Access Menu -->
-            <div class="row g-4">
-                <div class="col-12">
-                    <h5 class="mb-3"><i class="bi bi-lightning-charge me-2"></i>Menu Utama</h5>
-                </div>
-
-                <div class="col-12 col-md-6 col-lg-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <div class="icon mx-auto mb-3" style="width: 60px; height: 60px; background: var(--success); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
-                                <i class="bi bi-box-seam" style="font-size: 1.5rem; color: white;"></i>
-                            </div>
-                            <h5 class="card-title">Lihat Barang</h5>
-                            <p class="text-muted">Lihat daftar barang yang tersedia untuk dipinjam</p>
-                            <a href="<?= base_url('barang') ?>" class="btn btn-success w-100">
-                                <i class="bi bi-arrow-right me-1"></i>Lihat Barang
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-12 col-md-6 col-lg-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <div class="icon mx-auto mb-3" style="width: 60px; height: 60px; background: var(--primary); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
-                                <i class="bi bi-arrow-left-right" style="font-size: 1.5rem; color: white;"></i>
-                            </div>
-                            <h5 class="card-title">Peminjaman Saya</h5>
-                            <p class="text-muted">Cek status dan riwayat peminjaman Anda</p>
-                            <a href="<?= base_url('pinjam') ?>" class="btn btn-primary w-100">
-                                <i class="bi bi-arrow-right me-1"></i>Peminjaman Saya
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-12 col-md-6 col-lg-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center">
-                            <div class="icon mx-auto mb-3" style="width: 60px; height: 60px; background: var(--warning); border-radius: 0.75rem; display: flex; align-items: center; justify-content: center;">
-                                <i class="bi bi-person-circle" style="font-size: 1.5rem; color: white;"></i>
-                            </div>
-                            <h5 class="card-title">Profile Saya</h5>
-                            <p class="text-muted">Lihat dan perbarui data akun Anda</p>
-                            <a href="<?= base_url('profile') ?>" class="btn btn-warning w-100">
-                                <i class="bi bi-arrow-right me-1"></i>Profile Saya
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Info Card -->
-            <div class="row mt-4">
-                <div class="col-12">
-                    <div class="card" style="border-left: 4px solid var(--success);">
-                        <div class="card-body">
-                            <h6 class="fw-bold mb-2"><i class="bi bi-info-circle me-2"></i>Informasi Penting</h6>
-                            <ul class="mb-0 text-muted">
-                                <li>Pastikan barang yang dipinjam dalam kondisi baik</li>
-                                <li>Kembalikan barang sesuai waktu yang ditentukan</li>
-                                <li>Laporkan jika ada kerusakan pada barang</li>
-                                <li>Hubungi petugas jika ada kendala</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="dashboard-header mb-4">
+            <h1 class="mb-0">Selamat Datang, <?= esc($nama) ?>!</h1>
+            <p class="text-muted mb-0">Kelola peminjaman barang Anda dengan mudah</p>
         </div>
+
+        <!-- Welcome Card -->
+        <div class="card mb-4" style="background: var(--success); color: white; border: none;">
+            <div class="card-body p-4">
+                <div class="row align-items-center">
+                    <div class="col-md-2 text-center">
+                        <i class="bi bi-person-check-fill" style="font-size: 4rem;"></i>
+                    </div>
+                    <div class="col-md-10">
+                        <h5 class="mb-2">Dashboard Peminjam</h5>
+                        <p class="mb-0">Lihat status peminjaman Anda dan pastikan mengembalikan barang tepat waktu.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Card -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card" style="border-left: 4px solid var(--success);">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-2"><i class="bi bi-info-circle me-2"></i>Informasi Penting</h6>
+                        <ul class="mb-0 text-muted">
+                            <li>Pastikan barang yang dipinjam dalam kondisi baik</li>
+                            <li>Kembalikan barang sesuai waktu yang ditentukan</li>
+                            <li>Laporkan jika ada kerusakan pada barang</li>
+                            <li>Hubungi petugas jika ada kendala</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistik Peminjaman Saya -->
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <h5 class="mb-3"><i class="bi bi-bar-chart me-2"></i>Statistik Peminjaman Saya</h5>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-list-ul text-primary" style="font-size: 2rem;"></i>
+                        <h3 class="mt-2 mb-0"><?= $totalPeminjamanSaya ?? 0 ?></h3>
+                        <p class="text-muted mb-0">Total</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-clock-history text-warning" style="font-size: 2rem;"></i>
+                        <h3 class="mt-2 mb-0"><?= $peminjamanSaya['menunggu'] ?? 0 ?></h3>
+                        <p class="text-muted mb-0">Menunggu</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-check-circle text-info" style="font-size: 2rem;"></i>
+                        <h3 class="mt-2 mb-0"><?= $peminjamanSaya['disetujui'] ?? 0 ?></h3>
+                        <p class="text-muted mb-0">Disetujui</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <i class="bi bi-check-all text-success" style="font-size: 2rem;"></i>
+                        <h3 class="mt-2 mb-0"><?= $peminjamanSaya['dikembalikan'] ?? 0 ?></h3>
+                        <p class="text-muted mb-0">Dikembalikan</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Riwayat Peminjaman Terbaru -->
+        <?php if (!empty($riwayatTerbaru)): ?>
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="bi bi-clock-history me-2"></i>Riwayat Peminjaman Terbaru</h5>
+                        <a href="<?= base_url('pinjam') ?>" class="btn btn-sm btn-primary">
+                            Lihat Semua <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Tanggal</th>
+                                        <th>Barang</th>
+                                        <th>Durasi</th>
+                                        <th class="text-center">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($riwayatTerbaru as $pinjam): ?>
+                                        <tr>
+                                            <td class="text-nowrap">
+                                                <small><?= date('d M Y', strtotime($pinjam['tgl_pengajuan'])) ?></small>
+                                            </td>
+                                            <td>
+                                                <div class="fw-bold"><?= esc($pinjam['nama_kategori']) ?></div>
+                                                <small class="text-muted"><?= esc($pinjam['merek_barang']) ?> - <?= esc($pinjam['kode_barang']) ?></small>
+                                            </td>
+                                            <td>
+                                                <small><?= isset($pinjam['durasi_pinjam']) ? $pinjam['durasi_pinjam'] . ' hari' : '-' ?></small>
+                                            </td>
+                                            <td class="text-center">
+                                                <?php
+                                                $badgeClass = match($pinjam['status']) {
+                                                    'menunggu' => 'bg-warning',
+                                                    'disetujui' => 'bg-info',
+                                                    'dikembalikan' => 'bg-success',
+                                                    'ditolak' => 'bg-danger',
+                                                    default => 'bg-secondary'
+                                                };
+                                                ?>
+                                                <span class="badge <?= $badgeClass ?>"><?= ucfirst($pinjam['status']) ?></span>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endif ?>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+<?= view('layouts/dashboard_footer') ?>

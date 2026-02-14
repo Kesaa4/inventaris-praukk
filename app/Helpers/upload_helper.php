@@ -113,11 +113,12 @@ function validateFotoBarang($file)
         return $result;
     }
     
-    // Cek tipe MIME
-    $allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
-    if (!in_array($file->getMimeType(), $allowedTypes)) {
+    // ✅ Validasi MIME type
+    $allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    $mime = $file->getMimeType();
+    if (!in_array($mime, $allowedMimes)) {
         $result['valid'] = false;
-        $result['error'] = 'Format file harus JPG, PNG, atau GIF';
+        $result['error'] = 'File bukan gambar yang valid';
         return $result;
     }
     
@@ -126,6 +127,14 @@ function validateFotoBarang($file)
     if (!in_array(strtolower($file->getExtension()), $allowedExt)) {
         $result['valid'] = false;
         $result['error'] = 'Extension file tidak diizinkan';
+        return $result;
+    }
+    
+    // ✅ Validasi adalah gambar asli (bukan file PHP yang direname)
+    $imageInfo = @getimagesize($file->getTempName());
+    if ($imageInfo === false) {
+        $result['valid'] = false;
+        $result['error'] = 'File bukan gambar yang valid';
         return $result;
     }
     

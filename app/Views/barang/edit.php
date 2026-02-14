@@ -19,15 +19,15 @@
 
                 <div class="row g-3">
 
-                    <!-- Jenis Barang -->
+                    <!-- Kategori -->
                     <div class="col-md-6">
-                        <label class="form-label">Jenis Barang</label>
-                        <select name="jenis_barang" class="form-select" required>
-                            <option value="">-- Pilih Jenis Barang --</option>
-                            <?php foreach ($jenis_barang as $jenis): ?>
-                                <option value="<?= esc($jenis) ?>"
-                                    <?= ($barang['jenis_barang'] === $jenis) ? 'selected' : '' ?>>
-                                    <?= esc($jenis) ?>
+                        <label class="form-label">Kategori</label>
+                        <select name="id_kategori" class="form-select" required>
+                            <option value="">-- Pilih Kategori --</option>
+                            <?php foreach ($kategori as $k): ?>
+                                <option value="<?= esc($k['id_kategori']) ?>"
+                                    <?= ($barang['id_kategori'] == $k['id_kategori']) ? 'selected' : '' ?>>
+                                    <?= esc($k['nama_kategori']) ?>
                                 </option>
                             <?php endforeach ?>
                         </select>
@@ -91,24 +91,20 @@
                         >
                     </div>
 
-                    <!-- Kategori -->
+                    <!-- Kondisi -->
                     <div class="col-md-6">
-                        <label class="form-label">Kategori Kondisi</label>
-                        <select name="id_kategori" class="form-select" required>
-                            <?php foreach ($kategori as $k): ?>
-                                <option
-                                    value="<?= $k['id_kategori'] ?>"
-                                    <?= $barang['id_kategori'] == $k['id_kategori'] ? 'selected' : '' ?>>
-                                    <?= esc($k['kategori_kondisi']) ?>
+                        <label class="form-label">Kondisi Barang</label>
+                        <select name="kondisi" class="form-select" id="kondisiSelect" required>
+                            <option value="">-- Pilih Kondisi --</option>
+                            <?php foreach ($kondisi_list as $kondisi): ?>
+                                <option value="<?= esc($kondisi) ?>"
+                                    <?= ($barang['kondisi'] == $kondisi) ? 'selected' : '' ?>>
+                                    <?= esc($kondisi) ?>
                                 </option>
                             <?php endforeach ?>
                         </select>
                     </div>
                     
-                    <?php
-                        // normalisasi biar aman
-                        $status = strtolower(trim($barang['status']));
-                    ?>
                     <!-- Status -->
                     <div class="col-md-6">
                         <label class="form-label d-block">Status Barang</label>
@@ -207,10 +203,10 @@
                 <!-- Action -->
                 <div class="mt-4 d-flex flex-column flex-sm-row gap-2">
                     <button type="submit" class="btn btn-warning">
-                        Update
+                        <i class="bi bi-check-circle me-1"></i>Update
                     </button>
                     <a href="<?= base_url('barang') ?>" class="btn btn-outline-secondary">
-                        Batal
+                        <i class="bi bi-x-circle me-1"></i>Batal
                     </a>
                 </div>
 
@@ -223,11 +219,38 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    const kondisiSelect = document.getElementById('kondisiSelect');
+    const statusTersedia = document.getElementById('status_tersedia');
+    const statusTidak = document.getElementById('status_tidak');
+    
+    // Auto set status based on kondisi
+    kondisiSelect.addEventListener('change', function() {
+        if (this.value === 'Rusak Berat') {
+            statusTidak.checked = true;
+        } else if (this.value === 'Baik' || this.value === 'Rusak Ringan') {
+            statusTersedia.checked = true;
+        }
+    });
+    
+    // Auto set kondisi based on status
+    statusTidak.addEventListener('change', function() {
+        if (this.checked) {
+            kondisiSelect.value = 'Rusak Berat';
+        }
+    });
+    
+    statusTersedia.addEventListener('change', function() {
+        if (this.checked && kondisiSelect.value === 'Rusak Berat') {
+            kondisiSelect.value = '';
+        }
+    });
+});
+
 // Preview image before upload
 document.getElementById('fotoInput').addEventListener('change', function(e) {
     const file = e.target.files[0];
     if (file) {
-        // Validate size (2MB = 2048000 bytes)
         if (file.size > 2048000) {
             alert('Ukuran file maksimal 2MB');
             this.value = '';
@@ -235,7 +258,6 @@ document.getElementById('fotoInput').addEventListener('change', function(e) {
             return;
         }
         
-        // Validate type
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
         if (!allowedTypes.includes(file.type)) {
             alert('Format file harus JPG, PNG, atau GIF');
@@ -244,7 +266,6 @@ document.getElementById('fotoInput').addEventListener('change', function(e) {
             return;
         }
         
-        // Show preview
         const reader = new FileReader();
         reader.onload = function(e) {
             document.getElementById('previewImage').src = e.target.result;

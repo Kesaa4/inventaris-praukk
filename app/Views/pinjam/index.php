@@ -24,6 +24,14 @@ helper('pinjam');
         </div>
     <?php endif ?>
 
+    <!-- Alert Error -->
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <?= session()->getFlashdata('error') ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php endif ?>
+
     <!-- Filter -->
     <form method="get" class="card shadow-sm mb-4" id="filterForm">
 
@@ -176,7 +184,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         <tr>
                             <td>
-                                <strong><?= esc($p['jenis_barang']) ?></strong>
+                                <strong><?= esc($p['nama_kategori']) ?></strong>
                             </td>
 
                             <td class="text-nowrap text-center">
@@ -192,10 +200,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             </td>
 
                             <td class="text-nowrap text-center">
-                                <?php 
-                                    $displayName = !empty($p['nama']) ? $p['nama'] : explode('@', $p['email'])[0];
-                                    echo esc($displayName);
-                                ?>
+                                <?= !empty($p['nama']) ? esc($p['nama']) : esc(explode('@', $p['email'])[0]) ?>
                             </td>
 
                             <td class="text-nowrap text-center">
@@ -356,7 +361,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="modal-body">
                         <div class="mb-3">
                             <strong>Barang:</strong><br>
-                            <?= esc($p['jenis_barang']) ?> - <?= esc($p['merek_barang']) ?> - <?= esc($p['tipe_barang']) ?><br>
+                            <?= esc($p['nama_kategori']) ?> - <?= esc($p['merek_barang']) ?> - <?= esc($p['tipe_barang']) ?><br>
                             <small class="text-muted">Kode: <?= esc($p['kode_barang']) ?></small>
                         </div>
                         

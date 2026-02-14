@@ -9,21 +9,16 @@ use App\Models\KategoriModel;
 
 class BarangController extends BaseController
 {
-    // Tampilkan daftar barang
     public function index()
     {
-        // Inisialisasi model
         $barangModel   = new BarangModel();
         $kategoriModel = new KategoriModel();
 
-        // Ambil parameter filter dari query string
         $keyword  = $this->request->getGet('keyword');
         $kategori = $this->request->getGet('kategori');
 
-        // AMBIL barangModel FILTER
         $barangModel->getBarangFiltered($keyword, $kategori);
 
-        // PAGINATE DARI barangModel
         $data = [
             'title'     => 'Data Barang',
             'barang'    => $barangModel->paginate(10, 'barang'),
@@ -33,11 +28,9 @@ class BarangController extends BaseController
             'catFilter' => $kategori,
         ];
 
-        // Tampilkan view dengan data
         return view('barang/index', $data);
     }
 
-    // Cek apakah user adalah admin
     private function mustAdmin()
     {
         if (session()->get('role') !== 'admin') {
@@ -45,36 +38,35 @@ class BarangController extends BaseController
         }
     }
 
-    // Tampilkan form tambah barang
     public function create()
     {
-        // Cek admin
         $this->mustAdmin();
 
-        // Inisialisasi model
         $kategoriModel = new KategoriModel();
         $barangModel = new BarangModel();
 
-        // Tampilkan view dengan data kategori
         return view('barang/create', [
             'kategori' => $kategoriModel->findAll(),
             'kondisi_list' => $barangModel->getEnumKondisi()
         ]);
     }
 
-    // Simpan data barang baru
     public function store()
     {
-        // Cek admin
         $this->mustAdmin();
         
-        // Inisialisasi model
         $barangModel = new BarangModel();
-
-        // Ambil kode barang dari form
         $kodeBarang = $this->request->getPost('kode_barang');
+        $kondisi = $this->request->getPost('kondisi');
+        $status = $this->request->getPost('status');
 
-        // Simpan data barang dulu
+        // Auto sync kondisi dan status
+        if ($kondisi === 'Rusak Berat') {
+            $status = 'tidak tersedia';
+        } elseif ($status === 'tidak tersedia' && $kondisi !== 'Rusak Berat') {
+            $kondisi = 'Rusak Berat';
+        }
+
         $id = $barangModel->insert([
             'id_kategori'   => $this->request->getPost('id_kategori'),
             'merek_barang'  => $this->request->getPost('merek_barang'),
@@ -82,103 +74,89 @@ class BarangController extends BaseController
             'kode_barang'   => $kodeBarang,
             'ram'           => $this->request->getPost('ram'),
             'rom'           => $this->request->getPost('rom'),
-            'kondisi'       => $this->request->getPost('kondisi'),
-            'status'        => $this->request->getPost('status'),
+            'kondisi'       => $kondisi,
+            'status'        => $status,
             'keterangan'    => $this->request->getPost('keterangan')
         ]);
 
-        // Handle foto upload
         helper('upload');
         $file = $this->request->getFile('foto');
         
         if ($file && $file->isValid() && !$file->hasMoved()) {
-            // Validasi foto
             $validation = validateFotoBarang($file);
             
             if ($validation['valid']) {
-                // Upload foto
                 $fotoName = uploadFotoBarang($file, $id);
                 
                 if ($fotoName) {
-                    // Update dengan nama foto
                     $barangModel->update($id, ['foto' => $fotoName]);
                 }
             }
         }
 
-        // Log pakai kode barang
-        log_activity(
-            'Menambah barang: '.$kodeBarang,
-            'barang',
-            $id
-        );
+        log_activity('Menambah barang: ' . $kodeBarang, 'barang', $id);
 
-        // Redirect dengan pesan sukses
         return redirect()->to('/barang')->with('success', 'Barang berhasil ditambahkan');
     }
 
-    // Tampilkan form edit barang
     public function edit($id)
     {
-        // Cek admin
         $this->mustAdmin();
 
-        // Inisialisasi model
         $barangModel = new BarangModel();
         $kategoriModel = new KategoriModel();
 
-        // Tampilkan view dengan data barang dan kategori
         return view('barang/edit', [
-            'barang'    => $barangModel->find($id),
+            'barang'    => $barangModel->getBarangById($id),
             'kategori'  => $kategoriModel->findAll(),
-            'jenis_barang' => $barangModel->getEnumJenisBarang(),
             'kondisi_list' => $barangModel->getEnumKondisi()
         ]);
     }
 
-    // Update data barang
     public function update($id)
     {
-        // Cek admin
         $this->mustAdmin();
 
-        // Inisialisasi model
         $barangModel = new BarangModel();
 
-        // Data lama
         $old = $barangModel->find($id);
         if (!$old) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException();
         }
 
-        // Data baru
+        $kondisi = $this->request->getPost('kondisi');
+        $status = $this->request->getPost('status');
+
+        // Auto sync kondisi dan status
+        if ($kondisi === 'Rusak Berat') {
+            $status = 'tidak tersedia';
+        } elseif ($status === 'tidak tersedia' && $kondisi !== 'Rusak Berat') {
+            $kondisi = 'Rusak Berat';
+        }
+
         $new = [
-            'jenis_barang' => $this->request->getPost('jenis_barang'),
             'id_kategori'  => $this->request->getPost('id_kategori'),
             'merek_barang' => $this->request->getPost('merek_barang'),
             'tipe_barang'  => $this->request->getPost('tipe_barang'),
             'kode_barang'  => $this->request->getPost('kode_barang'),
             'ram'          => $this->request->getPost('ram'),
             'rom'          => $this->request->getPost('rom'),
-            'status'       => $this->request->getPost('status'),
+            'kondisi'      => $kondisi,
+            'status'       => $status,
             'keterangan'   => trim($this->request->getPost('keterangan') ?? '')
         ];
 
-        // Handle foto upload
         helper('upload');
         $file = $this->request->getFile('foto');
         
         if ($file && $file->isValid() && !$file->hasMoved()) {
-            // Validasi foto
             $validation = validateFotoBarang($file);
             
             if ($validation['valid']) {
-                // Hapus foto lama jika ada
                 if (!empty($old['foto'])) {
                     deleteFotoBarang($old['foto']);
                 }
                 
-                // Upload foto baru
                 $fotoName = uploadFotoBarang($file, $id);
                 
                 if ($fotoName) {
@@ -187,206 +165,114 @@ class BarangController extends BaseController
             }
         }
 
-        // Update data
         $barangModel->update($id, $new);
 
-        // Bandingkan perubahan
         $changes = [];
-
-        // Inisialisasi model kategori untuk nama kategori
         $kategoriModel = new KategoriModel();
 
-        // Cek tiap field
         $kategoriOld = $kategoriModel->find($old['id_kategori']);
         $kategoriNew = $kategoriModel->find($new['id_kategori']);
 
-        // Ambil nama kategori lama dan baru
-        $namaKategoriOld = $kategoriOld['kategori_kondisi'] ?? $old['id_kategori'];
-        $namaKategoriNew = $kategoriNew['kategori_kondisi'] ?? $new['id_kategori'];
+        $namaKategoriOld = $kategoriOld['nama_kategori'] ?? $old['id_kategori'];
+        $namaKategoriNew = $kategoriNew['nama_kategori'] ?? $new['id_kategori'];
 
-        // Loop untuk cek perubahan
         foreach ($new as $field => $value) {
-            // Jika ada perubahan
             if (trim((string)($old[$field] ?? '')) !== trim((string)$value)) {
-                // Khusus untuk id_kategori, tampilkan nama kategorinya
                 if ($field === 'id_kategori') {
                     $changes[] = 'Kategori: ' . $namaKategoriOld . ' → ' . $namaKategoriNew;
-                } 
-                // Khusus untuk foto, tampilkan info upload
-                elseif ($field === 'foto') {
+                } elseif ($field === 'foto') {
                     $changes[] = 'Foto: ' . ($old[$field] ? 'Diganti' : 'Ditambahkan');
-                }
-                // Khusus untuk keterangan, tampilkan dengan format berbeda 
-                else {
+                } else {
                     $label = ucwords(str_replace('_', ' ', $field));
                     $changes[] = $label . ': ' . ($old[$field] ?? '-') . ' → ' . $value;
                 }
             }
         }
 
-        // SIMPAN FORMAT POPUP
         $detail = implode('; ', $changes);
 
-        // Log perubahan
-        log_activity(
-            'Mengedit barang: ' . $new['kode_barang'] . ' || ' . $detail,
-            'barang',
-            $id
-        );
+        log_activity('Mengedit barang: ' . $new['kode_barang'] . ' || ' . $detail, 'barang', $id);
 
-        // Redirect dengan pesan sukses
         return redirect()->to('/barang')->with('success', 'Data berhasil diedit.');
     }
 
-    // Hapus data barang
     public function delete($id)
     {
-        // Cek admin
         $this->mustAdmin();
 
-        // Inisialisasi model
         $barangModel = new BarangModel();
 
-        // Ambil data dulu sebelum dihapus
         $barang = $barangModel->find($id);
         $kodeBarang = $barang['kode_barang'] ?? $id;
 
-        // Hapus data
         $barangModel->delete($id);
 
-        // Log pakai kode barang
-        log_activity(
-            'Menghapus barang: ' . $kodeBarang,
-            'barang',
-            $id
-        );
+        log_activity('Menghapus barang: ' . $kodeBarang, 'barang', $id);
 
-        // Redirect dengan pesan sukses
         return redirect()->to('/barang')->with('success', 'Data berhasil dihapus.');
     }
 
-    // Tampilkan daftar barang yang dihapus (trash)
     public function trash()
     {
-        // Cek admin
         $this->mustAdmin();
 
-        // Inisialisasi model
         $barangModel = new BarangModel();
 
-        // Ambil parameter filter dari query string
         $keyword      = $this->request->getGet('keyword');
+        $kondisi      = $this->request->getGet('kondisi');
+        $status       = $this->request->getGet('status');
         $deletedDate  = $this->request->getGet('deleted_date');
 
-        // Query builder hanya untuk data yang dihapus
-        $builder = $barangModel->onlyDeleted();
+        $builder = $barangModel->select('barang.*, kategori.nama_kategori')
+            ->join('kategori', 'kategori.id_kategori = barang.id_kategori', 'left')
+            ->onlyDeleted();
 
-        // keyword search
         if ($keyword) {
             $builder->groupStart()
-                ->like('jenis_barang', $keyword)
+                ->like('kategori.nama_kategori', $keyword)
                 ->orLike('merek_barang', $keyword)
                 ->orLike('tipe_barang', $keyword)
                 ->orLike('kode_barang', $keyword)
                 ->groupEnd();
         }
 
-        // filter tanggal hapus
-        if ($deletedDate) {
-            $builder->where('DATE(deleted_at)', $deletedDate);
+        if ($kondisi) {
+            $builder->where('barang.kondisi', $kondisi);
         }
 
-        // Siapkan data untuk view
+        if ($status) {
+            $builder->where('barang.status', $status);
+        }
+
+        if ($deletedDate) {
+            $builder->where('DATE(barang.deleted_at)', $deletedDate);
+        }
+
         $data = [
             'barang'      => $builder->paginate(10, 'trash'),
             'pager'       => $barangModel->pager,
             'keyword'     => $keyword,
+            'kondisi'     => $kondisi,
+            'status'      => $status,
             'deletedDate' => $deletedDate
         ];
 
-        // Tampilkan view dengan data
         return view('barang/trash', $data);
     }
 
-    // Restore barang yang dihapus
-    public function restore($id)
-    {
-        // Cek admin
-        $this->mustAdmin();
-
-        // Inisialisasi model
-        $barangModel = new BarangModel();
-
-        // Ambil data (termasuk yang terhapus)
-        $barang = $barangModel->withDeleted()->find($id);
-        $kodeBarang = $barang['kode_barang'] ?? $id;
-
-        // Restore data
-        $barangModel
-            ->withDeleted()
-            ->where('id_barang', $id)
-            ->set('deleted_at', null)
-            ->update();
-
-        // Log pakai kode barang
-        log_activity(
-            'Restore barang: ' . $kodeBarang,
-            'barang',
-            $id
-        );
-
-        // Redirect dengan pesan sukses
-        return redirect()->back()->with('success', 'Barang berhasil direstore');
-    }
-
-    // Hapus permanen barang
-    public function forceDelete($id)
-    {
-        // Cek admin
-        $this->mustAdmin();
-
-        // Inisialisasi model
-        $barangModel = new BarangModel();
-
-        // Ambil data dulu (termasuk soft deleted)
-        $barang = $barangModel->withDeleted()->find($id);
-        $kodeBarang = $barang['kode_barang'] ?? $id;
-
-        // Hapus permanen
-        $barangModel->delete($id, true);
-
-        // Log pakai kode barang
-        log_activity(
-            'Hapus permanen barang: ' . $kodeBarang,
-            'barang',
-            $id
-        );
-
-        // Redirect dengan pesan sukses
-        return redirect()->back()->with('success', 'Barang dihapus permanen');
-    }
-
-    // Riwayat peminjaman barang
     public function history($id)
     {
-        // Inisialisasi model
         $barangModel = new BarangModel();
 
-        // Ambil data barang
-        $barang = $barangModel->find($id);
+        $barang = $barangModel->getBarangById($id);
         
         if (!$barang) {
             throw new \CodeIgniter\Exceptions\PageNotFoundException('Barang tidak ditemukan');
         }
 
-        // Ambil riwayat peminjaman barang ini menggunakan query builder langsung
         $db = \Config\Database::connect();
         $riwayat = $db->table('pinjam')
-            ->select('
-                pinjam.*,
-                user.email,
-                userprofile.nama
-            ')
+            ->select('pinjam.*, user.email, userprofile.nama')
             ->join('user', 'user.id_user = pinjam.id_user', 'left')
             ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
             ->where('pinjam.id_barang', $id)
@@ -395,11 +281,9 @@ class BarangController extends BaseController
             ->get()
             ->getResultArray();
 
-        // Hitung statistik
         $totalPinjam = count($riwayat);
         $totalDikembalikan = count(array_filter($riwayat, fn($r) => $r['status'] === 'dikembalikan'));
 
-        // Siapkan data untuk view
         $data = [
             'barang' => $barang,
             'riwayat' => $riwayat,
@@ -410,75 +294,63 @@ class BarangController extends BaseController
         return view('barang/history', $data);
     }
 
-    // Export data barang ke Excel
     public function exportExcel()
     {
-        // Inisialisasi model
         $barangModel = new BarangModel();
 
-        // Ambil parameter filter
         $keyword = $this->request->getGet('keyword');
         $kategori = $this->request->getGet('kategori');
 
-        // Ambil data barang dengan filter
         $barang = $barangModel->getBarangFiltered($keyword, $kategori)->findAll();
 
-        // Load helper
         helper('excel');
 
-        // Siapkan headers
         $headers = [
             'No',
-            'Jenis Barang',
+            'Kategori',
             'Merek',
             'Tipe',
             'Kode Barang',
             'RAM',
             'ROM',
-            'Kategori',
+            'Kondisi',
             'Status',
             'Keterangan'
         ];
 
-        // Siapkan data
         $data = [];
         $no = 1;
         foreach ($barang as $b) {
             $data[] = [
                 $no++,
-                $b['jenis_barang'],
+                $b['nama_kategori'],
                 $b['merek_barang'],
                 $b['tipe_barang'],
                 $b['kode_barang'],
                 $b['ram'],
                 $b['rom'],
-                $b['kategori_kondisi'],
+                $b['kondisi'],
                 ucfirst($b['status']),
                 $b['keterangan'] ?? '-'
             ];
         }
 
-        // Generate filename
         $filename = 'Data_Barang_' . date('Y-m-d_His') . '.xlsx';
         $title = 'DATA BARANG INVENTARIS';
 
-        // Log activity
         log_activity('Export data barang ke Excel', 'barang', 0);
 
-        // Export
         exportToExcel($data, $headers, $filename, $title);
     }
 
     // Hapus foto barang
     public function deleteFoto($id)
     {
-        // Cek admin
         $this->mustAdmin();
 
         helper('upload');
         $barangModel = new BarangModel();
 
-        // Ambil data barang
         $barang = $barangModel->find($id);
 
         if (!$barang) {
@@ -489,28 +361,14 @@ class BarangController extends BaseController
             return redirect()->back()->with('error', 'Barang tidak memiliki foto');
         }
 
-        // Hapus file dari server
         if (deleteFotoBarang($barang['foto'])) {
-            // Update database
             $barangModel->update($id, ['foto' => null]);
 
-            // Log activity
-            log_activity(
-                'Menghapus foto barang: ' . $barang['kode_barang'],
-                'barang',
-                $id
-            );
+            log_activity('Menghapus foto barang: ' . $barang['kode_barang'], 'barang', $id);
 
             return redirect()->back()->with('success', 'Foto berhasil dihapus');
         }
 
         return redirect()->back()->with('error', 'Gagal menghapus foto');
     }
-
-    // Generate QR Code untuk barang
-
-    // Download QR Code
-
-
-
 }

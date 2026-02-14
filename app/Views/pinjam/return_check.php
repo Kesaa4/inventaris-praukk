@@ -12,6 +12,14 @@
             </p>
         </div>
 
+        <!-- Alert Error -->
+        <?php if (session()->getFlashdata('error')): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?= session()->getFlashdata('error') ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif ?>
+
         <!-- Card -->
         <div class="row justify-content-center">
             <div class="col-12 col-md-8 col-lg-6">
@@ -23,17 +31,14 @@
                             <div class="row mb-2">
                                 <div class="col-md-5 fw-semibold">Peminjam</div>
                                 <div class="col-md-7">
-                                    <?php 
-                                        $displayName = !empty($pinjam['nama']) ? $pinjam['nama'] : explode('@', $pinjam['email'])[0];
-                                        echo esc($displayName);
-                                    ?>
+                                    <?= !empty($pinjam['nama']) ? esc($pinjam['nama']) : esc(explode('@', $pinjam['email'])[0]) ?>
                                 </div>
                             </div>
 
                             <div class="row">
                                 <div class="col-md-5 fw-semibold">Barang</div>
                                 <div class="col-md-7">
-                                    <?= esc($pinjam['jenis_barang']) ?> -
+                                    <?= esc($pinjam['nama_kategori']) ?> -
                                     <?= esc($pinjam['merek_barang']) ?> -
                                     <?= esc($pinjam['tipe_barang']) ?>
                                 </div>

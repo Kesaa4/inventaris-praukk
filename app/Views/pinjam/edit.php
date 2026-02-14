@@ -12,6 +12,14 @@
             </p>
         </div>
 
+        <!-- Alert Error -->
+        <?php if (session()->getFlashdata('error')): ?>
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <?= session()->getFlashdata('error') ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif ?>
+
         <!-- Card -->
         <div class="row justify-content-center">
             <div class="col-12 col-md-8 col-lg-6">
@@ -24,17 +32,14 @@
                                 <div class="row mb-2">
                                     <div class="col-md-4 fw-semibold">Peminjam</div>
                                     <div class="col-md-8">
-                                        <?php 
-                                            $displayName = !empty($pinjam['nama']) ? $pinjam['nama'] : explode('@', $pinjam['email'])[0];
-                                            echo esc($displayName);
-                                        ?>
+                                        <?= !empty($pinjam['nama']) ? esc($pinjam['nama']) : esc(explode('@', $pinjam['email'])[0]) ?>
                                     </div>
                                 </div>
 
                                 <div class="row mb-2">
                                     <div class="col-md-4 fw-semibold">Barang</div>
                                     <div class="col-md-8">
-                                        <?= esc($pinjam['jenis_barang']) ?> -
+                                        <?= esc($pinjam['nama_kategori']) ?> -
                                         <?= esc($pinjam['merek_barang']) ?> -
                                         <?= esc($pinjam['tipe_barang']) ?>
                                     </div>
@@ -44,6 +49,15 @@
                                     <div class="col-md-4 fw-semibold">Tanggal Pengajuan</div>
                                     <div class="col-md-8">
                                         <?= date('d-m-Y H:i', strtotime($pinjam['tgl_pengajuan'])) ?>
+                                    </div>
+                                </div>
+
+                                <div class="row mb-2">
+                                    <div class="col-md-4 fw-semibold">Durasi Peminjaman</div>
+                                    <div class="col-md-8">
+                                        <span class="badge bg-info">
+                                            <?= $pinjam['durasi_pinjam'] ?? 7 ?> Hari
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -76,23 +90,6 @@
                                         </option>
                                     <?php endif; ?>
                                 </select>
-                            </div>
-
-                            <!-- Durasi Peminjaman (muncul jika disetujui) -->
-                            <div class="mb-3" id="durasiBox" style="display: <?= $pinjam['status'] === 'disetujui' ? 'block' : 'none' ?>;">
-                                <label class="form-label fw-semibold">
-                                    Durasi Peminjaman (Hari)
-                                </label>
-                                <input type="number" 
-                                    name="durasi_pinjam" 
-                                    class="form-control" 
-                                    value="<?= $pinjam['durasi_pinjam'] ?? 7 ?>"
-                                    min="1"
-                                    max="30"
-                                    placeholder="Masukkan durasi dalam hari">
-                                <small class="text-muted">
-                                    Batas waktu pengembalian akan dihitung otomatis
-                                </small>
                             </div>
 
                             <div class="mb-3 d-none" id="alasanBox">
@@ -129,7 +126,6 @@
 document.addEventListener('DOMContentLoaded', function () {
     const statusSelect = document.getElementById('statusSelect');
     const alasanBox = document.getElementById('alasanBox');
-    const durasiBox = document.getElementById('durasiBox');
     const textarea = alasanBox.querySelector('textarea');
 
     function toggleFields() {
@@ -140,13 +136,6 @@ document.addEventListener('DOMContentLoaded', function () {
         } else {
             alasanBox.classList.add('d-none');
             textarea.removeAttribute('required');
-        }
-        
-        // Toggle durasi peminjaman
-        if (statusSelect.value === 'disetujui') {
-            durasiBox.style.display = 'block';
-        } else {
-            durasiBox.style.display = 'none';
         }
     }
 

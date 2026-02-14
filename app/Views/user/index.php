@@ -14,7 +14,15 @@
     <!-- Alert Success -->
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <?= session()->getFlashdata('success') ?>
+            <i class="bi bi-check-circle me-2"></i><?= session()->getFlashdata('success') ?>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    <?php endif ?>
+
+    <!-- Alert Error -->
+    <?php if (session()->getFlashdata('error')): ?>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i><?= session()->getFlashdata('error') ?>
             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
     <?php endif ?>
@@ -23,7 +31,7 @@
     <div class="card shadow-sm mb-3">
         <div class="card-body">
             <form method="get" class="row g-2 align-items-end" id="filterForm">
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <label class="form-label">Cari User</label>
                     <input type="text"
                         name="keyword"
@@ -34,25 +42,34 @@
                     >
                 </div>
 
-                <div class="col-md-3">
-                    <label class="form-label">Cari Role</label>
+                <div class="col-md-2">
+                    <label class="form-label">Role</label>
                     <select name="role" class="form-select" id="roleSelect">
-                        <option value="">-- Semua Role --</option>
+                        <option value="">Semua Role</option>
                         <option value="admin" <?= ($role ?? '') === 'admin' ? 'selected' : '' ?>>Admin</option>
                         <option value="peminjam" <?= ($role ?? '') === 'peminjam' ? 'selected' : '' ?>>Peminjam</option>
                         <option value="petugas" <?= ($role ?? '') === 'petugas' ? 'selected' : '' ?>>Petugas</option>
                     </select>
                 </div>
 
-                <div class="col-md-12 col-lg-5 d-flex flex-column flex-lg-row justify-content-between gap-2">
+                <div class="col-md-2">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select" id="statusSelect">
+                        <option value="">Semua Status</option>
+                        <option value="aktif" <?= ($status ?? '') === 'aktif' ? 'selected' : '' ?>>Aktif</option>
+                        <option value="tidak aktif" <?= ($status ?? '') === 'tidak aktif' ? 'selected' : '' ?>>Tidak Aktif</option>
+                    </select>
+                </div>
+
+                <div class="col-md-5 d-flex flex-column flex-lg-row justify-content-between gap-2">
                     <div class="d-flex gap-2">
                         <a href="<?= base_url('user') ?>" class="btn btn-outline-secondary">
                             <i class="bi bi-arrow-clockwise me-1"></i>Reset
                         </a>
                     </div>
                     <div>
-                        <a href="/user/create" class="btn btn-success btn-sm w-100 w-lg-auto">
-                            Tambah User
+                        <a href="/user/create" class="btn btn-success w-100 w-lg-auto">
+                            <i class="bi bi-plus-circle me-1"></i>Tambah User
                         </a>
                     </div>
                 </div>
@@ -66,6 +83,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('filterForm');
     const keywordInput = document.getElementById('keywordInput');
     const roleSelect = document.getElementById('roleSelect');
+    const statusSelect = document.getElementById('statusSelect');
     
     let timeout = null;
     
@@ -77,8 +95,12 @@ document.addEventListener('DOMContentLoaded', function() {
         }, 500);
     });
     
-    // Auto submit saat memilih role
+    // Auto submit saat memilih role atau status
     roleSelect.addEventListener('change', function() {
+        form.submit();
+    });
+    
+    statusSelect.addEventListener('change', function() {
         form.submit();
     });
 });
@@ -93,20 +115,31 @@ document.addEventListener('DOMContentLoaded', function() {
                     <thead class="table-primary text-center">
                         <tr>
                             <th width="60">No</th>
-                            <th>Email</th>
+                            <th width="80">Foto</th>
                             <th>Nama Lengkap</th>
-                            <th width="120">Role</th>
-                            <th width="120">Status</th>
-                            <th>Aksi</th>
+                            <th>Email</th>
+                            <th width="100">Role</th>
+                            <th width="100">Status</th>
+                            <th width="200">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                     <?php if (count($users) > 0): ?>
-                        <?php $no = 1; foreach ($users as $u): ?>
+                        <?php $no = 1 + (10 * ($pager->getCurrentPage('user') - 1)); foreach ($users as $u): ?>
                             <tr>
                                 <td class="text-center"><?= $no++ ?></td>
-                                <td><?= esc($u['email']) ?></td>
+                                <td class="text-center">
+                                    <?php if (!empty($u['foto_profil'])): ?>
+                                        <img src="<?= base_url('uploads/profile/' . $u['foto_profil']) ?>" 
+                                             alt="Foto <?= esc($u['nama']) ?>" 
+                                             class="rounded-circle"
+                                             style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #e9ecef;">
+                                    <?php else: ?>
+                                        <i class="bi bi-person-circle text-muted" style="font-size: 40px;"></i>
+                                    <?php endif ?>
+                                </td>
                                 <td><?= esc($u['nama'] ?? '-') ?></td>
+                                <td><?= esc($u['email']) ?></td>
                                 <td class="text-center">
                                     <?php
                                         $role = $u['role'];
@@ -121,7 +154,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                         }
                                     ?>
                                     <span class="badge <?= $badgeClass ?>">
-                                        <?= esc($role) ?>
+                                        <?= esc(ucfirst($role)) ?>
                                     </span>
                                 </td>
 
@@ -131,22 +164,40 @@ document.addEventListener('DOMContentLoaded', function() {
                                         $badge = $status === 'aktif' ? 'bg-success' : 'bg-danger';
                                     ?>
                                     <span class="badge <?= $badge ?>">
-                                        <?= esc($status) ?>
+                                        <?= esc(ucfirst($status)) ?>
                                     </span>
                                 </td>
 
                                 <td class="text-center">
-                                    <a href="/user/edit/<?= $u['id_user'] ?>"
-                                       class="btn btn-sm btn-warning">
-                                        Edit
-                                    </a>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="/user/edit/<?= $u['id_user'] ?>"
+                                           class="btn btn-warning"
+                                           title="Edit User">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-info"
+                                                title="Reset Password"
+                                                onclick="confirmReset(<?= $u['id_user'] ?>, '<?= esc($u['nama']) ?>')">
+                                            <i class="bi bi-key"></i>
+                                        </button>
+                                        <?php if ($u['id_user'] != session('id_user')): ?>
+                                        <button type="button"
+                                                class="btn btn-danger"
+                                                title="Hapus User"
+                                                onclick="confirmDelete(<?= $u['id_user'] ?>, '<?= esc($u['nama']) ?>')">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                        <?php endif ?>
+                                    </div>
                                 </td>
                             </tr>
                         <?php endforeach ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="12" class="text-center text-muted">
-                                Data user belum tersedia
+                            <td colspan="7" class="text-center text-muted py-4">
+                                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                Data user tidak ditemukan
                             </td>
                         </tr>
                     <?php endif ?>
@@ -260,5 +311,19 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     </div>
 </div>
+
+<script>
+function confirmDelete(id, nama) {
+    if (confirm(`Apakah Anda yakin ingin menghapus user "${nama}"?\n\nData yang dihapus tidak dapat dikembalikan.`)) {
+        window.location.href = `/user/delete/${id}`;
+    }
+}
+
+function confirmReset(id, nama) {
+    if (confirm(`Reset password user "${nama}" menjadi default (123456)?`)) {
+        window.location.href = `/user/resetPassword/${id}`;
+    }
+}
+</script>
 
 <?= view('layouts/footer') ?>

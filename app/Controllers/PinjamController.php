@@ -15,13 +15,11 @@ class PinjamController extends BaseController
 {
     protected function mustLogin()
     {
-        // Cek apakah user sudah login
         if (!session('isLoggedIn')) {
             return redirect()->to('/');
         }
     }
 
-    // ADMIN ONLY
     protected function mustAdmin()
     {
         if (session('role') !== 'admin') {
@@ -29,7 +27,6 @@ class PinjamController extends BaseController
         }
     }
 
-    // ADMIN ATAU PETUGAS ONLY
     protected function mustAdminOrPetugas()
     {
         if (!in_array(session('role'), ['admin', 'petugas'])) {
@@ -37,7 +34,6 @@ class PinjamController extends BaseController
         }
     }
     
-    // PEMINJAM ATAU PETUGAS ONLY
     protected function mustPeminjamOrPetugas()
     {
         if (!in_array(session('role'), ['peminjam', 'petugas'])) {
@@ -45,54 +41,33 @@ class PinjamController extends BaseController
         }
     }
 
-    // LIST PEMINJAMAN
     public function index()
     {
-        // Pastikan user sudah login
         $this->mustLogin();
 
-        // Inisialisasi model
         $pinjamModel = new PinjamModel();
 
-        // Ambil filter dari query string
         $filters = [
-            'keyword'     => $this->request->getGet('keyword'),
-            'status'      => $this->request->getGet('status'),
-            'tgl_pengajuan'  => $this->request->getGet('tgl_pengajuan'),
+            'keyword'               => $this->request->getGet('keyword'),
+            'status'                => $this->request->getGet('status'),
+            'tgl_pengajuan'         => $this->request->getGet('tgl_pengajuan'),
             'tgl_disetujui_kembali' => $this->request->getGet('tgl_disetujui_kembali'),
         ];
 
-        // Cek ada tidaknya filter
-        $isFilter = array_filter($filters);
+        $userId = (session('role') === 'peminjam') ? session('id_user') : null;
 
-        // PANGGIL FILTER DARI MODEL JIKA ADA
-        if ($isFilter) {
-            // Kalau peminjam, batasi hanya miliknya
-            if (session('role') === 'peminjam') {
-                $pinjamModel->filterPinjam($filters, session('id_user'));
-            } // Kalau admin/petugas, semua data
-            else {
-                $pinjamModel->filterPinjam($filters);
-            }
-        // Kalau tidak ada filter
+        if (array_filter($filters)) {
+            $pinjamModel->filterPinjam($filters, $userId);
         } else {
-            // Kalau peminjam, batasi hanya miliknya
-            if (session('role') === 'peminjam') {
-                $pinjamModel->getPinjamWithRelasi(session('id_user'));
-            } // Kalau admin/petugas, semua data
-            else {
-                $pinjamModel->getPinjamWithRelasi();
-            }
+            $pinjamModel->getPinjamWithRelasi($userId);
         }
 
-        // Siapkan data untuk view
         $data = [
-            'pinjam' => $pinjamModel->paginate(10, 'pinjam'),
-            'pager'  => $pinjamModel->pager,
-            'filters'=> $filters,
+            'pinjam'  => $pinjamModel->paginate(10, 'pinjam'),
+            'pager'   => $pinjamModel->pager,
+            'filters' => $filters,
         ];
 
-        // Tampilkan view dengan data
         return view('pinjam/index', $data);
     }
 
@@ -104,21 +79,27 @@ class PinjamController extends BaseController
         $barangModel = new BarangModel();
         $userModel   = new UserModel();
 
-        // Siapkan data untuk view
-        $data = [
-            'barang' => $barangModel
-                ->where('status', 'tersedia')
-                ->findAll()
-        ];
+        // Siapkan data barang yang tersedia (case-insensitive untuk status)
+        $barang = $barangModel
+            ->select('barang.id_barang, barang.merek_barang, barang.tipe_barang, barang.kode_barang, barang.status, kategori.nama_kategori')
+            ->join('kategori', 'kategori.id_kategori = barang.id_kategori', 'left')
+            ->where('LOWER(barang.status)', 'tersedia')
+            ->orderBy('kategori.nama_kategori', 'ASC')
+            ->orderBy('barang.merek_barang', 'ASC')
+            ->findAll();
 
-        // kalau petugas/admin, kirim data user
+        $data = ['barang' => $barang];
+
+        // Kalau petugas/admin, kirim data user dengan nama
         if (in_array(session('role'), ['admin', 'petugas'])) {
             $data['users'] = $userModel
-                ->where('role', 'peminjam')
+                ->select('user.id_user, user.email, userprofile.nama')
+                ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
+                ->where('user.role', 'peminjam')
+                ->orderBy('userprofile.nama', 'ASC')
                 ->findAll();
         }
 
-        // Tampilkan view dengan data
         return view('pinjam/create', $data);
     }
 
@@ -127,56 +108,78 @@ class PinjamController extends BaseController
     {
         $this->mustLogin();
 
-        $pinjamModel        = new PinjamModel();
-        $barangModel        = new BarangModel();
-        $userProfileModel   = new UserProfileModel();
+        $pinjamModel = new PinjamModel();
+        $barangModel = new BarangModel();
 
-        // USER YANG MEMINJAM
+        // Tentukan user yang meminjam
         if (in_array(session('role'), ['admin', 'petugas'])) {
             $idUserPeminjam = $this->request->getPost('id_user');
 
-            // CEGAH PINJAM KE DIRI SENDIRI
+            // Validasi: tidak boleh meminjamkan ke diri sendiri
+            if (!$idUserPeminjam) {
+                return redirect()->back()->with('error', 'Peminjam harus dipilih')->withInput();
+            }
+
             if ($idUserPeminjam == session('id_user')) {
-                return redirect()
-                    ->back()
-                    ->with('error', 'Tidak boleh meminjamkan ke diri sendiri');
-            } // Hanya boleh pinjam ke peminjam
+                return redirect()->back()->with('error', 'Tidak boleh meminjamkan ke diri sendiri')->withInput();
+            }
         } else {
             $idUserPeminjam = session('id_user');
         }
 
-        // BARANG YANG DIPINJAM
+        // Validasi barang
         $idBarang = $this->request->getPost('id_barang');
+        if (!$idBarang) {
+            return redirect()->back()->with('error', 'Barang harus dipilih')->withInput();
+        }
 
-        // Ambil kode barang untuk log
-        $barang = $barangModel->find($idBarang);
-        $kodeBarang = $barang['kode_barang'] ?? $idBarang;
+        // Validasi durasi peminjaman
+        $durasi = $this->request->getPost('durasi_pinjam');
+        if (!$durasi || $durasi < 1) {
+            return redirect()->back()->with('error', 'Durasi peminjaman minimal 1 hari')->withInput();
+        }
+        $durasi = (int)$durasi;
 
-        // Simpan data peminjaman status jadi menunggu
+        // Ambil data barang (termasuk yang soft deleted untuk validasi lengkap)
+        $barang = $barangModel->withDeleted()->find($idBarang);
+        if (!$barang) {
+            return redirect()->back()->with('error', 'Barang tidak ditemukan')->withInput();
+        }
+
+        // Cek apakah barang sudah dihapus
+        if (!empty($barang['deleted_at'])) {
+            return redirect()->back()->with('error', 'Barang sudah tidak tersedia (telah dihapus)')->withInput();
+        }
+
+        // Cek status barang (case-insensitive)
+        if (strtolower($barang['status']) !== 'tersedia') {
+            return redirect()->back()->with('error', 'Barang tidak tersedia untuk dipinjam (Status: ' . ucfirst($barang['status']) . ')')->withInput();
+        }
+
+        // Simpan data peminjaman dengan durasi
         $id = $pinjamModel->insert([
-            'id_barang'  => $idBarang,
-            'id_user'    => $idUserPeminjam,      // PEMINJAM
-            'created_by' => session('id_user'),   // YANG INPUT
+            'id_barang'     => $idBarang,
+            'id_user'       => $idUserPeminjam,
+            'created_by'    => session('id_user'),
             'tgl_pengajuan' => date('Y-m-d H:i:s'),
-            'status'     => 'menunggu'
+            'durasi_pinjam' => $durasi,
+            'status'        => 'menunggu'
         ]);
 
-        // Log detail
-        $namaPeminjam = getNamaUser($idUserPeminjam);
+        // Update status barang
+        $barangModel->update($idBarang, ['status' => 'dibooking']);
 
+        // Log activity
+        $namaPeminjam = getNamaUser($idUserPeminjam);
+        $kodeBarang = $barang['kode_barang'] ?? $idBarang;
         log_activity(
-            'Menambahkan peminjaman untuk ' . $namaPeminjam . ' - ' . $kodeBarang,
+            'Menambahkan peminjaman untuk ' . $namaPeminjam . ' - ' . $kodeBarang . 
+            '||Durasi: ' . $durasi . ' hari',
             'pinjam',
             $id
         );
 
-        // Update status barang jadi dibooking jika sudah mengajukan pinjam
-        $barangModel->update($idBarang, [
-            'status' => 'dibooking'
-        ]);
-
-        // Redirect dengan pesan sukses
-        return redirect()->to('/pinjam')->with('success', 'Pengajuan berhasil');
+        return redirect()->to('/pinjam')->with('success', 'Pengajuan peminjaman berhasil (Durasi: ' . $durasi . ' hari)');
     }
 
     // EDIT STATUS (ADMIN / PETUGAS)
@@ -204,157 +207,161 @@ class PinjamController extends BaseController
     // UPDATE STATUS PEMINJAMAN
     public function update($id)
     {
-        // Pastikan admin atau petugas
         $this->mustAdminOrPetugas();
 
         $pinjamModel = new PinjamModel();
         $barangModel = new BarangModel();
 
-        // Ambil data peminjaman dulu
+        // Ambil data peminjaman
         $pinjam = $pinjamModel->find($id);
-
-        // Cek data ada tidak
         if (!$pinjam) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException();
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Data peminjaman tidak ditemukan');
         }
 
-        // Ambil data pendukung untuk log
+        // Ambil data pendukung
         $namaPeminjam = getNamaUser($pinjam['id_user']);
         $barang = $barangModel->find($pinjam['id_barang']);
         $kodeBarang = $barang['kode_barang'] ?? $pinjam['id_barang'];
 
         // Ambil status dari form
         $status = $this->request->getPost('status');
+        if (!$status) {
+            return redirect()->back()->with('error', 'Status harus dipilih');
+        }
+
         $data = [
-            'status' => $status,
+            'status'         => $status,
             'alasan_ditolak' => null
         ];
 
-        // Jika disetujui maka 
-        if ($status === 'disetujui') {
-            // Ambil durasi dari form atau default 7 hari
-            $durasi = $this->request->getPost('durasi_pinjam') ?: 7;
-            $durasi = max(1, min(30, (int)$durasi)); // Batasi 1-30 hari
-            
-            // Hitung tanggal jatuh tempo
-            $tglJatuhTempo = date('Y-m-d H:i:s', strtotime("+{$durasi} days"));
-            
-            $data['tgl_disetujui'] = date('Y-m-d H:i:s');
-            $data['tgl_jatuh_tempo'] = $tglJatuhTempo;
-            $data['durasi_pinjam'] = $durasi;
-            $data['approved_at'] = date('Y-m-d H:i:s');
-            $data['approved_by'] = session('id_user');
+        // Proses berdasarkan status
+        switch ($status) {
+            case 'disetujui':
+                // Gunakan durasi yang sudah diinput saat pengajuan, atau default 7 hari
+                $durasi = $pinjam['durasi_pinjam'] ?? 7;
+                
+                // Hitung tanggal jatuh tempo
+                $tglJatuhTempo = date('Y-m-d H:i:s', strtotime("+{$durasi} days"));
+                
+                $data['tgl_disetujui']  = date('Y-m-d H:i:s');
+                $data['tgl_jatuh_tempo'] = $tglJatuhTempo;
+                $data['durasi_pinjam']  = $durasi;
+                $data['approved_at']    = date('Y-m-d H:i:s');
+                $data['approved_by']    = session('id_user');
 
-            // Update status barang jadi dipinjam
-            $barangModel->update($pinjam['id_barang'], [
-                'status' => 'dipinjam'
-            ]);
+                // Update status barang
+                $barangModel->update($pinjam['id_barang'], ['status' => 'dipinjam']);
 
-            log_activity(
-                'Menyetujui peminjaman ' . $namaPeminjam . ' - ' . $kodeBarang . 
-                '||Durasi: ' . $durasi . ' hari;Jatuh tempo: ' . date('d-m-Y', strtotime($tglJatuhTempo)),
-                'pinjam',
-                $id
-            );
-        }
+                log_activity(
+                    'Menyetujui peminjaman ' . $namaPeminjam . ' - ' . $kodeBarang . 
+                    '||Durasi: ' . $durasi . ' hari;Jatuh tempo: ' . date('d-m-Y', strtotime($tglJatuhTempo)),
+                    'pinjam',
+                    $id
+                );
+                break;
 
-        // Jika ditolak
-        elseif ($status === 'ditolak') {
-            // Tambah alasan ditolak
-            $data['alasan_ditolak'] = $this->request->getPost('alasan_ditolak');
-            // Update status barang jadi tersedia lagi jika ditolak
-            $barangModel->update($pinjam['id_barang'], [
-                'status' => 'tersedia'
-            ]);
-            
-            log_activity(
-                'Menolak peminjaman ' . $namaPeminjam . 
-                '||Barang: ' . $kodeBarang .
-                ';Alasan: ' . $data['alasan_ditolak'],
-                'pinjam',
-                $id
-            );
-        }
-        // Jika dikembalikan status menjadi tersedia lagi
-        elseif ($status === 'dikembalikan') {
-            $barangModel->update($pinjam['id_barang'], [
-                'status' => 'tersedia'
-            ]);
+            case 'ditolak':
+                // Validasi alasan
+                $alasan = $this->request->getPost('alasan_ditolak');
+                if (!$alasan) {
+                    return redirect()->back()->with('error', 'Alasan penolakan harus diisi');
+                }
 
-            log_activity(
-                'Menyetujui pengembalian barang ' . $namaPeminjam . ' - ' . $kodeBarang,
-                'pinjam',
-                $id
-            );
+                $data['alasan_ditolak'] = $alasan;
+                
+                // Update status barang
+                $barangModel->update($pinjam['id_barang'], ['status' => 'tersedia']);
+                
+                log_activity(
+                    'Menolak peminjaman ' . $namaPeminjam . 
+                    '||Barang: ' . $kodeBarang . ';Alasan: ' . $alasan,
+                    'pinjam',
+                    $id
+                );
+                break;
+
+            case 'dikembalikan':
+                // Update status barang
+                $barangModel->update($pinjam['id_barang'], ['status' => 'tersedia']);
+
+                log_activity(
+                    'Menyetujui pengembalian barang ' . $namaPeminjam . ' - ' . $kodeBarang,
+                    'pinjam',
+                    $id
+                );
+                break;
         }
 
         // Update data peminjaman
         $pinjamModel->update($id, $data);
 
-        return redirect()->to('/pinjam')->with('success', 'Status berhasil diubah');
+        return redirect()->to('/pinjam')->with('success', 'Status peminjaman berhasil diubah');
     }
 
     // DELETE (ADMIN ONLY)
     public function delete($id)
     {
-        // Pastikan admin
         $this->mustAdmin();
 
         $pinjamModel = new PinjamModel();
         $barangModel = new BarangModel();
 
-        // Ambil data pinjam dulu
+        // Ambil data peminjaman
         $pinjam = $pinjamModel->find($id);
         if (!$pinjam) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException();
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Data peminjaman tidak ditemukan');
         }
 
         // Data pendukung log
         $namaPeminjam = getNamaUser($pinjam['id_user']);
-
-        // Ambil kode barang
         $barang = $barangModel->find($pinjam['id_barang']);
         $kodeBarang = $barang['kode_barang'] ?? $pinjam['id_barang'];
 
-        // Hapus data
+        // Soft delete
         $pinjamModel->delete($id);
 
-        // Log detail
         log_activity(
             'Menghapus peminjaman ' . $namaPeminjam . ' - ' . $kodeBarang,
             'pinjam',
             $id
         );
 
-        return redirect()->to('/pinjam');
+        return redirect()->to('/pinjam')->with('success', 'Data peminjaman berhasil dihapus');
     }
 
-    //pengembalian barang oleh peminjam
+    // Ajukan pengembalian barang oleh peminjam
     public function requestReturn($id)
     {
-        // Pastikan peminjam
         if (session('role') !== 'peminjam') {
-            throw new \CodeIgniter\Exceptions\PageForbiddenException();
+            throw new \CodeIgniter\Exceptions\PageForbiddenException('Hanya peminjam yang dapat mengajukan pengembalian');
         }
 
         $pinjamModel = new PinjamModel();
         $barangModel = new BarangModel();
 
-        // Ambil data pinjam dulu
+        // Ambil data peminjaman
         $pinjam = $pinjamModel->find($id);
-        // Cek data ada tidak
         if (!$pinjam) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException();
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Data peminjaman tidak ditemukan');
+        }
+
+        // Validasi: hanya peminjam yang bersangkutan yang bisa mengajukan
+        if ($pinjam['id_user'] != session('id_user')) {
+            throw new \CodeIgniter\Exceptions\PageForbiddenException('Anda tidak memiliki akses');
+        }
+
+        // Validasi status
+        if ($pinjam['status'] !== 'disetujui') {
+            return redirect()->back()->with('error', 'Hanya peminjaman yang disetujui yang dapat dikembalikan');
         }
 
         // Data pendukung log
-        $namaPeminjam = getNamaUser($pinjam['id_user']);
         $barang = $barangModel->find($pinjam['id_barang']);
         $kodeBarang = $barang['kode_barang'] ?? $pinjam['id_barang'];
 
-        // update status pinjam jadi pengembalian jika peminjam mengajukan
+        // Update status peminjaman
         $pinjamModel->update($id, [
-            'status' => 'pengembalian',
+            'status'                => 'pengembalian',
             'tgl_pengajuan_kembali' => date('Y-m-d H:i:s')
         ]);
 
@@ -364,37 +371,65 @@ class PinjamController extends BaseController
             $id
         );
 
-        return redirect()->to('/pinjam')->with('success', 'Pengembalian diajukan');
+        return redirect()->to('/pinjam')->with('success', 'Pengembalian berhasil diajukan');
     }
 
-    //view pengecekan oleh petugas dan admin
+    // View pengecekan pengembalian oleh petugas dan admin
     public function returnCheck($id)
     {
-        // Pastikan admin atau petugas
         $this->mustAdminOrPetugas();
 
         $pinjamModel = new PinjamModel();
 
-        // Tampilkan view dengan data
-        return view('pinjam/return_check', [
-            'pinjam' => $pinjamModel->getPinjamWithRelasiById($id)
-        ]);
+        // Ambil data peminjaman
+        $pinjam = $pinjamModel->getPinjamWithRelasiById($id);
+        if (!$pinjam) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Data peminjaman tidak ditemukan');
+        }
+
+        // Validasi status
+        if ($pinjam['status'] !== 'pengembalian') {
+            return redirect()->back()->with('error', 'Status peminjaman tidak valid untuk pengecekan pengembalian');
+        }
+
+        return view('pinjam/return_check', ['pinjam' => $pinjam]);
     }
 
-    //update status + barang jadi tersedia
+    // Update status pengembalian
     public function returnUpdate($id)
     {
-        // Pastikan admin atau petugas
         $this->mustAdminOrPetugas();
 
         $pinjamModel = new PinjamModel();
         $barangModel = new BarangModel();
 
-        // Ambil data pinjam dulu
+        // Ambil data peminjaman
         $pinjam = $pinjamModel->find($id);
-        // Cek data ada tidak
         if (!$pinjam) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException();
+            throw new \CodeIgniter\Exceptions\PageNotFoundException('Data peminjaman tidak ditemukan');
+        }
+
+        // Validasi status peminjaman
+        if ($pinjam['status'] !== 'pengembalian') {
+            return redirect()->back()->with('error', 'Status peminjaman tidak valid untuk pengembalian');
+        }
+
+        // Ambil data dari form
+        $status = $this->request->getPost('status');
+        $kondisiBarang = $this->request->getPost('kondisi_barang');
+        $keteranganRusak = $this->request->getPost('keterangan_rusak');
+
+        // Validasi input
+        if (!$status || $status !== 'dikembalikan') {
+            return redirect()->back()->with('error', 'Status harus dikembalikan');
+        }
+
+        if (!$kondisiBarang || !in_array($kondisiBarang, ['baik', 'rusak'])) {
+            return redirect()->back()->with('error', 'Kondisi barang harus dipilih');
+        }
+
+        if ($kondisiBarang === 'rusak' && !$keteranganRusak) {
+            return redirect()->back()->with('error', 'Keterangan kerusakan harus diisi');
         }
 
         // Data pendukung log
@@ -402,50 +437,38 @@ class PinjamController extends BaseController
         $barang = $barangModel->find($pinjam['id_barang']);
         $kodeBarang = $barang['kode_barang'] ?? $pinjam['id_barang'];
 
-        // Ambil data dari form
-        $status = $this->request->getPost('status');
-        $kondisiBarang = $this->request->getPost('kondisi_barang');
-        $keteranganRusak = $this->request->getPost('keterangan_rusak');
-
-        // update tanggal disetujui kembali, status pinjam, dan kondisi barang
+        // Update data peminjaman
         $pinjamModel->update($id, [
-            'status' => $status,
-            'tgl_disetujui_kembali' => date('Y-m-d H:i:s'),
-            'kondisi_barang' => $kondisiBarang,
-            'keterangan_kondisi' => $kondisiBarang === 'rusak' ? $keteranganRusak : null
+            'status'                 => $status,
+            'tgl_disetujui_kembali'  => date('Y-m-d H:i:s'),
+            'kondisi_barang'         => $kondisiBarang,
+            'keterangan_kondisi'     => $kondisiBarang === 'rusak' ? $keteranganRusak : null
         ]);
 
-        // jika dikembalikan
-        if ($status === 'dikembalikan') {
-            // Cek kondisi barang
-            if ($kondisiBarang === 'rusak') {
-                // Jika rusak, status barang jadi tidak tersedia
-                $barangModel->update($pinjam['id_barang'], [
-                    'status' => 'tidak tersedia',
-                    'keterangan' => $keteranganRusak
-                ]);
+        // Update status barang berdasarkan kondisi
+        if ($kondisiBarang === 'rusak') {
+            $barangModel->update($pinjam['id_barang'], [
+                'status'     => 'tidak tersedia',
+                'keterangan' => $keteranganRusak
+            ]);
 
-                log_activity(
-                    'Menyetujui pengembalian barang RUSAK ' . $namaPeminjam . ' - ' . $kodeBarang . 
-                    '||Keterangan: ' . $keteranganRusak,
-                    'pinjam',
-                    $id
-                );
-            } else {
-                // Jika baik, status barang jadi tersedia
-                $barangModel->update($pinjam['id_barang'], [
-                    'status' => 'tersedia'
-                ]);
+            log_activity(
+                'Menyetujui pengembalian barang RUSAK ' . $namaPeminjam . ' - ' . $kodeBarang . 
+                '||Keterangan: ' . $keteranganRusak,
+                'pinjam',
+                $id
+            );
+        } else {
+            $barangModel->update($pinjam['id_barang'], ['status' => 'tersedia']);
 
-                log_activity(
-                    'Menyetujui pengembalian barang ' . $namaPeminjam . ' - ' . $kodeBarang,
-                    'pinjam',
-                    $id
-                );
-            }
+            log_activity(
+                'Menyetujui pengembalian barang ' . $namaPeminjam . ' - ' . $kodeBarang,
+                'pinjam',
+                $id
+            );
         }
 
-        return redirect()->to('/pinjam')->with('success', 'Pengembalian diproses');
+        return redirect()->to('/pinjam')->with('success', 'Pengembalian berhasil diproses');
     }
 
     // TRASH MANAGEMENT (ADMIN ONLY)
@@ -457,18 +480,20 @@ class PinjamController extends BaseController
 
         // Ambil filter dari query string
         $filters = [
-            'keyword'     => $this->request->getGet('keyword'),
-            'status'      => $this->request->getGet('status'),
-            'tgl_pengajuan'  => $this->request->getGet('tgl_pengajuan'),
+            'keyword'               => $this->request->getGet('keyword'),
+            'status'                => $this->request->getGet('status'),
+            'tgl_pengajuan'         => $this->request->getGet('tgl_pengajuan'),
             'tgl_disetujui_kembali' => $this->request->getGet('tgl_disetujui_kembali'),
         ];
 
         // Ambil data soft deleted
         $pinjamModel->onlyDeleted();
 
-        // pakai logic filter YANG SUDAH ADA
+        // Terapkan filter jika ada
         if (array_filter($filters)) {
             $pinjamModel->filterPinjam($filters);
+        } else {
+            $pinjamModel->orderBy('pinjam.deleted_at', 'DESC');
         }
 
         // Siapkan data untuk view
@@ -482,77 +507,9 @@ class PinjamController extends BaseController
     }
 
     // RESTORE PEMINJAMAN
-    public function restore($id)
-    {
-        $this->mustAdmin();
-
-        $pinjamModel  = new PinjamModel();
-        $barangModel  = new BarangModel();
-
-        // Ambil data dulu (termasuk soft deleted)
-        $pinjam = $pinjamModel->withDeleted()->find($id);
-        // Cek data ada tidak
-        if (!$pinjam) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException();
-        }
-
-        // Data pendukung log
-        $namaPeminjam = getNamaUser($pinjam['id_user']);
-
-        // Ambil kode barang
-        $barang = $barangModel->find($pinjam['id_barang']);
-        $kodeBarang = $barang['kode_barang'] ?? $pinjam['id_barang'];
-
-        // Restore data
-        $pinjamModel->withDeleted()
-            ->where('id_pinjam', $id)
-            ->update(null, [
-                'deleted_at' => null
-            ]);
-
-        log_activity(
-            'Restore peminjaman ' . $namaPeminjam . ' - ' . $kodeBarang,
-            'pinjam',
-            $id
-        );
-
-        return redirect()->back()->with('success', 'Data peminjaman berhasil direstore');
-    }
 
 
     // FORCE DELETE PEMINJAMAN
-    public function forceDelete($id)
-    {
-        $this->mustAdmin();
-
-        $pinjamModel = new PinjamModel();
-        $barangModel = new BarangModel();
-
-        // Ambil data dulu sebelum dihapus permanen
-        $pinjam = $pinjamModel->withDeleted()->find($id);
-        // Cek data ada tidak
-        if (!$pinjam) {
-            throw new \CodeIgniter\Exceptions\PageNotFoundException();
-        }
-
-        // Data pendukung log
-        $namaPeminjam = getNamaUser($pinjam['id_user']);
-
-        // Ambil kode barang
-        $barang = $barangModel->find($pinjam['id_barang']);
-        $kodeBarang = $barang['kode_barang'] ?? $pinjam['id_barang'];
-
-        // Hapus permanen
-        $pinjamModel->delete($id, true);
-
-        log_activity(
-            'Hapus permanen peminjaman ' . $namaPeminjam . ' - ' . $kodeBarang,
-            'pinjam',
-            $id
-        );
-
-        return redirect()->back()->with('success', 'Data peminjaman dihapus permanen');
-    }
 
     // CETAK DETAIL PEMINJAMAN (PETUGAS ONLY)
     public function cetakDetail($id)
@@ -651,7 +608,7 @@ class PinjamController extends BaseController
                 $no++,
                 $p['nama'] ?? explode('@', $p['email'])[0],
                 $p['email'],
-                $p['jenis_barang'] . ' - ' . $p['merek_barang'] . ' - ' . $p['tipe_barang'],
+                $p['nama_kategori'] . ' - ' . $p['merek_barang'] . ' - ' . $p['tipe_barang'],
                 $p['kode_barang'],
                 $p['tgl_pengajuan'] ? date('d-m-Y H:i', strtotime($p['tgl_pengajuan'])) : '-',
                 $p['tgl_disetujui'] ? date('d-m-Y H:i', strtotime($p['tgl_disetujui'])) : '-',

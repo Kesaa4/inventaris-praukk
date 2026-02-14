@@ -20,35 +20,38 @@ class AuthController extends BaseController
         return view('auth/login');
     }
 
-    // Menangani proses login
     public function attemptLogin()
-    {   
-        // Inisialisasi model
+    {
+        // ✅ Rate limiting untuk mencegah brute force
+        $throttle = service('throttler');
+        $ipAddress = $this->request->getIPAddress();
+        
+        if ($throttle->check(md5($ipAddress), 5, MINUTE) === false) {
+            return redirect()->back()->with('error', 'Terlalu banyak percobaan login. Coba lagi dalam 1 menit.');
+        }
+        
         $userModel = new UserModel();
-
-        // Ambil data dari form
         $email = $this->request->getPost('email');
         $password = $this->request->getPost('password');
         
-        // Cari user berdasarkan email
         $user = $userModel->where('email', $email)->first();
 
-        // Cek email
         if (!$user) {
+            // Tambahkan ke throttle saat gagal
+            $throttle->check(md5($ipAddress), 5, MINUTE);
             return redirect()->back()->with('error', 'Email tidak ditemukan');
         }
 
-        // Cek status user
         if ($user['status'] !== 'aktif') {
             return redirect()->back()->with('error', 'Akun anda tidak aktif');
         }
 
-        // Cek password
         if (!password_verify($password, $user['password'])) {
+            // Tambahkan ke throttle saat gagal
+            $throttle->check(md5($ipAddress), 5, MINUTE);
             return redirect()->back()->with('error', 'Password salah');
         }
         
-        // Set session
         session()->set([
             'id_user'    => $user['id_user'],
             'email'      => $user['email'],
@@ -56,30 +59,15 @@ class AuthController extends BaseController
             'isLoggedIn' => true
         ]);
 
-        // Log activity
-        log_activity(
-            'Login ke sistem',
-            'user',
-            $user['id_user']
-        );
+        log_activity('Login ke sistem', 'user', $user['id_user']);
 
-        // Redirect ke dashboard
         return redirect()->to('/dashboard');
-
     }
 
     public function logout()
     {
-        // Log activity
-        log_activity(
-            'Logout dari sistem',
-            'user',
-            session('id_user')
-        );
-
-        // Hapus session
+        log_activity('Logout dari sistem', 'user', session('id_user'));
         session()->destroy();
-        // Redirect ke halaman login
         return redirect()->to('/')->with('success', 'Berhasil logout');
     }
 

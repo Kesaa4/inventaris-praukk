@@ -5,19 +5,21 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/testdb', 'TestDb::index');
-$routes->get('/test-navbar', function() {
-    return view('test_navbar');
-});
-$routes->get('/test-barang', function() {
-    return view('barang/index', [
-        'barang' => [],
-        'kategori' => [],
-        'keyword' => '',
-        'catFilter' => '',
-        'pager' => service('pager')
-    ]);
-});
+
+// ❌ HAPUS TEST ROUTES UNTUK PRODUCTION
+// $routes->get('/testdb', 'TestDb::index');
+// $routes->get('/test-navbar', function() {
+//     return view('test_navbar');
+// });
+// $routes->get('/test-barang', function() {
+//     return view('barang/index', [
+//         'barang' => [],
+//         'kategori' => [],
+//         'keyword' => '',
+//         'catFilter' => '',
+//         'pager' => service('pager')
+//     ]);
+// });
 
 // Authentication Routes
 $routes->get('/', 'AuthController::login');
@@ -37,6 +39,7 @@ $routes->group('', ['filter' => 'auth'], function ($routes) {
     $routes->get('profile', 'ProfileController::index');
     $routes->get('profile/edit', 'ProfileController::edit');
     $routes->post('profile/update', 'ProfileController::update');
+    $routes->get('profile/deleteFoto', 'ProfileController::deleteFoto');
 });
 
 // User Management Routes for Admin
@@ -47,6 +50,7 @@ $routes->group('user', ['filter' => 'admin'], function ($routes) {
     $routes->get('edit/(:num)', 'UserController::edit/$1');
     $routes->post('update/(:num)', 'UserController::update/$1');
     $routes->get('delete/(:num)', 'UserController::delete/$1');
+    $routes->get('resetPassword/(:num)', 'UserController::resetPassword/$1');
 });
 
 // Barang Routes
@@ -60,16 +64,11 @@ $routes->group('barang', ['filter' => 'auth'], function ($routes) {
 $routes->group('barang', ['filter' => 'admin'], function ($routes) {
     $routes->get('create', 'BarangController::create');
     $routes->post('store', 'BarangController::store');
-
     $routes->get('edit/(:num)', 'BarangController::edit/$1');
     $routes->post('update/(:num)', 'BarangController::update/$1');
-
     $routes->get('delete/(:num)', 'BarangController::delete/$1');
     $routes->get('delete-foto/(:num)', 'BarangController::deleteFoto/$1');
-
     $routes->get('trash', 'BarangController::trash');
-    $routes->get('restore/(:num)', 'BarangController::restore/$1');
-    $routes->get('force-delete/(:num)', 'BarangController::forceDelete/$1');
 });
 
 // Pinjam Routes
@@ -96,6 +95,16 @@ $routes->group('pinjam', ['filter' => 'auth'], function ($routes) {
 // Kategori Routes (untuk semua user yang login)
 $routes->group('kategori', ['filter' => 'auth'], function ($routes) {
     $routes->get('/', 'KategoriController::index');
+    $routes->get('export', 'KategoriController::export');
     $routes->get('(:num)', 'KategoriController::show/$1');
+});
+
+// Kategori Management Routes for Admin
+$routes->group('kategori', ['filter' => 'admin'], function ($routes) {
+    $routes->get('create', 'KategoriController::create');
+    $routes->post('store', 'KategoriController::store');
+    $routes->get('edit/(:num)', 'KategoriController::edit/$1');
+    $routes->post('update/(:num)', 'KategoriController::update/$1');
+    $routes->post('delete/(:num)', 'KategoriController::delete/$1');
 });
 

@@ -232,7 +232,7 @@
                     <small><?= esc($pinjam['email']) ?></small>
                 </td>
                 <td>
-                    <strong><?= esc($pinjam['jenis_barang']) ?></strong><br>
+                    <strong><?= esc($pinjam['nama_kategori']) ?></strong><br>
                     <?= esc($pinjam['merek_barang']) ?> - <?= esc($pinjam['tipe_barang']) ?><br>
                     <small>Kode: <?= esc($pinjam['kode_barang']) ?></small>
                 </td>

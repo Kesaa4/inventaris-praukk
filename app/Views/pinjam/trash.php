@@ -20,78 +20,89 @@
     <?php endif ?>
 
     <!-- Filter -->
-    <div class="card shadow-sm mb-3">
+    <form method="get" class="card shadow-sm mb-3" id="filterForm">
         <div class="card-body">
-            <form method="get" action="<?= site_url('pinjam/trash') ?>" class="row g-2 align-items-end">
+            <div class="row g-3">
 
-                <!-- Keyword -->
                 <div class="col-md-4">
-                    <label class="form-label">Cari Peminjaman</label>
-                    <input
-                        type="text"
-                        name="keyword"
-                        class="form-control"
-                        placeholder="Barang atau email.."
-                        value="<?= esc($filters['keyword'] ?? '') ?>"
-                    >
+                    <label class="form-label">Cari Data</label>
+                    <input type="text" name="keyword" class="form-control" id="keywordInput"
+                        value="<?= esc($filters['keyword'] ?? '') ?>" placeholder="Barang atau peminjam...">
                 </div>
 
-                <!-- Status -->
                 <div class="col-md-2">
                     <label class="form-label">Status</label>
-                    <select name="status" class="form-select">
+                    <select name="status" class="form-select" id="statusSelect">
                         <option value="">Semua</option>
-                        <option value="dipinjam" <?= ($filters['status'] ?? '') === 'dipinjam' ? 'selected' : '' ?>>
-                            Dipinjam
-                        </option>
-                        <option value="dikembalikan" <?= ($filters['status'] ?? '') === 'dikembalikan' ? 'selected' : '' ?>>
-                            Dikembalikan
-                        </option>
-                        <option value="ditolak" <?= ($filters['status'] ?? '') === 'ditolak' ? 'selected' : '' ?>>
-                            Ditolak
-                        </option>
-                        <option value="menunggu" <?= ($filters['status'] ?? '') === 'menunggu' ? 'selected' : '' ?>>
-                            Menunggu
-                        </option>
+                        <option value="menunggu" <?= ($filters['status'] ?? '') === 'menunggu' ? 'selected' : '' ?>>Menunggu</option>
+                        <option value="disetujui" <?= ($filters['status'] ?? '') === 'disetujui' ? 'selected' : '' ?>>Disetujui</option>
+                        <option value="dipinjam" <?= ($filters['status'] ?? '') === 'dipinjam' ? 'selected' : '' ?>>Dipinjam</option>
+                        <option value="pengembalian" <?= ($filters['status'] ?? '') === 'pengembalian' ? 'selected' : '' ?>>Pengembalian</option>
+                        <option value="dikembalikan" <?= ($filters['status'] ?? '') === 'dikembalikan' ? 'selected' : '' ?>>Dikembalikan</option>
+                        <option value="ditolak" <?= ($filters['status'] ?? '') === 'ditolak' ? 'selected' : '' ?>>Ditolak</option>
                     </select>
                 </div>
 
-                <!-- Tgl Pengajuan -->
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label class="form-label">Tanggal Pengajuan</label>
-                    <input
-                        type="date"
-                        name="tgl_pengajuan"
-                        class="form-control"
-                        value="<?= esc($filters['tgl_pengajuan'] ?? '') ?>"
-                    >
+                    <input type="date" name="tgl_pengajuan" class="form-control" id="tglPengajuanInput"
+                        value="<?= esc($filters['tgl_pengajuan'] ?? '') ?>">
                 </div>
 
-                <!-- Tgl Kembali -->
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label class="form-label">Tanggal Kembali</label>
-                    <input
-                        type="date"
-                        name="tgl_disetujui_kembali"
-                        class="form-control"
-                        value="<?= esc($filters['tgl_disetujui_kembali'] ?? '') ?>"
-                    >
+                    <input type="date" name="tgl_disetujui_kembali" class="form-control" id="tglKembaliInput"
+                        value="<?= esc($filters['tgl_disetujui_kembali'] ?? '') ?>">
                 </div>
 
-                <!-- Tombol -->
-                <div class="col-md-12 col-lg-2 d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        Cari
-                    </button>
-
-                    <a href="<?= site_url('pinjam/trash') ?>" class="btn btn-outline-secondary">
-                        Reset
-                    </a>
-                </div>
-
-            </form>
+            </div>
         </div>
-    </div>
+
+        <div class="card-footer d-flex justify-content-between">
+            <a href="<?= site_url('pinjam/trash') ?>" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-clockwise me-1"></i>Reset
+            </a>
+            <a href="<?= site_url('pinjam') ?>" class="btn btn-secondary">
+                <i class="bi bi-arrow-left me-1"></i>Kembali
+            </a>
+        </div>
+    </form>
+
+    <script>
+    // Auto filter untuk trash peminjaman
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('filterForm');
+        const keywordInput = document.getElementById('keywordInput');
+        const statusSelect = document.getElementById('statusSelect');
+        const tglPengajuanInput = document.getElementById('tglPengajuanInput');
+        const tglKembaliInput = document.getElementById('tglKembaliInput');
+        
+        let timeout = null;
+        
+        // Auto submit saat mengetik keyword (dengan delay 500ms)
+        keywordInput.addEventListener('input', function() {
+            clearTimeout(timeout);
+            timeout = setTimeout(function() {
+                form.submit();
+            }, 500);
+        });
+        
+        // Auto submit saat memilih status
+        statusSelect.addEventListener('change', function() {
+            form.submit();
+        });
+        
+        // Auto submit saat memilih tanggal pengajuan
+        tglPengajuanInput.addEventListener('change', function() {
+            form.submit();
+        });
+        
+        // Auto submit saat memilih tanggal kembali
+        tglKembaliInput.addEventListener('change', function() {
+            form.submit();
+        });
+    });
+    </script>
 
     <!-- Table -->
     <div class="card shadow-sm border-danger">
@@ -115,7 +126,7 @@
 
                         <?php if (empty($pinjam)): ?>
                             <tr>
-                                <td colspan="12" class="text-center text-muted py-4">
+                                <td colspan="9" class="text-center text-muted py-4">
                                     <i class="bi bi-inbox"></i> Tidak ada peminjaman terhapus
                                 </td>
                             </tr>
@@ -126,14 +137,11 @@
                             <td class="text-center"><?= $i + 1 ?></td>
 
                             <td class="text-nowrap text-center">
-                                <?= esc($p['jenis_barang'].' '.$p['merek_barang'].' '.$p['tipe_barang'].' '.$p['kode_barang']) ?>
+                                <?= esc($p['nama_kategori'].' '.$p['merek_barang'].' '.$p['tipe_barang'].' '.$p['kode_barang']) ?>
                             </td>
 
                             <td class="text-nowrap text-center">
-                                <?php 
-                                    $displayName = !empty($p['nama']) ? $p['nama'] : explode('@', $p['email'])[0];
-                                    echo esc($displayName);
-                                ?>
+                                <?= !empty($p['nama']) ? esc($p['nama']) : esc(explode('@', $p['email'])[0]) ?>
                             </td>
 
                             <td class="text-nowrap text-center">
@@ -162,7 +170,7 @@
 
                             <td class="text-center">
                                 <span class="badge bg-secondary">
-                                    <?= esc($p['status']) ?>
+                                    <?= esc(ucfirst($p['status'])) ?>
                                 </span>
                             </td>
 

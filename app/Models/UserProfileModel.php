@@ -16,8 +16,31 @@ class UserProfileModel extends Model
         'id_user',
         'nama',
         'no_hp',
-        'alamat'
+        'alamat',
+        'foto_profil'
     ];
+
+    /**
+     * Ambil profil user dengan data user
+     */
+    public function getProfileWithUser($idUser)
+    {
+        $builder = $this->builder();
+        return $builder->select('userprofile.*, user.email, user.role, user.status')
+                       ->join('user', 'user.id_user = userprofile.id_user', 'left')
+                       ->where('userprofile.id_user', $idUser)
+                       ->get()
+                       ->getRowArray();
+    }
+
+    /**
+     * Cek apakah user sudah memiliki profil
+     */
+    public function hasProfile($idUser)
+    {
+        $builder = $this->builder();
+        return $builder->where('id_user', $idUser)->countAllResults() > 0;
+    }
 
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;

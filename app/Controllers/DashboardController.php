@@ -5,211 +5,362 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\BarangModel;
+use App\Models\PinjamModel;
+use App\Models\UserModel;
+use App\Models\UserProfileModel;
+use App\Models\ActivityLogModel;
 
 class DashboardController extends BaseController
 {
-    // Tampilkan dashboard sesuai peran user
-    public function index()
+    protected $db;
+    protected $userProfileModel;
+
+    public function __construct()
     {
-        // Ambil role dari session
-        $role = session()->get('role');
-
-        // Tampilkan dashboard sesuai role
-        switch ($role) {
-            case 'admin':
-                return $this->adminDashboard();
-
-            case 'petugas':
-                return $this->petugasDashboard();
-
-            case 'peminjam':
-                return $this->peminjamDashboard();
-
-            default:
-                throw new \CodeIgniter\Exceptions\PageForbiddenException();
-        }
+        $this->db = \Config\Database::connect();
+        $this->userProfileModel = new UserProfileModel();
     }
 
-    // Tampilkan dashboard untuk admin
+    /**
+     * Tampilkan dashboard sesuai peran user
+     */
+    public function index()
+    {
+        $role = session()->get('role');
+
+        return match ($role) {
+            'admin' => $this->adminDashboard(),
+            'petugas' => $this->petugasDashboard(),
+            'peminjam' => $this->peminjamDashboard(),
+            default => throw new \CodeIgniter\Exceptions\PageNotFoundException()
+        };
+    }
+
+    /**
+     * Dashboard untuk admin dengan statistik lengkap
+     */
     private function adminDashboard()
     {
-        $barangModel = new BarangModel();
-        $pinjamModel = new \App\Models\PinjamModel();
-        $userModel = new \App\Models\UserModel();
-        $userProfileModel = new \App\Models\UserProfileModel();
+        $data = [
+            'nama' => $this->getUserName(),
+            ...$this->getBarangStats(),
+            ...$this->getPeminjamanStats(),
+            'totalUser' => $this->getTotalUsers(),
+            'totalKategori' => $this->getTotalKategori(),
+            'peminjamanPerBulan' => $this->getPeminjamanPerBulan(),
+            'barangPopuler' => $this->getBarangPopuler(),
+            'userAktif' => $this->getUserAktif(),
+            'peminjamanTerbaru' => $this->getPeminjamanTerbaru(5)
+        ];
 
-        // Ambil nama user dari profile
-        $profile = $userProfileModel->where('id_user', session('id_user'))->first();
-        $nama = $profile['nama'] ?? explode('@', session('email'))[0];
+        return view('dashboard/admin', $data);
+    }
 
-        // Statistik Barang
-        $db = \Config\Database::connect();
-        $totalBarang = $db->table('barang')->where('deleted_at IS NULL')->countAllResults(false);
-        $barangTersedia = $db->table('barang')->where('deleted_at IS NULL')->where('status', 'tersedia')->countAllResults(false);
-        $barangDipinjam = $db->table('barang')->where('deleted_at IS NULL')->where('status', 'dipinjam')->countAllResults(false);
-        $barangTidakTersedia = $db->table('barang')->where('deleted_at IS NULL')->where('status', 'tidak tersedia')->countAllResults();
+    /**
+     * Dashboard untuk petugas
+     */
+    private function petugasDashboard()
+    {
+        $data = [
+            'nama' => $this->getUserName(),
+            ...$this->getPeminjamanStats(),
+            ...$this->getBarangStats(),
+            'totalKategori' => $this->getTotalKategori(),
+            'peminjamanMenungguList' => $this->getPeminjamanMenungguList(5),
+            'peminjamanTerbaru' => $this->getPeminjamanTerbaru(10)
+        ];
 
-        // Statistik Peminjaman
-        $db = \Config\Database::connect();
-        $totalPeminjaman = $db->table('pinjam')->where('deleted_at IS NULL')->countAllResults(false);
-        $peminjamanMenunggu = $db->table('pinjam')->where('deleted_at IS NULL')->where('status', 'menunggu')->countAllResults(false);
-        $peminjamanDisetujui = $db->table('pinjam')->where('deleted_at IS NULL')->where('status', 'disetujui')->countAllResults(false);
-        $peminjamanDikembalikan = $db->table('pinjam')->where('deleted_at IS NULL')->where('status', 'dikembalikan')->countAllResults();
+        return view('dashboard/petugas', $data);
+    }
 
-        // Statistik User
-        $totalUser = $db->table('user')->countAllResults();
+    /**
+     * Dashboard untuk peminjam
+     */
+    private function peminjamDashboard()
+    {
+        $userId = session('id_user');
+        
+        $data = [
+            'nama' => $this->getUserName(),
+            'peminjamanSaya' => $this->getPeminjamanByUser($userId),
+            'totalPeminjamanSaya' => $this->getTotalPeminjamanByUser($userId),
+            'peminjamanAktif' => $this->getPeminjamanAktifByUser($userId),
+            'riwayatTerbaru' => $this->getRiwayatPeminjamanByUser($userId, 5)
+        ];
 
-        // Statistik Peminjaman per Bulan (6 bulan terakhir)
-        $peminjamanPerBulan = [];
-        for ($i = 5; $i >= 0; $i--) {
+        return view('dashboard/peminjam', $data);
+    }
+
+    /**
+     * Cetak laporan peminjaman
+     */
+    public function cetakLaporan()
+    {
+        $role = session()->get('role');
+        if (!in_array($role, ['petugas', 'admin'])) {
+            throw new \CodeIgniter\Exceptions\PageNotFoundException();
+        }
+
+        $filters = [
+            'status' => $this->request->getGet('status'),
+            'tglMulai' => $this->request->getGet('tgl_mulai'),
+            'tglSelesai' => $this->request->getGet('tgl_selesai')
+        ];
+
+        $data = [
+            'dataPinjam' => $this->getFilteredPeminjaman($filters),
+            'namaPetugas' => $this->getUserName(),
+            ...$filters
+        ];
+
+        return view('dashboard/cetak_laporan', $data);
+    }
+
+    // ==================== HELPER METHODS ====================
+
+    /**
+     * Ambil nama user dari profile
+     */
+    private function getUserName(): string
+    {
+        $profile = $this->userProfileModel->where('id_user', session('id_user'))->first();
+        return $profile['nama'] ?? explode('@', session('email'))[0];
+    }
+
+    /**
+     * Statistik barang
+     */
+    private function getBarangStats(): array
+    {
+        $builder = $this->db->table('barang')->where('deleted_at IS NULL');
+        
+        return [
+            'totalBarang' => (clone $builder)->countAllResults(),
+            'barangTersedia' => (clone $builder)->where('status', 'tersedia')->countAllResults(),
+            'barangDipinjam' => (clone $builder)->where('status', 'dipinjam')->countAllResults(),
+            'barangTidakTersedia' => (clone $builder)->where('status', 'tidak tersedia')->countAllResults()
+        ];
+    }
+
+    /**
+     * Statistik peminjaman
+     */
+    private function getPeminjamanStats(): array
+    {
+        $builder = $this->db->table('pinjam')->where('deleted_at IS NULL');
+        
+        return [
+            'totalPeminjaman' => (clone $builder)->countAllResults(),
+            'peminjamanMenunggu' => (clone $builder)->where('status', 'menunggu')->countAllResults(),
+            'peminjamanDisetujui' => (clone $builder)->where('status', 'disetujui')->countAllResults(),
+            'peminjamanDikembalikan' => (clone $builder)->where('status', 'dikembalikan')->countAllResults(),
+            'peminjamanDitolak' => (clone $builder)->where('status', 'ditolak')->countAllResults()
+        ];
+    }
+
+    /**
+     * Total user
+     */
+    private function getTotalUsers(): int
+    {
+        return $this->db->table('user')->countAllResults();
+    }
+
+    /**
+     * Total kategori
+     */
+    private function getTotalKategori(): int
+    {
+        return $this->db->table('kategori')->countAllResults();
+    }
+
+    /**
+     * Statistik peminjaman per bulan (6 bulan terakhir)
+     */
+    private function getPeminjamanPerBulan(int $months = 6): array
+    {
+        $result = [];
+        for ($i = $months - 1; $i >= 0; $i--) {
             $bulan = date('Y-m', strtotime("-$i month"));
-            $count = $db->table('pinjam')
+            $count = $this->db->table('pinjam')
                 ->where('deleted_at IS NULL')
                 ->where("DATE_FORMAT(tgl_pengajuan, '%Y-%m')", $bulan)
                 ->countAllResults();
             
-            $peminjamanPerBulan[] = [
+            $result[] = [
                 'bulan' => date('M Y', strtotime($bulan . '-01')),
                 'total' => $count
             ];
         }
+        return $result;
+    }
 
-        // Barang Paling Sering Dipinjam (Top 5)
-        $barangPopuler = $db->table('pinjam')
-            ->select('barang.jenis_barang, barang.merek_barang, barang.kode_barang, COUNT(pinjam.id_pinjam) as total')
+    /**
+     * Barang paling populer (paling sering dipinjam)
+     */
+    private function getBarangPopuler(int $limit = 5): array
+    {
+        return $this->db->table('pinjam')
+            ->select('kategori.nama_kategori, barang.merek_barang, barang.kode_barang, COUNT(pinjam.id_pinjam) as total')
             ->join('barang', 'barang.id_barang = pinjam.id_barang')
+            ->join('kategori', 'kategori.id_kategori = barang.id_kategori', 'left')
             ->where('pinjam.deleted_at IS NULL')
             ->groupBy('pinjam.id_barang')
             ->orderBy('total', 'DESC')
-            ->limit(5)
+            ->limit($limit)
             ->get()
             ->getResultArray();
+    }
 
-        // User Paling Aktif (Top 5)
-        $userAktif = $db->table('pinjam')
+    /**
+     * User paling aktif
+     */
+    private function getUserAktif(int $limit = 5): array
+    {
+        return $this->db->table('pinjam')
             ->select('user.email, userprofile.nama, COUNT(pinjam.id_pinjam) as total')
             ->join('user', 'user.id_user = pinjam.id_user')
             ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
             ->where('pinjam.deleted_at IS NULL')
             ->groupBy('pinjam.id_user')
             ->orderBy('total', 'DESC')
-            ->limit(5)
+            ->limit($limit)
             ->get()
             ->getResultArray();
-
-        // Tampilkan view dengan data
-        return view('dashboard/admin', [
-            'nama' => $nama,
-            'totalBarang' => $totalBarang,
-            'barangTersedia' => $barangTersedia,
-            'barangDipinjam' => $barangDipinjam,
-            'barangTidakTersedia' => $barangTidakTersedia,
-            'totalPeminjaman' => $totalPeminjaman,
-            'peminjamanMenunggu' => $peminjamanMenunggu,
-            'peminjamanDisetujui' => $peminjamanDisetujui,
-            'peminjamanDikembalikan' => $peminjamanDikembalikan,
-            'totalUser' => $totalUser,
-            'peminjamanPerBulan' => $peminjamanPerBulan,
-            'barangPopuler' => $barangPopuler,
-            'userAktif' => $userAktif
-        ]);
     }
 
-    // Tampilkan dashboard untuk petugas
-    private function petugasDashboard()
+    /**
+     * Aktivitas terbaru
+     */
+    private function getAktivitasTerbaru(int $limit = 10): array
     {
-        $userProfileModel = new \App\Models\UserProfileModel();
-        
-        // Ambil nama user dari profile
-        $profile = $userProfileModel->where('id_user', session('id_user'))->first();
-        $nama = $profile['nama'] ?? explode('@', session('email'))[0];
-
-        // Statistik untuk dashboard petugas
-        $db = \Config\Database::connect();
-        $totalPeminjaman = $db->table('pinjam')->where('deleted_at IS NULL')->countAllResults(false);
-        $peminjamanMenunggu = $db->table('pinjam')->where('deleted_at IS NULL')->where('status', 'menunggu')->countAllResults(false);
-        $peminjamanDisetujui = $db->table('pinjam')->where('deleted_at IS NULL')->where('status', 'disetujui')->countAllResults(false);
-        $peminjamanDikembalikan = $db->table('pinjam')->where('deleted_at IS NULL')->where('status', 'dikembalikan')->countAllResults();
-
-        return view('dashboard/petugas', [
-            'nama' => $nama,
-            'totalPeminjaman' => $totalPeminjaman,
-            'peminjamanMenunggu' => $peminjamanMenunggu,
-            'peminjamanDisetujui' => $peminjamanDisetujui,
-            'peminjamanDikembalikan' => $peminjamanDikembalikan
-        ]);
+        return $this->db->table('activity_log')
+            ->select('activity_log.*, userprofile.nama, user.email')
+            ->join('user', 'user.id_user = activity_log.id_user')
+            ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
+            ->orderBy('activity_log.created_at', 'DESC')
+            ->limit($limit)
+            ->get()
+            ->getResultArray();
     }
 
-    // Cetak laporan peminjaman untuk petugas
-    public function cetakLaporan()
+    /**
+     * Peminjaman terbaru
+     */
+    private function getPeminjamanTerbaru(int $limit = 5): array
     {
-        // Cek apakah user adalah petugas atau admin
-        $role = session()->get('role');
-        if (!in_array($role, ['petugas', 'admin'])) {
-            throw new \CodeIgniter\Exceptions\PageForbiddenException();
-        }
-
-        // Ambil parameter filter dari query string
-        $status = $this->request->getGet('status');
-        $tglMulai = $this->request->getGet('tgl_mulai');
-        $tglSelesai = $this->request->getGet('tgl_selesai');
-
-        // Query data peminjaman
-        $db = \Config\Database::connect();
-        $builder = $db->table('pinjam')
-            ->select('
-                pinjam.*,
-                barang.jenis_barang,
-                barang.merek_barang,
-                barang.tipe_barang,
-                barang.kode_barang,
-                user.email,
-                userprofile.nama
-            ')
+        return $this->db->table('pinjam')
+            ->select('pinjam.*, barang.merek_barang, barang.kode_barang, kategori.nama_kategori, userprofile.nama, user.email')
             ->join('barang', 'barang.id_barang = pinjam.id_barang', 'left')
+            ->join('kategori', 'kategori.id_kategori = barang.id_kategori', 'left')
+            ->join('user', 'user.id_user = pinjam.id_user', 'left')
+            ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
+            ->where('pinjam.deleted_at IS NULL')
+            ->orderBy('pinjam.tgl_pengajuan', 'DESC')
+            ->limit($limit)
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Peminjaman yang menunggu persetujuan
+     */
+    private function getPeminjamanMenungguList(int $limit = 5): array
+    {
+        return $this->db->table('pinjam')
+            ->select('pinjam.*, barang.merek_barang, barang.kode_barang, kategori.nama_kategori, userprofile.nama, user.email')
+            ->join('barang', 'barang.id_barang = pinjam.id_barang', 'left')
+            ->join('kategori', 'kategori.id_kategori = barang.id_kategori', 'left')
+            ->join('user', 'user.id_user = pinjam.id_user', 'left')
+            ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
+            ->where('pinjam.deleted_at IS NULL')
+            ->where('pinjam.status', 'menunggu')
+            ->orderBy('pinjam.tgl_pengajuan', 'ASC')
+            ->limit($limit)
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Peminjaman berdasarkan user
+     */
+    private function getPeminjamanByUser(int $userId): array
+    {
+        $builder = $this->db->table('pinjam')->where('id_user', $userId)->where('deleted_at IS NULL');
+        
+        return [
+            'menunggu' => (clone $builder)->where('status', 'menunggu')->countAllResults(),
+            'disetujui' => (clone $builder)->where('status', 'disetujui')->countAllResults(),
+            'dikembalikan' => (clone $builder)->where('status', 'dikembalikan')->countAllResults(),
+            'ditolak' => (clone $builder)->where('status', 'ditolak')->countAllResults()
+        ];
+    }
+
+    /**
+     * Total peminjaman by user
+     */
+    private function getTotalPeminjamanByUser(int $userId): int
+    {
+        return $this->db->table('pinjam')
+            ->where('id_user', $userId)
+            ->where('deleted_at IS NULL')
+            ->countAllResults();
+    }
+
+    /**
+     * Peminjaman aktif by user
+     */
+    private function getPeminjamanAktifByUser(int $userId): int
+    {
+        return $this->db->table('pinjam')
+            ->where('id_user', $userId)
+            ->where('deleted_at IS NULL')
+            ->whereIn('status', ['menunggu', 'disetujui'])
+            ->countAllResults();
+    }
+
+    /**
+     * Riwayat peminjaman by user
+     */
+    private function getRiwayatPeminjamanByUser(int $userId, int $limit = 5): array
+    {
+        return $this->db->table('pinjam')
+            ->select('pinjam.*, barang.merek_barang, barang.kode_barang, kategori.nama_kategori')
+            ->join('barang', 'barang.id_barang = pinjam.id_barang', 'left')
+            ->join('kategori', 'kategori.id_kategori = barang.id_kategori', 'left')
+            ->where('pinjam.id_user', $userId)
+            ->where('pinjam.deleted_at IS NULL')
+            ->orderBy('pinjam.tgl_pengajuan', 'DESC')
+            ->limit($limit)
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Get filtered peminjaman untuk laporan
+     */
+    private function getFilteredPeminjaman(array $filters): array
+    {
+        $builder = $this->db->table('pinjam')
+            ->select('pinjam.*, kategori.nama_kategori, barang.merek_barang, barang.tipe_barang, barang.kode_barang, user.email, userprofile.nama')
+            ->join('barang', 'barang.id_barang = pinjam.id_barang', 'left')
+            ->join('kategori', 'kategori.id_kategori = barang.id_kategori', 'left')
             ->join('user', 'user.id_user = pinjam.id_user', 'left')
             ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
             ->where('pinjam.deleted_at IS NULL');
 
-        // Terapkan filter
-        if ($status) {
-            $builder->where('pinjam.status', $status);
+        if (!empty($filters['status'])) {
+            $builder->where('pinjam.status', $filters['status']);
         }
 
-        if ($tglMulai) {
-            $builder->where('DATE(pinjam.tgl_pengajuan) >=', $tglMulai);
+        if (!empty($filters['tglMulai'])) {
+            $builder->where('DATE(pinjam.tgl_pengajuan) >=', $filters['tglMulai']);
         }
 
-        if ($tglSelesai) {
-            $builder->where('DATE(pinjam.tgl_pengajuan) <=', $tglSelesai);
+        if (!empty($filters['tglSelesai'])) {
+            $builder->where('DATE(pinjam.tgl_pengajuan) <=', $filters['tglSelesai']);
         }
 
-        $dataPinjam = $builder->orderBy('pinjam.tgl_pengajuan', 'DESC')->get()->getResultArray();
-
-        // Ambil data petugas
-        $userProfileModel = new \App\Models\UserProfileModel();
-        $profile = $userProfileModel->where('id_user', session('id_user'))->first();
-        $namaPetugas = $profile['nama'] ?? explode('@', session('email'))[0];
-
-        // Tampilkan view cetak
-        return view('dashboard/cetak_laporan', [
-            'dataPinjam' => $dataPinjam,
-            'namaPetugas' => $namaPetugas,
-            'status' => $status,
-            'tglMulai' => $tglMulai,
-            'tglSelesai' => $tglSelesai
-        ]);
-    }
-
-    // Tampilkan dashboard untuk peminjam
-    private function peminjamDashboard()
-    {
-        $userProfileModel = new \App\Models\UserProfileModel();
-        
-        // Ambil nama user dari profile
-        $profile = $userProfileModel->where('id_user', session('id_user'))->first();
-        $nama = $profile['nama'] ?? explode('@', session('email'))[0];
-
-        return view('dashboard/peminjam', ['nama' => $nama]);
+        return $builder->orderBy('pinjam.tgl_pengajuan', 'DESC')->get()->getResultArray();
     }
 }

@@ -15,6 +15,31 @@
             </a>
         </div>
 
+        <!-- Filter Kondisi -->
+        <div class="card shadow-sm mb-3">
+            <div class="card-body">
+                <div class="d-flex flex-wrap gap-2 align-items-center">
+                    <span class="me-2 fw-bold">Filter Kondisi:</span>
+                    <a href="<?= site_url('kategori/'.$kategori['id_kategori']) ?>" 
+                       class="btn btn-sm <?= (!$kondisiFilter || $kondisiFilter === 'semua') ? 'btn-primary' : 'btn-outline-primary' ?>">
+                        <i class="bi bi-grid-3x3-gap me-1"></i>Semua
+                    </a>
+                    <a href="<?= site_url('kategori/'.$kategori['id_kategori'].'?kondisi=baik') ?>" 
+                       class="btn btn-sm <?= ($kondisiFilter === 'baik') ? 'btn-success' : 'btn-outline-success' ?>">
+                        <i class="bi bi-check-circle me-1"></i>Baik
+                    </a>
+                    <a href="<?= site_url('kategori/'.$kategori['id_kategori'].'?kondisi=rusak ringan') ?>" 
+                       class="btn btn-sm <?= ($kondisiFilter === 'rusak ringan') ? 'btn-warning' : 'btn-outline-warning' ?>">
+                        <i class="bi bi-exclamation-triangle me-1"></i>Rusak Ringan
+                    </a>
+                    <a href="<?= site_url('kategori/'.$kategori['id_kategori'].'?kondisi=rusak berat') ?>" 
+                       class="btn btn-sm <?= ($kondisiFilter === 'rusak berat') ? 'btn-danger' : 'btn-outline-danger' ?>">
+                        <i class="bi bi-x-circle me-1"></i>Rusak Berat
+                    </a>
+                </div>
+            </div>
+        </div>
+
         <!-- Table -->
         <div class="card shadow-sm">
             <div class="card-body p-0">
@@ -29,6 +54,7 @@
                                 <th>Kode Barang</th>
                                 <th>RAM</th>
                                 <th>ROM</th>
+                                <th>Kondisi</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -37,12 +63,25 @@
                                 <?php $no = 1 + (($currentPage - 1) * $perPage); foreach($barang_list as $b): ?>
                                     <tr>
                                         <td class="text-center"><?= $no++ ?></td>
-                                        <td><?= esc($b['jenis_barang']) ?></td>
+                                        <td><?= esc($b['nama_kategori']) ?></td>
                                         <td><?= esc($b['merek_barang']) ?></td>
                                         <td><?= esc($b['tipe_barang']) ?></td>
                                         <td><?= esc($b['kode_barang']) ?></td>
                                         <td class="text-center"><?= esc($b['ram']) ?></td>
                                         <td class="text-center"><?= esc($b['rom']) ?></td>
+                                        <td class="text-center">
+                                            <?php
+                                                $kondisiBadge = match($b['kondisi']) {
+                                                    'baik' => 'success',
+                                                    'rusak ringan' => 'warning',
+                                                    'rusak berat' => 'danger',
+                                                    default => 'secondary'
+                                                };
+                                            ?>
+                                            <span class="badge bg-<?= $kondisiBadge ?>">
+                                                <?= ucfirst(esc($b['kondisi'])) ?>
+                                            </span>
+                                        </td>
                                         <td class="text-center">
                                             <?php
                                                 $statusBadge = match($b['status']) {
@@ -61,8 +100,10 @@
                                 <?php endforeach; ?>
                             <?php else: ?>
                                 <tr>
-                                    <td colspan="8" class="text-center py-3">
-                                        Belum ada barang di kategori ini.
+                                    <td colspan="9" class="text-center py-3">
+                                        <?= $kondisiFilter && $kondisiFilter !== 'semua' 
+                                            ? 'Tidak ada barang dengan kondisi ' . esc($kondisiFilter) . ' di kategori ini.' 
+                                            : 'Belum ada barang di kategori ini.' ?>
                                     </td>
                                 </tr>
                             <?php endif; ?>

@@ -15,6 +15,7 @@ class PinjamModel extends Model
     protected $allowedFields    = [
         'id_barang',
         'id_user',
+        'created_by',
         'tgl_pengajuan',
         'tgl_disetujui',
         'tgl_jatuh_tempo',
@@ -26,97 +27,61 @@ class PinjamModel extends Model
         'approved_at',
         'approved_by',
         'kondisi_barang',
-        'keterangan_kondisi',
-        'deleted_at'
+        'keterangan_kondisi'
     ];
 
     protected function initialize()
     {
-        // DEFAULT QUERY (WAJIB untuk paginate + join)
-        $this->select('
-            pinjam.*,
-            barang.jenis_barang,
-            barang.merek_barang,
-            barang.tipe_barang,
-            barang.kode_barang,
-            user.email,
-            userprofile.nama
-        ')
-        ->join('barang', 'barang.id_barang = pinjam.id_barang', 'left')
-        ->join('user', 'user.id_user = pinjam.id_user', 'left')
-        ->join('userprofile', 'userprofile.id_user = user.id_user', 'left');
+        $this->select('pinjam.*, kategori.nama_kategori, barang.merek_barang, barang.tipe_barang, barang.kode_barang, user.email, userprofile.nama')
+            ->join('barang', 'barang.id_barang = pinjam.id_barang', 'left')
+            ->join('kategori', 'kategori.id_kategori = barang.id_kategori', 'left')
+            ->join('user', 'user.id_user = pinjam.id_user', 'left')
+            ->join('userprofile', 'userprofile.id_user = user.id_user', 'left');
     }
 
-    // Ambil data pinjam dengan relasi barang dan user (optional filter by userId)
     public function getPinjamWithRelasi($userId = null)
     {
         if ($userId) {
-            // Filter berdasarkan userId jika diberikan
             $this->where('pinjam.id_user', $userId);
         }
 
-        // Urutkan berdasarkan tanggal pengajuan terbaru
         return $this->orderBy('pinjam.created_at', 'DESC');
     }
 
-    // Ambil data pinjam berdasarkan ID dengan relasi barang dan user
     public function getPinjamWithRelasiById($id)
     {
-        // Query dengan join ke tabel barang dan user
-        return $this->db->table('pinjam')
-            ->select('
-                pinjam.*,
-                barang.jenis_barang,
-                barang.merek_barang,
-                barang.tipe_barang,
-                barang.kode_barang,
-                user.email,
-                userprofile.nama
-            ')
-            ->join('barang', 'barang.id_barang = pinjam.id_barang')
-            ->join('user', 'user.id_user = pinjam.id_user')
-            ->join('userprofile', 'userprofile.id_user = user.id_user', 'left')
-            ->where('pinjam.id_pinjam', $id)
-            ->get()
-            ->getRowArray();
+        return $this->where('pinjam.id_pinjam', $id)->first();
     }
 
-    // Filter data pinjam
     public function filterPinjam(array $filters = [], $userId = null)
     {
         if ($userId) {
-            // Filter berdasarkan userId jika diberikan
             $this->where('pinjam.id_user', $userId);
         }
 
-        // Terapkan filter berdasarkan kriteria yang diberikan
         if (!empty($filters['keyword'])) {
             $this->groupStart()
-                ->like('barang.jenis_barang', $filters['keyword'])
+                ->like('kategori.nama_kategori', $filters['keyword'])
                 ->orLike('barang.merek_barang', $filters['keyword'])
                 ->orLike('barang.tipe_barang', $filters['keyword'])
                 ->orLike('barang.kode_barang', $filters['keyword'])
                 ->orLike('user.email', $filters['keyword'])
                 ->orLike('userprofile.nama', $filters['keyword'])
-            ->groupEnd();
+                ->groupEnd();
         }
 
-        // Filter berdasarkan status
         if (!empty($filters['status'])) {
             $this->where('pinjam.status', $filters['status']);
         }
 
-        // Filter berdasarkan tanggal pengajuan
         if (!empty($filters['tgl_pengajuan'])) {
             $this->where('DATE(pinjam.tgl_pengajuan)', $filters['tgl_pengajuan']);
         }
 
-        // Filter berdasarkan tanggal disetujui
         if (!empty($filters['tgl_disetujui_kembali'])) {
             $this->where('DATE(pinjam.tgl_disetujui_kembali)', $filters['tgl_disetujui_kembali']);
         }
 
-        // Urutkan berdasarkan tanggal pengajuan terbaru
         return $this->orderBy('pinjam.created_at', 'DESC');
     }
 

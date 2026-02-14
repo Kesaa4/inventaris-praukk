@@ -18,7 +18,8 @@
                         <!-- Error validation -->
                         <?php if (session()->getFlashdata('errors')): ?>
                             <div class="alert alert-danger">
-                                <ul class="mb-0">
+                                <strong><i class="bi bi-exclamation-triangle me-2"></i>Terjadi Kesalahan:</strong>
+                                <ul class="mb-0 mt-2">
                                     <?php foreach (session()->getFlashdata('errors') as $error): ?>
                                         <li><?= esc($error) ?></li>
                                     <?php endforeach ?>
@@ -26,22 +27,45 @@
                             </div>
                         <?php endif ?>
 
+                        <!-- Error message -->
+                        <?php if (session()->getFlashdata('error')): ?>
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i><?= session()->getFlashdata('error') ?>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        <?php endif ?>
+
                         <form action="/user/store" method="post">
                             <?= csrf_field() ?>
 
                             <div class="mb-3">
-                                <label class="form-label">Nama Lengkap</label>
-                                <input type="text" name="nama" class="form-control" required>
+                                <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+                                <input type="text" 
+                                       name="nama" 
+                                       class="form-control" 
+                                       value="<?= old('nama') ?>"
+                                       placeholder="Masukkan nama lengkap"
+                                       required>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Email</label>
-                                <input type="email" name="email" class="form-control" required>
+                                <label class="form-label">Email <span class="text-danger">*</span></label>
+                                <input type="email" 
+                                       name="email" 
+                                       class="form-control" 
+                                       value="<?= old('email') ?>"
+                                       placeholder="contoh@email.com"
+                                       required>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Password</label>
-                                <input type="password" name="password" id="password" class="form-control" required>
+                                <label class="form-label">Password <span class="text-danger">*</span></label>
+                                <input type="password" 
+                                       name="password" 
+                                       id="password" 
+                                       class="form-control"
+                                       placeholder="Minimal 6 karakter"
+                                       required>
                             </div>
 
                             <!-- Show Password -->
@@ -58,20 +82,20 @@
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Role</label>
+                                <label class="form-label">Role <span class="text-danger">*</span></label>
                                 <select name="role" class="form-select" required>
                                     <option value="">-- Pilih Role --</option>
-                                    <option value="admin">Admin</option>
-                                    <option value="petugas">Petugas</option>
-                                    <option value="peminjam">Peminjam</option>
+                                    <option value="admin" <?= old('role') === 'admin' ? 'selected' : '' ?>>Admin</option>
+                                    <option value="petugas" <?= old('role') === 'petugas' ? 'selected' : '' ?>>Petugas</option>
+                                    <option value="peminjam" <?= old('role') === 'peminjam' ? 'selected' : '' ?>>Peminjam</option>
                                 </select>
                             </div>
 
                             <div class="mb-3">
-                                <label class="form-label">Status</label>
+                                <label class="form-label">Status <span class="text-danger">*</span></label>
                                 <select name="status" class="form-select" required>
-                                    <option value="aktif">Aktif</option>
-                                    <option value="tidak aktif">Tidak Aktif</option>
+                                    <option value="aktif" <?= old('status') === 'aktif' || !old('status') ? 'selected' : '' ?>>Aktif</option>
+                                    <option value="tidak aktif" <?= old('status') === 'tidak aktif' ? 'selected' : '' ?>>Tidak Aktif</option>
                                 </select>
                             </div>
 
